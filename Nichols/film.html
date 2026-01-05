@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Film Development - Nichols Photo Lab</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=DM+Sans:wght@700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body class="film-page">
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="index.html" class="logo logo-link">
+                <img src="assets/logo.svg" alt="Nichols Photo Lab Logo">
+            </a>
+            <div class="nav-elements">
+                <div class="drawer-logo">
+                    <img src="assets/logo.svg" alt="Nichols Photo Lab Logo">
+                </div>
+                <a href="index.html#products" class="nav-link">PRODUCTS</a>
+                <a href="film.html" class="nav-link nav-link-active">FILM</a>
+                <a href="video.html" class="nav-link">VIDEO AND REELS</a>
+                <a href="index.html#about" class="nav-link nav-link-about">ABOUT US</a>
+                <a href="https://www.roesweb.com/configs/NicholsRW/products/standard" class="order-now-btn">ORDER
+                    NOW</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </nav>
+    <div class="nav-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section film-hero">
+            <div class="hero-background">
+                <img src="IMG/Hero-Film.webp" alt="Film Development Hero" class="hero-bg-image">
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-content">
+                <div class="hero-title">
+                    <h1 class="hero-title-line1">THE COMPLETE<br><span class="hero-title-line2">FILM PROCESS</span>
+                    </h1>
+                </div>
+                <p class="film-hero-description">Film processing, high-resolution scans,<br>and beautiful prints, all in
+                    one place.</p>
+            </div>
+        </section>
+
+        <!-- Film Development Section -->
+        <section class="film-section" id="step-1">
+            <div class="film-section-header">
+                <h2 class="section-number">1. FILM DEVELOPMENT</h2>
+                <p class="section-description">Turning your completed film into ready to use negatives.</p>
+            </div>
+
+            <!-- Film Type Tabs -->
+            <div class="film-tabs-container">
+                <div class="film-tabs">
+                    <button class="film-tab is-active" data-tab="c41" aria-selected="true" role="tab">C-41</button>
+                    <button class="film-tab" data-tab="B&W" aria-selected="false" role="tab">B&W</button>
+                    <button class="film-tab" data-tab="E-6" aria-selected="false" role="tab">E-6</button>
+                </div>
+            </div>
+
+            <!-- Tab Panels -->
+            <div class="film-panels">
+                <!-- C-41 Panel -->
+                <div class="film-panel is-active" id="panel-c41" role="tabpanel">
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3>C-41 (COLOR FILM)</h3>
+                            <p>Bring your color film to life. We process C-41 rolls with precision and care to produce
+                                sharp, vibrant negatives ready for scanning or printing.</p>
+                            <div class="pricing-list">
+                                <div class="price-item" data-format="35mm" data-film-type="c41">
+                                    <span class="format">35MM/110/120</span>
+                                    <span class="price">$6.50</span>
+                                </div>
+                                <div class="price-item" data-format="4x5" data-film-type="c41">
+                                    <span class="format">4×5 SHEET</span>
+                                    <span class="price">$4.00</span>
+                                </div>
+                                <div class="price-item" data-format="5x7" data-film-type="c41">
+                                    <span class="format">5×7 SHEET</span>
+                                    <span class="price">$5.00</span>
+                                </div>
+                                <div class="price-item" data-format="8x10" data-film-type="c41">
+                                    <span class="format">8×10 SHEET</span>
+                                    <span class="price">$6.50</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                 <div class="film-image-container square" data-format="35mm">
+                                    <img src="IMG/Film/C41/Film-C41.webp" alt="C-41 Film Roll" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>KODAK PORTRA 400</h4>
+                                            <p>35mm · 36 shots · ISO 400 · C-41</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container portrait" data-format="35mm">
+                                    <img src="IMG/Film/C41/Film-C41-Building2.webp" alt="C-41 Film Roll"
+                                        class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>FUJIFILM SUPERIA</h4>
+                                            <p>35mm · 24 shots · ISO 200 · C-41</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                 <div class="film-image-container landscape" data-format="35mm">
+                                    <img src="IMG/Film/C41/Film-C41-Lake.webp" alt="C-41 Film Roll" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>KODAK GOLD 200</h4>
+                                            <p>35mm · 36 shots · ISO 200 · C-41</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container landscape" data-format="35mm">
+                                    <img src="IMG/Film/C41/Film-C41-Trees.webp" alt="C-41 Film Roll" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>CINESTILL 800T</h4>
+                                            <p>35mm · 36 shots · ISO 800 · C-41</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container portrait" data-format="35mm">
+                                    <img src="IMG/Film/C41/Film-C41-Building.webp" alt="C-41 Film Roll"
+                                        class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>FUJIFILM SUPERIA</h4>
+                                            <p>35mm · 24 shots · ISO 200 · C-41</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container portrait" data-format="35mm">
+                                    <img src="IMG/Film/C41/Film-C41-Steam.webp" alt="C-41 Film Roll" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>KODAK PORTRA 400</h4>
+                                            <p>35mm · 36 shots · ISO 400 · C-41</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container landscape" data-format="35mm">
+                                    <img src="IMG/Film/C41/Film-C41-Lake.webp" alt="C-41 Film Roll" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>KODAK GOLD 200</h4>
+                                            <p>35mm · 36 shots · ISO 200 · C-41</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container portrait" data-format="35mm">
+                                    <img src="IMG/Film/C41/Film-C41-Trees.webp" alt="C-41 Film Roll" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>CINESTILL 800T</h4>
+                                            <p>35mm · 36 shots · ISO 800 · C-41</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pricing-images-empty" style="display: none;">
+                                <p>No images yet</p>
+                            </div>
+                            <div class="pricing-images-cta">
+                                Want to be featured? Submit <a href="#">here</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- B&W Panel -->
+                <div class="film-panel" id="panel-B&W" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3>Black & White</h3>
+                            <p>Classic and timeless. We hand-develop black and white film using professional darkroom
+                                techniques to achieve rich tones, fine contrast, and archival quality.</p>
+                            <div class="pricing-list">
+                                <div class="price-item">
+                                    <span class="format">35MM/110/120</span>
+                                    <span class="price">$8.50</span>
+                                </div>
+                                <div class="price-item">
+                                    <span class="format">4×5 SHEET</span>
+                                    <span class="price">$6.00</span>
+                                </div>
+                                <div class="price-item">
+                                    <span class="format">5×7 SHEET</span>
+                                    <span class="price">$7.00</span>
+                                </div>
+                                <div class="price-item">
+                                    <span class="format">8×10 SHEET</span>
+                                    <span class="price">$8.50</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="film-image-container portrait">
+                                    <img src="IMG/Film/B&W/Film-B&W.webp" alt="Black & White Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>ILFORD HP5 PLUS</h4>
+                                            <p>35mm · 36 shots · ISO 400 · B&W</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container square">
+                                    <img src="IMG/Film/B&W/Film-B&W.webp" alt="Black & White Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>KODAK TRI-X 400</h4>
+                                            <p>35mm · 36 shots · ISO 400 · B&W</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container landscape">
+                                    <img src="IMG/Film/B&W/Film-B&W.webp" alt="Black & White Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>ILFORD DELTA 100</h4>
+                                            <p>35mm · 36 shots · ISO 100 · B&W</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container portrait">
+                                    <img src="IMG/Film/B&W/Film-B&W.webp" alt="Black & White Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>KODAK T-MAX 100</h4>
+                                            <p>35mm · 36 shots · ISO 100 · B&W</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container square">
+                                    <img src="IMG/Film/B&W/Film-B&W.webp" alt="Black & White Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>ILFORD FP4 PLUS</h4>
+                                            <p>35mm · 36 shots · ISO 125 · B&W</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container landscape">
+                                    <img src="IMG/Film/B&W/Film-B&W.webp" alt="Black & White Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>KODAK DOUBLE-X</h4>
+                                            <p>35mm · 36 shots · ISO 250 · B&W</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container portrait">
+                                    <img src="IMG/Film/B&W/Film-B&W.webp" alt="Black & White Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>ILFORD PAN F PLUS</h4>
+                                            <p>35mm · 36 shots · ISO 50 · B&W</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container square">
+                                    <img src="IMG/Film/B&W/Film-B&W.webp" alt="Black & White Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>KODAK TRI-X 400</h4>
+                                            <p>35mm · 36 shots · ISO 400 · B&W</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pricing-images-cta">
+                                Want to be featured? Submit <a href="#">here</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- E-6 Panel -->
+                <div class="film-panel" id="panel-E-6" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3>E-6 (Slide Film)</h3>
+                            <p>Experience true color transparency. We process E-6 slide film with expert precision to
+                                produce vivid, high-contrast positives ideal for projection or high-resolution
+                                scanning.</p>
+                            <div class="pricing-list">
+                                <div class="price-item">
+                                    <span class="format">35MM/110/120</span>
+                                    <span class="price">$8.50</span>
+                                </div>
+                                <div class="price-item">
+                                    <span class="format">4×5 SHEET</span>
+                                    <span class="price">$5.00</span>
+                                </div>
+                                <div class="price-item">
+                                    <span class="format">5×7 SHEET</span>
+                                    <span class="price">$6.00</span>
+                                </div>
+                                <div class="price-item">
+                                    <span class="format">8×10 SHEET</span>
+                                    <span class="price">$7.50</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="film-image-container landscape">
+                                    <img src="IMG/Film/E-6/Film-E-6.webp" alt="E-6 Slide Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>FUJI VELVIA 50</h4>
+                                            <p>35mm · 36 shots · ISO 50 · E-6</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container portrait">
+                                    <img src="IMG/Film/E-6/Film-E-6.webp" alt="E-6 Slide Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>FUJI PROVIA 100F</h4>
+                                            <p>35mm · 36 shots · ISO 100 · E-6</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container square">
+                                    <img src="IMG/Film/E-6/Film-E-6.webp" alt="E-6 Slide Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>EKTACHROME E100</h4>
+                                            <p>35mm · 36 shots · ISO 100 · E-6</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container portrait">
+                                    <img src="IMG/Film/E-6/Film-E-6.webp" alt="E-6 Slide Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>FUJI VELVIA 100</h4>
+                                            <p>35mm · 36 shots · ISO 100 · E-6</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container landscape">
+                                    <img src="IMG/Film/E-6/Film-E-6.webp" alt="E-6 Slide Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>FUJI ASTIA 100F</h4>
+                                            <p>35mm · 36 shots · ISO 100 · E-6</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container square">
+                                    <img src="IMG/Film/E-6/Film-E-6.webp" alt="E-6 Slide Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>KODAK EKTACHROME E100VS</h4>
+                                            <p>35mm · 36 shots · ISO 100 · E-6</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container portrait">
+                                    <img src="IMG/Film/E-6/Film-E-6.webp" alt="E-6 Slide Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>FUJI PROVIA 400X</h4>
+                                            <p>35mm · 36 shots · ISO 400 · E-6</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="film-image-container landscape">
+                                    <img src="IMG/Film/E-6/Film-E-6.webp" alt="E-6 Slide Film" class="film-image">
+                                    <div class="film-image-overlay">
+                                        <div class="film-image-caption">
+                                            <h4>FUJI VELVIA 50</h4>
+                                            <p>35mm · 36 shots · ISO 50 · E-6</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="pricing-images-cta">
+                                Want to be featured? Submit <a href="#">here</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Scan or Print Section -->
+        <section class="film-section" id="step-2">
+            <div class="film-section-header">
+                <h2 class="section-number">2. CHOOSE YOUR OUTPUT</h2>
+                <p class="section-description">Choose how you want to enjoy your images.</p>
+            </div>
+
+            <!-- Output Type Tabs -->
+            <div class="film-tabs-container">
+                <div class="film-tabs">
+                    <button class="film-tab is-active" data-tab="scans" aria-selected="true" role="tab">Scans</button>
+                    <button class="film-tab" data-tab="prints" aria-selected="false" role="tab">Prints</button>
+                    <button class="film-tab" data-tab="develop-only" aria-selected="false" role="tab">Develop Only</button>
+                </div>
+            </div>
+
+            <!-- Tab Panels -->
+            <div class="film-panels">
+                <!-- Develop Only Panel -->
+                <div class="film-panel" id="panel-develop-only" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3>DEVELOP ONLY</h3>
+                            <p>Just develop your film with no scans or prints. Perfect for photographers who want to scan their own negatives or store them for future use.</p>
+                            <div class="pricing-list">
+                                <div class="price-item" data-format="35mm" data-film-type="develop-only" data-target-tab="c41" data-target-section="#step-1">
+                                    <span class="format">C-41</span>
+                                    <span class="price">Click to See Prices</span>
+                                </div>
+                                <div class="price-item" data-format="4x5" data-film-type="develop-only" data-target-tab="B&W" data-target-section="#step-1">
+                                    <span class="format">B&W</span>
+                                    <span class="price">Click to See Prices</span>
+                                </div>
+                                <div class="price-item" data-format="5x7" data-film-type="develop-only" data-target-tab="E-6" data-target-section="#step-1">
+                                    <span class="format">E-6</span>
+                                    <span class="price">Click to See Prices</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                            <div class="pricing-images-cta">
+                                Want to be featured? Submit <a href="#">here</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scans Panel -->
+                <div class="film-panel is-active" id="panel-scans" role="tabpanel">
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3>STANDARD SCANS</h3>
+                            <p>Professional film scanning at multiple resolutions. Perfect for digital archiving, social media, or large prints.</p>
+                            <div class="pricing-list">
+                                <div class="price-item" data-format="35mm" data-film-type="scans">
+                                    <div class="price-item-main">
+                                        <span class="format">35MM</span>
+                                        <span class="price">$0.35/Frame</span>
+                                    </div>
+                                    <div class="scan-detail" data-scan-format="35mm">
+                                        <p>
+                                            Great for everyday use, social media, and web sharing. Balanced files with
+                                            clean grain, accurate color, and enough resolution for small prints and
+                                            screens.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="price-item" data-format="120" data-film-type="scans">
+                                    <div class="price-item-main">
+                                        <span class="format">120 Film</span>
+                                        <span class="price">$0.60/Frame</span>
+                                    </div>
+                                    <div class="scan-detail" data-scan-format="120">
+                                        <p>
+                                            Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quod.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="price-item" data-format="110" data-film-type="scans">
+                                    <div class="price-item-main">
+                                        <span class="format">110 Film</span>
+                                        <span class="price">$0.75/Frame</span>
+                                    </div>
+                                    <div class="scan-detail" data-scan-format="110">
+                                        <p>
+                                           Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quod.
+                                        </p>
+                                    </div>
+                                </div>
+                                   <div class="price-item" data-format="Sheet Film" data-film-type="scans">
+                                    <div class="price-item-main">
+                                        <span class="format">Sheet Film</span>
+                                        <span class="price">$5.00/Sheet</span>
+                                    </div>
+                                    <div class="scan-detail" data-scan-format="Sheet Film">
+                                        <p>
+                                           Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quod.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                            <div class="pricing-images-cta">
+                                Want to be featured? Submit <a href="#">here</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prints Panel -->
+                <div class="film-panel" id="panel-prints" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3>BEAUTIFUL PRINTS</h3>
+                            <p>Archival-quality prints on luster photo paper. Available in standard and  custom sizes.</p>
+                            <div class="pricing-list">
+                                <div class="price-item" data-format="4x6" data-film-type="prints">
+                                    <span class="format">4×6</span>
+                                    <span class="price">$0.60</span>
+                                </div>
+                                <div class="price-item" data-format="5x7" data-film-type="prints">
+                                    <span class="format">5×7</span>
+                                    <span class="price">$2.00</span>
+                                </div>
+                                <div class="price-item" data-format="8x10" data-film-type="prints">
+                                    <span class="format">8×10</span>
+                                    <span class="price">$5.00</span>
+                                </div>
+                                <div class="price-item" data-format="11x14" data-film-type="prints">
+                                    <span class="format">11×14</span>
+                                    <span class="price">$12.00</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                            <div class="pricing-images-cta">
+                                Want to be featured? Submit <a href="#">here</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Delivery Options Section -->
+        <section class="film-section" id="step-3">
+            <div class="film-section-header">
+                <h2 class="section-number">3. DELIVERY OPTIONS</h2>
+                <p class="section-description">How would you like to receive your images?</p>
+            </div>
+
+            <div class="options-grid">
+                <div class="option-card">
+                    <h3>Digital Delivery</h3>
+                    <p>Receive your scans via secure online gallery. Download high-resolution files directly to your
+                        device.</p>
+                    <div class="option-features">
+                        <p><strong>Email/Download Link:</strong> Free</p>
+                        <p><strong>USB Drive:</strong> +$10.00</p>
+                        <p><strong>Turnaround:</strong> 3-5 business days</p>
+                    </div>
+                </div>
+
+                <div class="option-card">
+                    <h3>Physical Pickup</h3>
+                    <p>Pick up your developed film, prints, or scans at our lab during business hours.</p>
+                    <div class="option-features">
+                        <p><strong>In-Store Pickup:</strong> Free</p>
+                        <p><strong>Mail Shipping:</strong> +$5.00 (USPS Priority)</p>
+                        <p><strong>Turnaround:</strong> 2-4 business days</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section" id="about">
+            <div class="contact-info">
+                <div class="contact-columns">
+                    <div class="contact-column">
+                        <h3 class="contact-column-title">Products</h3>
+                        <ul class="contact-links">
+                            <li><a href="film.html">Film Processing</a></li>
+                            <li><a href="video.html">Reel &amp; Video Conversion</a></li>
+                            <li><a href="index.html#products">Printing Services</a></li>
+                        </ul>
+                    </div>
+                    <div class="contact-column">
+                        <h3 class="contact-column-title">About Us</h3>
+                        <ul class="contact-links">
+                            <li><a href="index.html#about">Our Story</a></li>
+                            <li><a href="index.html#about">Contact</a></li>
+                            <li><a href="index.html#about">FAQs</a></li>
+                            <li><a href="https://www.instagram.com/nicholsphotolab" target="_blank"
+                                    rel="noopener">Instagram</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="contact-meta">
+                    <a class="contact-info-panel contact-info-panel--link"
+                        href="https://www.google.com/maps/dir/?api=1&destination=3265+South+1100+East,+Salt+Lake+City,+UT+84106"
+                        target="_blank" rel="noopener">
+                        <h3>Visit Us.</h3>
+                        <address>
+                            3265 South 1100 East<br>
+                            Salt Lake City, UT 84106
+                        </address>
+                    </a>
+                    <div class="contact-info-panel">
+                        <h3>Store Hours</h3>
+                        <p>Normal Hours<br>Monday – Friday<br>9 AM – 5 PM<br>Closed Saturdays &amp; Sundays</p>
+                    </div>
+                    <a class="contact-call-btn" href="tel:+18014863053">Call the Lab: (801) 486-3053</a>
+                </div>
+            </div>
+            <div class="contact-form-wrapper">
+                <form class="contact-form" id="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+                    <h3 class="contact-form-title">Contact Now</h3>
+                    <div class="contact-form-row">
+                        <label class="contact-field">
+                            <span class="sr-only">Full Name</span>
+                            <input type="text" name="fullName" id="fullName" placeholder="Full Name" required>
+                        </label>
+                        <label class="contact-field">
+                            <span class="sr-only">Phone (optional)</span>
+                            <input type="tel" name="phone" id="phone" placeholder="Phone (optional)">
+                        </label>
+                    </div>
+                    <label class="contact-field">
+                        <span class="sr-only">Email</span>
+                        <input type="email" name="email" id="email" placeholder="Email" required>
+                    </label>
+                    <label class="contact-field contact-field-textarea">
+                        <span class="sr-only">Enter your message</span>
+                        <textarea name="message" id="message" placeholder="Enter your message" rows="4"
+                            required></textarea>
+                    </label>
+                    <button type="submit" class="contact-submit-btn">Send message</button>
+                    <div class="form-success-message" id="form-success" style="display: none;">
+                        <p>✓ Thank you! Your message has been sent successfully.</p>
+                        <p class="success-note">We'll respond within 24 hours during our store hours (Monday–Friday, 9
+                            AM–5 PM).</p>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

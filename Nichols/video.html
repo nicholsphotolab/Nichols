@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video and Reels Conversion - Nichols Photo Lab</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=DM+Sans:wght@700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+        <div class="nav-container">
+            <a href="index.html" class="logo logo-link">
+                <img src="assets/logo.svg" alt="Nichols Photo Lab Logo">
+            </a>
+            <div class="nav-elements">
+                <div class="drawer-logo">
+                    <img src="assets/logo.svg" alt="Nichols Photo Lab Logo">
+                </div>
+                <a href="index.html#products" class="nav-link">PRODUCTS</a>
+                <a href="film.html" class="nav-link">FILM</a>
+                <a href="video.html" class="nav-link nav-link-active">VIDEO AND REELS</a>
+                <a href="index.html#about" class="nav-link nav-link-about">ABOUT US</a>
+                <a href="https://www.roesweb.com/configs/NicholsRW/products/standard" class="order-now-btn">ORDER
+                    NOW</a>
+            </div>
+            <button class="mobile-menu-btn" aria-label="Toggle menu" aria-expanded="false">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </button>
+        </div>
+    </nav>
+    <div class="nav-overlay"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Hero Section -->
+        <section class="hero-section film-hero">
+            <div class="hero-background">
+                <img src="IMG/Reels and Video.webp" alt="Video and Reels Conversion Hero" class="hero-bg-image">
+                <div class="hero-overlay"></div>
+            </div>
+            <div class="hero-content">
+                <div class="hero-title">
+                    <h1 class="hero-title-line1">VIDEO & REELS<br><span class="hero-title-line2">CONVERSION</span>
+                    </h1>
+                </div>
+                <p class="film-hero-description">Preserve your memories. Convert your vintage video formats<br>and film reels to modern digital files.</p>
+            </div>
+        </section>
+
+        <!-- Video Type Section -->
+        <section class="film-section" id="video-types">
+            <div class="film-section-header">
+                <h2 class="section-number">1. VIDEO TYPE</h2>
+                <p class="section-description">Select your video format for conversion to digital files.</p>
+            </div>
+
+            <!-- Video Type Tabs -->
+            <div class="film-tabs-container">
+                <div class="film-tabs">
+                    <button class="film-tab is-active" data-tab="vhs" aria-selected="true" role="tab">VHS / VHC-C</button>
+                    <button class="film-tab" data-tab="hi8" aria-selected="false" role="tab">Hi-8 / Mini-DV</button>
+                    <button class="film-tab" data-tab="reels" aria-selected="false" role="tab">Reels</button>
+                    <button class="film-tab" data-tab="cassette" aria-selected="false" role="tab">Audio Cassette</button>
+                    <button class="film-tab" data-tab="dvd" aria-selected="false" role="tab">DVD</button>
+                </div>
+            </div>
+
+            <!-- Tab Panels -->
+            <div class="film-panels">
+                <!-- VHS / VHC-C Panel -->
+                <div class="film-panel is-active" id="panel-vhs" role="tabpanel">
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">VHS / VHC-C <span style="color: var(--primary-500);">$18.00</span></h3>
+                            <p>Convert your VHS and VHC-C tapes to high-quality digital files. Perfect for preserving home movies, weddings, and special events from the 80s and 90s.</p>
+                            <p style="margin-top: auto; padding-top: 20px; font-size: 13px; line-height: 1.6; color: rgba(248, 248, 248, 0.65); font-style: italic;">Note: We do not convert copyrighted materials. We reserve the right to refuse service for any content that appears to be copyrighted.</p>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hi-8 / Mini-DV Panel -->
+                <div class="film-panel" id="panel-hi8" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">Hi-8 / Mini-DV <span style="color: var(--primary-500);">$18.00</span></h3>
+                            <p>Professional-grade conversion for Hi-8 and Mini-DV camcorder tapes. Capture the higher quality footage from these formats with enhanced color correction and stabilization.</p>
+                            <p style="margin-top: auto; padding-top: 20px; font-size: 13px; line-height: 1.6; color: rgba(248, 248, 248, 0.65); font-style: italic;">Note: We do not convert copyrighted materials. We reserve the right to refuse service for any content that appears to be copyrighted.</p>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reels Panel -->
+                <div class="film-panel" id="panel-reels" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3>REELS</h3>
+                            <p>Convert your film reels to digital format. Select your reel size for professional conversion.</p>
+                            <div class="pricing-list">
+                                <div class="price-item" data-format="3in" data-film-type="reels">
+                                    <span class="format">3 INCH REELS</span>
+                                    <span class="price">$15.00</span>
+                                </div>
+                                <div class="price-item" data-format="5in" data-film-type="reels">
+                                    <span class="format">5 INCH REELS</span>
+                                    <span class="price">$20.00</span>
+                                </div>
+                                <div class="price-item" data-format="7in" data-film-type="reels">
+                                    <span class="format">7 INCH REELS</span>
+                                    <span class="price">$30.00</span>
+                                </div>
+                                <div class="price-item" data-format="9in" data-film-type="reels">
+                                    <span class="format">9 INCH REELS</span>
+                                    <span class="price">$40.00</span>
+                                </div>
+                            </div>
+                            <p style="margin-top: auto; padding-top: 24px; border-top: 1px solid rgba(248, 248, 248, 0.12); font-size: 14px; line-height: 1.6; color: rgba(248, 248, 248, 0.75);">We do not develop 8mm film reels. We offer conversion services for already-developed reels, transferring them to high-quality digital formats for easy viewing and sharing.</p>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cassette Panel -->
+                <div class="film-panel" id="panel-cassette" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">Audio Cassette <span style="color: var(--primary-500);">$18.00</span></h3>
+                            <p>Convert your video cassette tapes to digital format. We handle various cassette formats with professional equipment to ensure the best quality transfer.</p>
+                            <p style="margin-top: auto; padding-top: 20px; font-size: 13px; line-height: 1.6; color: rgba(248, 248, 248, 0.65); font-style: italic;">Note: We do not convert copyrighted materials. We reserve the right to refuse service for any content that appears to be copyrighted.</p>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DVD Panel -->
+                <div class="film-panel" id="panel-dvd" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">DVD <span style="color: var(--primary-500);">$18.00</span></h3>
+                            <p>Convert your DVDs to digital files. Extract video content from DVDs and convert to modern formats for easy sharing and archiving.</p>
+                            <p style="margin-top: auto; padding-top: 20px; font-size: 13px; line-height: 1.6; color: rgba(248, 248, 248, 0.65); font-style: italic;">Note: We do not convert copyrighted materials. We reserve the right to refuse service for any content that appears to be copyrighted.</p>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Output Type Section -->
+        <section class="film-section" id="output-types">
+            <div class="film-section-header">
+                <h2 class="section-number">2. OUTPUT TYPE</h2>
+                <p class="section-description">Choose how you want to receive your converted media.</p>
+            </div>
+
+            <!-- Output Type Tabs -->
+            <div class="film-tabs-container">
+                <div class="film-tabs">
+                    <button class="film-tab is-active" data-tab="lab-usb" aria-selected="true" role="tab">LAB USB</button>
+                    <button class="film-tab" data-tab="customer-usb" aria-selected="false" role="tab">CUSTOMER USB</button>
+                    <button class="film-tab" data-tab="dvd-video" aria-selected="false" role="tab">DVD (VIDEO)</button>
+                    <button class="film-tab" data-tab="cd" aria-selected="false" role="tab">CD (AUDIO)</button>
+                    <button class="film-tab" data-tab="email" aria-selected="false" role="tab">EMAIL</button>
+                </div>
+            </div>
+
+            <!-- Tab Panels -->
+            <div class="film-panels">
+                <!-- Lab USB Panel -->
+                <div class="film-panel is-active" id="panel-lab-usb" role="tabpanel">
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">LAB USB <span style="color: var(--primary-500);">$12.00</span></h3>
+                            <p>Receive your converted files on a USB drive provided by our lab. High-capacity drive with all your files ready to transfer to your computer.</p>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Customer USB Panel -->
+                <div class="film-panel" id="panel-customer-usb" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">CUSTOMER USB <span style="color: var(--primary-500);">$2.00</span></h3>
+                            <p>Bring your own USB drive and we'll transfer your converted files directly to it. Save on media costs while keeping your files on your preferred device.</p>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DVD (Video) Panel -->
+                <div class="film-panel" id="panel-dvd-video" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">DVD (VIDEO) <span style="color: var(--primary-500);">$8.00</span></h3>
+                            <p>Receive your converted video on a standard DVD. Compatible with most DVD players and perfect for sharing with family and friends.</p>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CD (Audio) Panel -->
+                <div class="film-panel" id="panel-cd" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">CD (AUDIO) <span style="color: var(--primary-500);">$8.00</span></h3>
+                            <p>Receive your converted audio on a standard CD. Perfect for audio-only conversions from cassette tapes, vinyl records, or other audio sources.</p>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Email Panel -->
+                <div class="film-panel" id="panel-email" role="tabpanel" hidden>
+                    <div class="film-pricing-card">
+                        <div class="pricing-info">
+                            <h3 style="display: flex; justify-content: space-between; align-items: center;">EMAIL <span style="color: var(--primary-500);">$2.00</span></h3>
+                            <p>Receive your converted files via secure email delivery. Download links sent directly to your inbox for convenient access from any device.</p>
+                        </div>
+                        <div class="pricing-images">
+                            <div class="pricing-images-content">
+                                <div class="pricing-images-empty" style="display: flex;">
+                                    <p>No images yet</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Contact Section -->
+        <section class="contact-section" id="about">
+            <div class="contact-info">
+                <div class="contact-columns">
+                    <div class="contact-column">
+                        <h3 class="contact-column-title">Products</h3>
+                        <ul class="contact-links">
+                            <li><a href="film.html">Film Processing</a></li>
+                            <li><a href="video.html">Reel &amp; Video Conversion</a></li>
+                            <li><a href="index.html#products">Printing Services</a></li>
+                        </ul>
+                    </div>
+                    <div class="contact-column">
+                        <h3 class="contact-column-title">About Us</h3>
+                        <ul class="contact-links">
+                            <li><a href="index.html#about">Our Story</a></li>
+                            <li><a href="index.html#about">Contact</a></li>
+                            <li><a href="index.html#about">FAQs</a></li>
+                            <li><a href="https://www.instagram.com/nicholsphotolab" target="_blank"
+                                    rel="noopener">Instagram</a></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="contact-meta">
+                    <a class="contact-info-panel contact-info-panel--link"
+                        href="https://www.google.com/maps/dir/?api=1&destination=3265+South+1100+East,+Salt+Lake+City,+UT+84106"
+                        target="_blank" rel="noopener">
+                        <h3>Visit Us.</h3>
+                        <address>
+                            3265 South 1100 East<br>
+                            Salt Lake City, UT 84106
+                        </address>
+                    </a>
+                    <div class="contact-info-panel">
+                        <h3>Store Hours</h3>
+                        <p>Normal Hours<br>Monday – Friday<br>9 AM – 5 PM<br>Closed Saturdays &amp; Sundays</p>
+                    </div>
+                    <a class="contact-call-btn" href="tel:+18014863053">Call the Lab: (801) 486-3053</a>
+                </div>
+            </div>
+            <div class="contact-form-wrapper">
+                <form class="contact-form" id="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+                    <h3 class="contact-form-title">Contact Now</h3>
+                    <div class="contact-form-row">
+                        <label class="contact-field">
+                            <span class="sr-only">Full Name</span>
+                            <input type="text" name="fullName" id="fullName" placeholder="Full Name" required>
+                        </label>
+                        <label class="contact-field">
+                            <span class="sr-only">Phone (optional)</span>
+                            <input type="tel" name="phone" id="phone" placeholder="Phone (optional)">
+                        </label>
+                    </div>
+                    <label class="contact-field">
+                        <span class="sr-only">Email</span>
+                        <input type="email" name="email" id="email" placeholder="Email" required>
+                    </label>
+                    <label class="contact-field contact-field-textarea">
+                        <span class="sr-only">Enter your message</span>
+                        <textarea name="message" id="message" placeholder="Enter your message" rows="4"
+                            required></textarea>
+                    </label>
+                    <button type="submit" class="contact-submit-btn">Send message</button>
+                    <div class="form-success-message" id="form-success" style="display: none;">
+                        <p>✓ Thank you! Your message has been sent successfully.</p>
+                        <p class="success-note">We'll respond within 24 hours during our store hours (Monday–Friday, 9
+                            AM–5 PM).</p>
+                    </div>
+                </form>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
+
