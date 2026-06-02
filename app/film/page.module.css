@@ -1,0 +1,186 @@
+.page {
+  background: var(--paper-white);
+  color: var(--black);
+  padding: 133.5px var(--page-pad) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* ---------- Hero row: huge FILM wordmark + canister ---------- */
+.heroRow {
+  --gap: clamp(16px, 4.2vw, 60px);
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  width: 100%;
+}
+
+.title {
+  margin: 0;
+  flex: 0 1 auto;
+  min-width: 0;
+  font-weight: 700;
+  /* Title + canister fill the row at every viewport.
+     Avail width = 100vw - (page padding * 2) - gap.
+     Divide by 2.7835 (≈ width-to-font-size ratio of "FILM" in Inter Bold
+     plus the canister's relative footprint at aspect 199:266). */
+  font-size: clamp(40px,
+      calc((100vw - 2 * var(--page-pad) - var(--gap)) / 2.7835),
+      640px);
+  line-height: 0.78;
+  letter-spacing: -0.02em;
+  color: var(--black);
+  white-space: nowrap;
+  /* Modern: trims line box to cap height in supporting browsers. */
+  text-box: trim-both cap alphabetic;
+}
+
+.heroImage {
+  flex: 0 0 auto;
+  /* Canister width = font-size * (line-height 0.78) * (aspect 199/266 ≈ 0.748)
+     = 0.5835F. Combined with the title formula, simplifies to avail * 0.209. */
+  width: clamp(28px,
+      calc((100vw - 2 * var(--page-pad) - var(--gap)) * 0.209),
+      380px);
+  aspect-ratio: 199 / 266;
+  position: relative;
+}
+
+/* ---------- Divider ---------- */
+.divider {
+  border: 0;
+  border-top: 1px solid var(--black);
+  width: 100%;
+  margin: 0;
+}
+
+/* ---------- Intro paragraph ---------- */
+.intro {
+  margin: 0;
+  width: 583px;
+  max-width: 100%;
+  font-size: 24px;
+  line-height: 1.35;
+  color: var(--black);
+  hyphens: none;
+  -webkit-hyphens: none;
+}
+
+/* ---------- Stocks row ---------- */
+.stocks {
+  display: grid;
+  /* Each card = 30% of row width; remaining 10% becomes two 5% gaps
+     so the row spans edge-to-edge while cards stay ~90% of equal thirds. */
+  grid-template-columns: repeat(3, 25%);
+  justify-content: space-between;
+  align-items: start;
+  width: 100%;
+}
+
+.stock {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.stockImage {
+  width: 100%;
+  /* Default image aspect (Figma 199 × 266). */
+  aspect-ratio: 199 / 266;
+  overflow: hidden;
+}
+
+.stockImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+  transition:
+    filter 550ms var(--ease-soft),
+    transform 550ms var(--ease-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stocks:has(.stock:hover) .stock:not(:hover) .stockImage img {
+    filter: invert(1);
+  }
+  .stock:hover .stockImage img {
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stockImage img {
+    transition: none;
+  }
+}
+
+.stockMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stockName {
+  margin: 0;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 24px;
+  letter-spacing: 0.48px;
+  color: var(--black);
+  white-space: nowrap;
+}
+
+.stockPrice {
+  margin: 0;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 16px;
+  letter-spacing: 0.32px;
+  color: var(--black);
+}
+
+.stockCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--paper-white);
+  border: 1px solid var(--black);
+  color: var(--black);
+  font-size: 20px;
+  letter-spacing: 0.28px;
+  text-transform: uppercase;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.stockCta:hover,
+.stock:hover .stockCta {
+  background: var(--darkroom-red);
+  color: var(--paper-white);
+  border-color: var(--darkroom-red);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .page {
+    padding-top: 120px;
+    padding-bottom: 80px;
+    gap: 40px;
+  }
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding-top: 100px;
+    padding-bottom: 60px;
+    gap: 32px;
+  }
+
+  .intro {
+    font-size: 18px;
+  }
+}

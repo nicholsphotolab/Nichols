@@ -1,0 +1,76 @@
+/* Links + CTA are fixed independently. The brand mark is rendered globally
+   by <Brand /> (HeroLogo on home, NavBrand elsewhere), not here. */
+
+.links,
+.cta {
+  position: fixed;
+  top: 20.5px;
+  z-index: 10;
+}
+
+.links {
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-start;
+  gap: 40px;
+  mix-blend-mode: difference;
+}
+
+.links a {
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: 0.28px;
+  text-transform: uppercase;
+  color: var(--paper-white);
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  line-height: normal;
+}
+
+.underline {
+  display: block;
+  height: 12px;
+  width: 100%;
+  background: var(--paper-white);
+  opacity: 0;
+}
+
+.active .underline {
+  opacity: 1;
+}
+
+.cta {
+  right: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0.28px;
+  text-transform: uppercase;
+  color: var(--paper-white);
+  background: var(--darkroom-red);
+  padding: 6px 10px;
+  transition: filter 0.15s ease;
+}
+
+.cta:hover {
+  filter: brightness(1.08);
+}
+
+@media (max-width: 900px) {
+  .brand {
+    left: 20px;
+  }
+
+  .cta {
+    right: 20px;
+  }
+
+  .links {
+    display: none;
+  }
+}

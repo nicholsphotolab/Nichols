@@ -1,0 +1,27 @@
+.logo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* Element is rendered at HERO size and scaled DOWN as you scroll.
+     The mix-blend-mode layer rasterizes at this larger size, so the
+     downscaled nav state stays crisp. */
+  width: var(--logo-w, 136px);
+  height: var(--logo-h, 33px);
+  --tx: 40px;
+  --ty: 20.5px;
+  --scale: 1;
+  transform: translate(var(--tx), var(--ty)) scale(var(--scale));
+  transform-origin: top left;
+  /* White paths so mix-blend-mode: difference inverts against any backdrop. */
+  color: #fff;
+  mix-blend-mode: difference;
+  z-index: 10;
+  will-change: transform;
+  display: block;
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

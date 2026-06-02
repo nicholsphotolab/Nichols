@@ -1,0 +1,123 @@
+.footer {
+  background: var(--paper-white);
+  color: var(--black);
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 31px;
+}
+
+/* ---------- Full-width logo lockup ---------- */
+.logo {
+  display: block;
+  width: 100%;
+  color: var(--black);
+  /* Match Figma aspect (842 × 204.96 ≈ 4.108). */
+  aspect-ratio: 842 / 205;
+}
+
+.logoSvg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* ---------- Divider ---------- */
+.divider {
+  border: 0;
+  border-top: 1px solid var(--black);
+  width: 100%;
+  margin: 0;
+}
+
+/* ---------- Three columns ---------- */
+.cols {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 32px;
+  width: 100%;
+}
+
+/* All footer text shares one type treatment: 16px, 2% tracking, uppercase.
+   Color + font-family are inherited from .footer / body. */
+.copyright,
+.nav a,
+.address,
+.phone,
+.hoursBlock {
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* ---------- Nav column ---------- */
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nav a {
+  line-height: normal;
+  transition: color 0.15s ease;
+}
+
+.nav a:hover,
+.address:hover,
+.phone:hover {
+  color: var(--darkroom-red);
+}
+
+/* ---------- Contact column ---------- */
+.contact {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: flex-start;
+}
+
+.address,
+.phone {
+  line-height: 1.2;
+  transition: color 0.15s ease;
+}
+
+.address {
+  display: flex;
+  flex-direction: column;
+}
+
+.phone {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 2px;
+}
+
+/* ---------- Hours row ---------- */
+.hoursBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hoursGroup {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .footer {
+    padding: 32px 20px;
+    gap: 24px;
+  }
+  .cols {
+    flex-direction: column;
+    gap: 32px;
+  }
+  .copyright {
+    order: 3;
+  }
+}
