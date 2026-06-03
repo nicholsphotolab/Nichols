@@ -1,15 +1,13 @@
 import Link from "next/link";
-import NicholsLogoSvg from "./NicholsLogoSvg";
 import { CONTACT, MAPS_URL, NAV_ITEMS } from "../lib/site";
 import styles from "./Footer.module.css";
+import FooterLogoAnimated from "./FooterLogoAnimated";
 
 export default function Footer() {
   const year = new Date().getFullYear();
   return (
     <footer className={styles.footer}>
-      <Link href="/" className={styles.logo} aria-label="Nichols Photo Lab — home">
-        <NicholsLogoSvg className={styles.logoSvg} />
-      </Link>
+      <FooterLogoAnimated />
 
       <hr className={styles.divider} />
 
