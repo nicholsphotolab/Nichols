@@ -104,8 +104,9 @@
 
 @media (hover: hover) and (pointer: fine) {
   .stocks:has(.stock:hover) .stock:not(:hover) .stockImage img {
-    filter: invert(1);
+    filter: saturate(0);
   }
+
   .stock:hover .stockImage img {
     transform: scale(1.1);
   }

@@ -1,18 +1,37 @@
+/* globals.css
+   Site-wide base styles, design tokens, and reusable utility classes.
+   Imported once in app/layout.tsx so these apply to every page. */
+
+/* ---------- Font ----------
+   Full Inter variable font served locally from /public/fonts/.
+   No unicode-range restriction so all glyphs (including arrows) load correctly.
+   font-display: swap shows fallback text immediately, then swaps in Inter. */
+@font-face {
+  font-family: "Inter Variable";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("/fonts/InterVariable.woff2") format("woff2");
+}
+
+/* ---------- Design tokens ---------- */
 :root {
-  --paper-white: #f9f8f4;
-  --darkroom-red: #ff0100;
-  --black: #010101;
-  --bw-200: #d6d3cc;
-  --bw-400: #a09991;
+  /* Brand colours */
+  --paper-white: #f9f8f4;   /* off-white page background */
+  --darkroom-red: #ff0100;  /* primary accent — buttons, hover states */
+  --black: #010101;         /* near-black for all body text */
+  --bw-200: #d6d3cc;        /* light grey — borders, dividers */
+  --bw-400: #a09991;        /* mid grey — secondary text */
 
-  --font-sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  /* Font stack — Inter Variable first, then system fallbacks */
+  --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
 
-  /* Shared easing curves */
-  --ease-out: cubic-bezier(0.23, 1, 0.32, 1); /* strong ease-out for UI */
-  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1); /* gentle in/out */
-  --ease-carousel: cubic-bezier(0.65, 0, 0.35, 1); /* carousel slide */
+  /* Easing curves used across components */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);      /* strong deceleration for UI interactions */
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);        /* gentle in/out for subtle transitions */
+  --ease-carousel: cubic-bezier(0.65, 0, 0.35, 1);  /* heavier curve for carousel slides */
 
-  /* Global page gutter (overridden at small screens below) */
+  /* Horizontal page padding — reduced on small screens below */
   --page-pad: 40px;
 }
 
@@ -22,6 +41,7 @@
   }
 }
 
+/* ---------- Reset ---------- */
 *,
 *::before,
 *::after {
@@ -39,10 +59,12 @@ body {
   font-weight: 400;
   color: var(--paper-white);
   background: var(--paper-white);
+  /* Render Inter at its intended weight on both Mac and Windows */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* Strip default link styles — colour is always set by the component */
 a {
   color: inherit;
   text-decoration: none;
@@ -53,25 +75,39 @@ img {
   max-width: 100%;
 }
 
+/* Buttons inherit the page font so they don't fall back to system UI */
 button {
   font-family: inherit;
   color: inherit;
 }
 
-/* ---------------------------------------------------------------------------
-   Hover-reveal arrow utility
-   Space for the arrow is reserved always so surrounding text doesn't shift;
-   the arrow itself fades + slides into view when an ancestor marked
-   `.reveal-on-hover` is hovered.
---------------------------------------------------------------------------- */
+/* ---------- Reveal-arrow utility ----------
+   Used on nav links, footer links, and any CTA that should show a ↗ or →
+   arrow on hover. The arrow span is always in the DOM (opacity 0) so the
+   surrounding text never shifts when it appears.
+
+   Usage:
+     <a className="reveal-on-hover">
+       Label<span className="reveal-arrow" aria-hidden="true">↗</span>
+     </a>
+
+   Notes:
+   - vertical-align: top + line-height: 1 aligns the arrow with the cap-height
+     of uppercase text.
+   - will-change keeps the element on the GPU compositor so there's no
+     subpixel snap when the animation settles.
+   - The hover rule is scoped to devices with a real pointer so touch users
+     don't get stuck hover states.
+   - prefers-reduced-motion removes the transition for accessibility. */
 .reveal-arrow {
   display: inline-block;
-  margin-left: 6px;
+  margin-left: 4px;
+  vertical-align: top;
+  line-height: 1;
   opacity: 0;
   transform: translateX(-4px);
-  transition:
-    opacity 180ms var(--ease-out),
-    transform 220ms var(--ease-out);
+  will-change: transform, opacity;
+  transition: opacity 180ms var(--ease-out), transform 220ms var(--ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {

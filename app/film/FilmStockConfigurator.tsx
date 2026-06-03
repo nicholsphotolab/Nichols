@@ -1,29 +1,36 @@
+// FilmStockConfigurator.tsx
+// Interactive pricing panel for a single film stock (C-41, B&W, or E-6).
+// Rendered by app/film/[stock]/page.tsx. Accepts a FilmStock data object and
+// lets the user select size, output type, exposure count, and quantity — then
+// computes and displays the live price total.
+//
+// Layout: two-column grid — left column has the back button + product image,
+// right column has the title, price, and all option rows.
+
 "use client";
 
 import { useMemo, useState } from "react";
-import styles from "./PriceConfigurator.module.css";
+import { useRouter } from "next/navigation";
+import styles from "./FilmStockConfigurator.module.css";
 
+// Shape of a single film stock's pricing and option data.
+// Defined here and imported by filmStocksData.ts where the actual values live.
 export type FilmStock = {
   slug: "c-41" | "bw" | "e-6";
-  name: string; // e.g. "C-41"
-  basePrice: number; // e.g. 6.50
-  image: string; // public path
+  name: string;
+  basePrice: number;
+  image: string; // path relative to /public
   sizes: string[];
   outputs: string[];
-  /** Available exposures keyed by size, then output.
-   * Missing entry = no EXP row for that combo. */
-  exposures: Partial<
-    Record<string, Partial<Record<string, string[]>>>
-  >;
-  /** Per-exposure surcharge keyed by size, then output. */
-  perExposureRate: Partial<
-    Record<string, Partial<Record<string, number>>>
-  >;
-  /** Optional short caption beneath the EXP row. */
-  expExplanation?: string;
+  // Available exposure counts keyed by [size][output]. Missing = no EXP row shown.
+  exposures: Partial<Record<string, Partial<Record<string, string[]>>>>;
+  // Per-exposure surcharge in dollars, keyed by [size][output].
+  perExposureRate: Partial<Record<string, Partial<Record<string, number>>>>;
+  expExplanation?: string; // optional caption below the EXP row
 };
 
-// Per-exposure surcharge looked up by (size, output) from stock data.
+// Adds the per-exposure surcharge to the base price when a size, output, and
+// exposure count are all selected.
 function computeUnitPrice(
   stock: FilmStock,
   size: string,
@@ -43,23 +50,24 @@ function formatUSD(n: number) {
   return `$${n.toFixed(2)}`;
 }
 
-export default function PriceConfigurator({ stock }: { stock: FilmStock }) {
+export default function FilmStockConfigurator({ stock }: { stock: FilmStock }) {
+  const router = useRouter();
+
+  // Selection state — each row is independent except EXP which depends on size+output.
   const [size, setSize] = useState<string>(stock.sizes[0] ?? "");
   const [output, setOutput] = useState<string | null>(stock.outputs[0] ?? null);
   const [exp, setExp] = useState<string | null>(null);
   const [qty, setQty] = useState<number>(1);
 
-  // Available exposures depend on both the chosen size and output.
+  // Recompute available exposures whenever size or output changes.
   const expOptions = useMemo(
-    () =>
-      output ? (stock.exposures[size]?.[output] ?? []) : [],
+    () => (output ? (stock.exposures[size]?.[output] ?? []) : []),
     [size, output, stock.exposures]
   );
 
-  // Clear exposure when output changes if the prior selection no longer applies.
+  // If the previously-selected exposure no longer exists under the new size/output,
+  // clear it. queueMicrotask avoids a setState-during-render warning.
   if (exp && !expOptions.includes(exp)) {
-    // Use functional update to avoid render-loop tripwire; this branch only
-    // fires the frame after output changes.
     queueMicrotask(() => setExp(null));
   }
 
@@ -69,14 +77,27 @@ export default function PriceConfigurator({ stock }: { stock: FilmStock }) {
   return (
     <main className={styles.page}>
       <div className={styles.layout}>
-        <div className={styles.image} aria-hidden="true">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={stock.image} alt="" />
+
+        {/* Left column: back navigation + product image */}
+        <div className={styles.imageCol}>
+          <button
+            className={styles.backBtn}
+            onClick={() => router.back()}
+            aria-label="Go back"
+          >
+            ←
+          </button>
+          <div className={styles.image} aria-hidden="true">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={stock.image} alt="" />
+          </div>
         </div>
 
+        {/* Right column: title, live price, and all option selectors */}
         <div className={styles.body}>
           <header className={styles.header}>
             <h1 className={styles.title}>{stock.name}</h1>
+            {/* Price updates in real-time as options change */}
             <p className={styles.price}>{formatUSD(total)}</p>
           </header>
 
@@ -84,34 +105,21 @@ export default function PriceConfigurator({ stock }: { stock: FilmStock }) {
 
           <div className={styles.rows}>
             <Row label="SIZE">
-              <Pills
-                values={stock.sizes}
-                selected={size}
-                onSelect={setSize}
-              />
+              <Pills values={stock.sizes} selected={size} onSelect={setSize} />
             </Row>
 
             <Row label="OUTPUT">
-              <Pills
-                values={stock.outputs}
-                selected={output}
-                onSelect={setOutput}
-              />
+              <Pills values={stock.outputs} selected={output} onSelect={setOutput} />
             </Row>
 
+            {/* EXP row only appears when the selected size+output has exposure options */}
             {output && expOptions.length > 0 && (
-              <Row
-                label="EXP"
-                explanation={stock.expExplanation}
-              >
-                <Pills
-                  values={expOptions}
-                  selected={exp}
-                  onSelect={setExp}
-                />
+              <Row label="EXP" explanation={stock.expExplanation}>
+                <Pills values={expOptions} selected={exp} onSelect={setExp} />
               </Row>
             )}
 
+            {/* Quantity stepper — minimum 1, no maximum */}
             <div className={styles.qtyRow}>
               <button
                 className={styles.qtyBtn}
@@ -139,8 +147,7 @@ export default function PriceConfigurator({ stock }: { stock: FilmStock }) {
   );
 }
 
-// ---------- helpers ----------
-
+// A labeled option row with a horizontal rule beneath it.
 function Row({
   label,
   explanation,
@@ -162,6 +169,7 @@ function Row({
   );
 }
 
+// Renders a set of toggle buttons. Active pill gets the red background.
 function Pills<T extends string>({
   values,
   selected,

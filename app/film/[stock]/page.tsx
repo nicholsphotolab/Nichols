@@ -1,9 +1,15 @@
+// app/film/[stock]/page.tsx
+// Dynamic route for individual film stock detail pages.
+// URL pattern: /film/c-41, /film/bw, /film/e-6
+// generateStaticParams pre-renders all known stocks at build time.
+// The FilmStockConfigurator handles all interactive pricing logic client-side.
+
 import { notFound } from "next/navigation";
 import Nav from "../../components/Nav";
-import PriceConfigurator from "../PriceConfigurator";
-import { STOCKS } from "../stocks";
+import FilmStockConfigurator from "../FilmStockConfigurator";
+import { STOCKS } from "../filmStocksData";
 
-// Pre-render one page per known stock (/film/c-41, /film/bw, /film/e-6).
+// Tell Next.js which slugs to statically generate at build time.
 export function generateStaticParams() {
   return Object.keys(STOCKS).map((stock) => ({ stock }));
 }
@@ -15,12 +21,14 @@ export default async function FilmStockPage({
 }) {
   const { stock } = await params;
   const data = STOCKS[stock];
+
+  // Return 404 for any slug not defined in filmStocksData.ts.
   if (!data) notFound();
 
   return (
     <>
       <Nav activeHref="/film" />
-      <PriceConfigurator stock={data} />
+      <FilmStockConfigurator stock={data} />
     </>
   );
 }

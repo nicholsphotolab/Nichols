@@ -1,12 +1,18 @@
+// app/layout.tsx
+// Root layout — wraps every page on the site.
+// Loads the Inter Variable font from /public/fonts/InterVariable.woff2 via
+// globals.css @font-face (full glyph set, no subset restrictions).
+// Mounts three global components that persist across all routes:
+//   - LenisScrollProvider: initialises smooth scrolling via the Lenis library
+//   - BrandLogoSwitch: renders the hero logo on / and the nav logo everywhere else
+//   - Footer: site-wide footer with logo scroll-reveal animation
+
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
 import "./globals.css";
 import "lenis/dist/lenis.css";
-import SmoothScroll from "./components/SmoothScroll";
-import Brand from "./components/Brand";
+import LenisScrollProvider from "./components/LenisScrollProvider";
+import BrandLogoSwitch from "./components/BrandLogoSwitch";
 import Footer from "./components/Footer";
-
-const inter = Inter({ subsets: ["latin"], weight: ["400", "700"] });
 
 export const metadata: Metadata = {
   title: "Nichols Photo Lab",
@@ -20,10 +26,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={inter.className}>
+    <html lang="en">
       <body>
-        <SmoothScroll />
-        <Brand />
+        {/* Smooth scroll — must be first so scroll events are intercepted early */}
+        <LenisScrollProvider />
+        {/* Switches between the hero logo (home) and nav logo (all other pages) */}
+        <BrandLogoSwitch />
         {children}
         <Footer />
       </body>

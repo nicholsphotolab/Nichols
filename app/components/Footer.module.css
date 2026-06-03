@@ -1,13 +1,25 @@
+/* Footer.module.css
+   Styles for the site-wide footer (Footer.tsx).
+   Structure: logo → divider → four columns (copyright, nav, hours, contact).
+   All text in the footer shares one type treatment defined under the
+   "Unified type treatment" section — only layout and hover behaviour differ. */
+
+/* ---------- Footer shell ---------- */
 .footer {
   background: var(--paper-white);
   color: var(--black);
   padding: 40px;
   display: flex;
   flex-direction: column;
-  gap: 31px;
+  gap: 32px;
 }
 
-/* ---------- Full-width logo lockup ---------- */
+/* ---------- Logo reveal ----------
+   The wrapper clips the logo while it slides up from below.
+   overflow: hidden is what makes the clip work.
+   aspect-ratio matches the Nichols logo SVG dimensions (842 × 205).
+   The animation itself is triggered by FooterLogoScrollReveal.tsx which adds
+   data-visible="true" when the footer enters the viewport. */
 .logoRevealWrap {
   width: 100%;
   overflow: hidden;
@@ -19,10 +31,13 @@
   width: 100%;
   height: 100%;
   color: var(--black);
+  /* Starts fully below the clip boundary */
   transform: translateY(100%);
+  /* Heavy slow-start easing gives a weighted, deliberate feel */
   transition: transform 1.7s cubic-bezier(0.6, 0, 0.2, 1);
 }
 
+/* Slides the logo into view when JS sets data-visible */
 .logoRevealWrap[data-visible="true"] .logo {
   transform: translateY(0);
 }
@@ -41,7 +56,8 @@
   margin: 0;
 }
 
-/* ---------- Three columns ---------- */
+/* ---------- Columns ----------
+   Four columns laid out with space-between. Stacks vertically below 900px. */
 .cols {
   display: flex;
   align-items: flex-start;
@@ -50,16 +66,19 @@
   width: 100%;
 }
 
-/* All footer text shares one type treatment: 16px, 2% tracking, uppercase.
-   Color + font-family are inherited from .footer / body. */
+/* ---------- Unified type treatment ----------
+   Every footer text element uses the same size, tracking, and case.
+   Colour is set explicitly so <a> tags don't inherit browser link blue. */
 .copyright,
 .nav a,
 .address,
 .phone,
-.hoursBlock {
+.hoursGroup span {
   font-size: 16px;
+  line-height: 20px;
   letter-spacing: 0.02em;
   text-transform: uppercase;
+  color: var(--black);
 }
 
 /* ---------- Nav column ---------- */
@@ -67,17 +86,6 @@
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-.nav a {
-  line-height: normal;
-  transition: color 0.15s ease;
-}
-
-.nav a:hover,
-.address:hover,
-.phone:hover {
-  color: var(--darkroom-red);
 }
 
 /* ---------- Contact column ---------- */
@@ -88,34 +96,45 @@
   align-items: flex-start;
 }
 
-.address,
-.phone {
-  line-height: 1.2;
-  transition: color 0.15s ease;
-}
-
+/* Address is a flex column so the two address lines stack naturally */
 .address {
   display: flex;
   flex-direction: column;
+  align-items: flex-start;
 }
 
+/* Phone uses inline-flex with flex-start so the reveal arrow aligns
+   to the top of the number text, matching the other link arrows */
 .phone {
   display: inline-flex;
-  align-items: baseline;
-  gap: 2px;
+  align-items: flex-start;
 }
 
-/* ---------- Hours row ---------- */
+/* ---------- Hours column ---------- */
 .hoursBlock {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
+  /* space between "Open" group and "Passport Hours" group */
 }
 
 .hoursGroup {
   display: flex;
   flex-direction: column;
-  line-height: 1.2;
+}
+
+/* ---------- Hover states ----------
+   Only nav links, address, and phone are interactive — hours and copyright are not. */
+.nav a,
+.address,
+.phone {
+  transition: color 0.15s ease;
+}
+
+.nav a:hover,
+.address:hover,
+.phone:hover {
+  color: var(--darkroom-red);
 }
 
 /* ---------- Responsive ---------- */
@@ -125,11 +144,13 @@
     gap: 24px;
   }
 
+  /* Stack columns vertically on tablet and below */
   .cols {
     flex-direction: column;
     gap: 32px;
   }
 
+  /* Copyright moves to the bottom of the stacked columns */
   .copyright {
     order: 3;
   }
