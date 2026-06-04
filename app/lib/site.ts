@@ -19,6 +19,7 @@ export const NAV_ITEMS: NavItem[] = [
   { href: "/video", label: "Video", footerLabel: "Video & Reels" },
   { href: "/passport", label: "Passport" },
   { href: "/about", label: "About", footerLabel: "About Us" },
+  { href: "/faq", label: "FAQ" },
 ];
 
 export const CONTACT = {
