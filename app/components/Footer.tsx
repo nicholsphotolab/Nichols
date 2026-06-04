@@ -25,11 +25,14 @@ export default function Footer() {
 
         {/* Nav links — same items as the top nav, with footer-specific labels */}
         <nav className={styles.nav} aria-label="Footer">
-          {NAV_ITEMS.map((l) => (
+          {NAV_ITEMS.filter((l) => l.href !== "/faq").map((l) => (
             <Link key={l.href} href={l.href} className="reveal-on-hover">
               {l.footerLabel ?? l.label}<span className="reveal-arrow" aria-hidden="true">↗</span>
             </Link>
           ))}
+          <Link href="/faq" className={`reveal-on-hover ${styles.faqLink}`}>
+            FAQ<span className="reveal-arrow" aria-hidden="true">↗</span>
+          </Link>
         </nav>
 
         {/* Business hours */}
