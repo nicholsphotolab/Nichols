@@ -3,11 +3,11 @@
 }
 
 .item {
-  border-top: 1px solid var(--bw-200);
+  border-top: 1px solid var(--black);
 }
 
 .item:last-child {
-  border-bottom: 1px solid var(--bw-200);
+  border-bottom: 1px solid var(--black);
 }
 
 .trigger {
@@ -24,27 +24,35 @@
 }
 
 .question {
-  font-size: 18px;
-  font-weight: 500;
-  line-height: 1.35;
+  font-size: 24px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
   color: var(--black);
+  transition: color 0.15s ease;
+}
+
+.triggerOpen .question {
+  font-weight: 700;
 }
 
 .indicator {
   flex-shrink: 0;
-  font-size: 24px;
-  font-weight: 300;
+  font-size: 20px;
   line-height: 1;
-  color: var(--bw-400);
-  transition: color 180ms var(--ease-out);
+  color: var(--black);
+  transform: rotate(90deg);
+  transition: transform 300ms var(--ease-out), color 0.15s ease;
   user-select: none;
+  display: inline-block;
 }
 
-.trigger:hover .indicator {
-  color: var(--darkroom-red);
+.indicatorOpen {
+  transform: rotate(-90deg);
 }
 
-/* Smooth height animation via grid-template-rows trick — no JS measurement */
+/* Smooth height animation — bodyInner must have overflow:hidden
+   so the grid can collapse it to 0 */
 .body {
   display: grid;
   grid-template-rows: 0fr;
@@ -55,26 +63,31 @@
   grid-template-rows: 1fr;
 }
 
-.answer {
+.bodyInner {
   overflow: hidden;
+  min-height: 0;
+}
+
+.answer {
   margin: 0;
-  padding-bottom: 20px;
+  padding-bottom: 24px;
   font-size: 16px;
   line-height: 1.6;
-  color: var(--bw-400);
+  color: var(--black);
 }
 
 @media (hover: hover) and (pointer: fine) {
   .trigger:hover .question {
-    color: var(--black);
+    color: var(--darkroom-red);
+  }
+
+  .trigger:hover .indicator {
+    color: var(--darkroom-red);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .body {
-    transition: none;
-  }
-
+  .body,
   .indicator {
     transition: none;
   }

@@ -16,17 +16,19 @@ function Item({
   return (
     <div className={styles.item}>
       <button
-        className={styles.trigger}
+        className={`${styles.trigger} ${open ? styles.triggerOpen : ""}`}
         aria-expanded={open}
         onClick={onToggle}
       >
         <span className={styles.question}>{item.q}</span>
-        <span className={styles.indicator} aria-hidden="true">
-          {open ? "−" : "+"}
+        <span className={`${styles.indicator} ${open ? styles.indicatorOpen : ""}`} aria-hidden="true">
+          →
         </span>
       </button>
       <div className={`${styles.body} ${open ? styles.open : ""}`}>
-        <p className={styles.answer}>{item.a}</p>
+        <div className={styles.bodyInner}>
+          <p className={styles.answer}>{item.a}</p>
+        </div>
       </div>
     </div>
   );
