@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Nav from "../components/Nav";
 import FilmHeroImage from "./FilmHeroImage";
+import FilmProcessSteps from "./FilmProcessSteps";
 import styles from "./page.module.css";
 
 type Stock = {
@@ -44,14 +45,6 @@ export default function FilmPage() {
           </div>
         </section>
 
-        <hr className={styles.divider} />
-
-        <p className={styles.intro}>
-          Film deserves to be developed right. We process C&#8209;41, B&amp;W,
-          and E&#8209;6 all in-house across every major format, backed by 45+
-          years of experience.
-        </p>
-
         <section className={styles.stocks} aria-label="Film stocks">
           {STOCKS.map((s, i) => (
             <Link
@@ -78,6 +71,14 @@ export default function FilmPage() {
             </Link>
           ))}
         </section>
+
+        <p className={styles.intro}>
+          Film deserves to be developed right. We process C&#8209;41, B&amp;W,
+          and E&#8209;6 all in-house across every major format, backed by 45+
+          years of experience.
+        </p>
+
+        <FilmProcessSteps />
       </main>
     </>
   );

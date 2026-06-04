@@ -180,6 +180,7 @@
   background: transparent;
   border: 0;
   padding: 0;
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 48px;
   line-height: 48px;
@@ -203,13 +204,15 @@
 }
 
 .qtyValue {
+  font-family: var(--font-sans);
   font-weight: 700;
   font-size: 48px;
   line-height: 48px;
   letter-spacing: 0.96px;
-  font-variant-numeric: tabular-nums;
-  min-width: 1.5ch;
+  /* Fixed width holds 3 digits — buttons never shift as qty grows */
+  width: 3ch;
   text-align: center;
+  flex-shrink: 0;
 }
 
 /* ---------- Responsive ---------- */

@@ -1,0 +1,129 @@
+/* FilmProcessSteps.module.css
+   Styles for the three-step process section on the film page.
+   Left column: clickable step numbers. Right column: items for the active step.
+   Matches the site's 16px/uppercase/0.02em type treatment for labels. */
+
+.section {
+  padding: 80px var(--page-pad);
+}
+
+/* Two-column layout: narrow step list on left, item detail on right */
+.layout {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 48px;
+  align-items: start;
+}
+
+/* ---------- Step list (left column) ---------- */
+.stepList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stepBtn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--bw-400);
+  /* dimmed by default */
+  cursor: pointer;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  text-align: left;
+  transition: color 0.15s ease;
+}
+
+.stepBtn[data-active] {
+  color: var(--black);
+  /* active step is full black */
+  font-weight: 700;
+}
+
+.stepBtn:hover {
+  color: var(--black);
+}
+
+.stepNum {
+  font-weight: 400;
+  /* number stays regular weight even when step is active */
+}
+
+/* ---------- Item list (right column) ---------- */
+.itemList {
+  display: flex;
+  flex-direction: column;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Two-column row: name on left, description on right */
+.itemRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 48px;
+  padding: 20px 0;
+}
+
+.itemName {
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
+  font-weight: 700;
+}
+
+.itemLink {
+  transition: color 0.15s ease;
+}
+
+.itemLink:hover {
+  color: var(--darkroom-red);
+}
+
+.itemDescription {
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  color: var(--black);
+  font-weight: 400;
+}
+
+.itemDivider {
+  border: 0;
+  border-top: 1px solid var(--black);
+  margin: 0;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+
+  .stepList {
+    flex-direction: row;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 700px) {
+  .section {
+    padding: 60px var(--page-pad);
+  }
+
+  .itemRow {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+}

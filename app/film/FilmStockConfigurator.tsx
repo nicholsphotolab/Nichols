@@ -26,11 +26,15 @@ export type FilmStock = {
   exposures: Partial<Record<string, Partial<Record<string, string[]>>>>;
   // Per-exposure surcharge in dollars, keyed by [size][output].
   perExposureRate: Partial<Record<string, Partial<Record<string, number>>>>;
+  // Silent default exposure count per size — used in price calculation without
+  // showing the EXP selector (e.g. disposable cameras are always 27 exp).
+  defaultExposures?: Partial<Record<string, string>>;
   expExplanation?: string; // optional caption below the EXP row
 };
 
 // Adds the per-exposure surcharge to the base price when a size, output, and
-// exposure count are all selected.
+// exposure count are known. Falls back to defaultExposures[size] when no
+// explicit exp is selected (e.g. disposable cameras with a fixed count).
 function computeUnitPrice(
   stock: FilmStock,
   size: string,
@@ -38,9 +42,10 @@ function computeUnitPrice(
   exp: string | null
 ): number {
   let price = stock.basePrice;
-  if (output && exp) {
+  const resolvedExp = exp ?? stock.defaultExposures?.[size] ?? null;
+  if (output && resolvedExp) {
     const rate = stock.perExposureRate[size]?.[output];
-    const count = parseInt(exp, 10);
+    const count = parseInt(resolvedExp, 10);
     if (rate && !Number.isNaN(count)) price += rate * count;
   }
   return price;
@@ -78,8 +83,16 @@ export default function FilmStockConfigurator({ stock }: { stock: FilmStock }) {
     <main className={styles.page}>
       <div className={styles.layout}>
 
-        {/* Left column: back navigation + product image */}
+        {/* Left column: product image */}
         <div className={styles.imageCol}>
+          <div className={styles.image} aria-hidden="true">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={stock.image} alt="" />
+          </div>
+        </div>
+
+        {/* Right column: back navigation, title, live price, and all option selectors */}
+        <div className={styles.body}>
           <button
             className={styles.backBtn}
             onClick={() => router.back()}
@@ -87,14 +100,6 @@ export default function FilmStockConfigurator({ stock }: { stock: FilmStock }) {
           >
             ←
           </button>
-          <div className={styles.image} aria-hidden="true">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={stock.image} alt="" />
-          </div>
-        </div>
-
-        {/* Right column: title, live price, and all option selectors */}
-        <div className={styles.body}>
           <header className={styles.header}>
             <h1 className={styles.title}>{stock.name}</h1>
             {/* Price updates in real-time as options change */}
