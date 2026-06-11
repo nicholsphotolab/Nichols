@@ -10,10 +10,14 @@
 .title {
   margin: 0;
   font-weight: 700;
-  font-size: clamp(56px, 14vw, 160px);
+  /* "FAQ" in Inter Bold fills the available content width.
+     Divisor ≈ sum of F/A/Q advance widths (2.103) minus letter-spacing (0.06) = 2.04.
+     Adjust the divisor here if the fit is slightly off. */
+  font-size: clamp(40px, calc((100vw - 2 * var(--page-pad)) / 2.04), 800px);
   line-height: 0.85;
   letter-spacing: -0.02em;
   color: var(--black);
+  white-space: nowrap;
   text-box: trim-both cap alphabetic;
 }
 
@@ -21,8 +25,8 @@
   display: flex;
   flex-direction: column;
   gap: 56px;
-  max-width: 900px;
-  width: 100%;
+  /* 11 of 16 site-grid columns: 100% × 11/16 − gap × 5/16 */
+  width: calc(100% * 11 / 16 - var(--grid-gap) * 5 / 16);
 }
 
 .section {
@@ -45,6 +49,13 @@
     padding-top: 120px;
     padding-bottom: 60px;
     gap: 40px;
+  }
+}
+
+/* 8-col tablet and below: questions take the full content width */
+@media (max-width: 900px) {
+  .sections {
+    width: 100%;
   }
 }
 

@@ -1,0 +1,16 @@
+<svg width="1000" height="1000" viewBox="0 0 1000 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+<style>
+  .bg { fill: #010101; }
+  .fg { fill: #F9F8F4; }
+  @media (prefers-color-scheme: dark) {
+    .bg { fill: #F9F8F4; }
+    .fg { fill: #010101; }
+  }
+</style>
+<rect width="1000" height="1000" class="bg"/>
+<path d="M308.229 252.398H532.971V149.77H210.51V580.822H308.229V252.398Z" class="fg"/>
+<path d="M437.697 388.401H660.022V283.176H337.534V714.228H437.697V388.401Z" class="fg"/>
+<path d="M467.001 419.177H660.022V714.228H467.001V419.177Z" class="fg"/>
+<path d="M467.001 419.177H760.185V819.453H467.001V419.177Z" class="fg"/>
+<path d="M467.001 419.177H789.49V850.231H467.001V419.177Z" class="fg"/>
+</svg>

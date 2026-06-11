@@ -30,7 +30,7 @@ export default function Footer() {
               {l.footerLabel ?? l.label}<span className="reveal-arrow" aria-hidden="true">↗</span>
             </Link>
           ))}
-          <Link href="/faq" className={`reveal-on-hover ${styles.faqLink}`}>
+          <Link href="/faq" className="reveal-on-hover">
             FAQ<span className="reveal-arrow" aria-hidden="true">↗</span>
           </Link>
         </nav>

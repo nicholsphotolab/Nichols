@@ -47,15 +47,15 @@ const STEPS: Step[] = [
     items: [
       {
         name: "Develop Only",
-        description: "Film is developed and returned to you unscanned.",
+        description: "We'll only develop your film. No scans or prints included.",
       },
       {
         name: "Scans",
-        description: "High-resolution digital scans delivered online with your developed film.",
+        description: "Your film will be developed, then scanned digitally. Once paid for it will be sent to your email via a dropbox link.",
       },
       {
         name: "Scans & Prints",
-        description: "Digital scans plus physical prints — everything in one order.",
+        description: "Get both physical prints and digital scans of your images. Once paid for it will be sent to your email via a dropbox link",
       },
     ],
   },
@@ -64,11 +64,11 @@ const STEPS: Step[] = [
     items: [
       {
         name: "Lab Pickup",
-        description: "Pick up your finished order at the lab. Free.",
+        description: "Pick up your finished order at the lab. ",
       },
       {
         name: "Discard",
-        description: "We dispose of your film after processing. Free.",
+        description: "We dispose of your film after processing",
       },
       {
         name: "Ship",

@@ -8,7 +8,7 @@
 .footer {
   background: var(--paper-white);
   color: var(--black);
-  padding: 40px;
+  padding: 40px var(--page-pad);
   display: flex;
   flex-direction: column;
   gap: 32px;
@@ -57,13 +57,21 @@
 }
 
 /* ---------- Columns ----------
-   Four columns laid out with space-between. Stacks vertically below 900px. */
+   Four columns on the site grid (4 columns each on the 16-col desktop grid).
+   Stacks vertically below 900px. */
 .cols {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 32px;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  gap: var(--grid-gap);
+  align-items: start;
   width: 100%;
+}
+
+.copyright,
+.nav,
+.hoursBlock,
+.contact {
+  grid-column: span 4;
 }
 
 /* ---------- Unified type treatment ----------
@@ -75,7 +83,7 @@
 .phone,
 .hoursGroup span {
   font-size: 16px;
-  line-height: 20px;
+  line-height: 1.25;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--black);
@@ -88,10 +96,6 @@
   gap: 20px;
 }
 
-/* FAQ link sits below the service nav links with extra breathing room */
-.faqLink {
-  margin-top: 12px;
-}
 
 /* ---------- Contact column ---------- */
 .contact {
@@ -145,14 +149,20 @@
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
   .footer {
-    padding: 32px 20px;
+    padding: 32px var(--page-pad);
     gap: 24px;
   }
 
   /* Stack columns vertically on tablet and below */
   .cols {
-    flex-direction: column;
-    gap: 32px;
+    row-gap: 32px;
+  }
+
+  .copyright,
+  .nav,
+  .hoursBlock,
+  .contact {
+    grid-column: 1 / -1;
   }
 
   /* Copyright moves to the bottom of the stacked columns */

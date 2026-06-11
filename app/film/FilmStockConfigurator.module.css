@@ -4,14 +4,16 @@
   padding: 133.5px var(--page-pad) 80px;
 }
 
+/* Site column grid: image column spans 4, configurator body spans 8 */
 .layout {
   display: grid;
-  grid-template-columns: minmax(280px, 1fr) 2fr;
-  gap: 48px;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  gap: var(--grid-gap);
   align-items: start;
 }
 
 .imageCol {
+  grid-column: span 5;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -48,6 +50,7 @@
 }
 
 .body {
+  grid-column: span 11;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -82,8 +85,8 @@
 .priceLabel {
   margin: 0;
   font-size: 24px;
-  line-height: 24px;
-  letter-spacing: 0.48px;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: var(--black);
 }
 
@@ -109,8 +112,8 @@
 
 .rowLabel {
   font-size: 24px;
-  line-height: 24px;
-  letter-spacing: 0.48px;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: var(--black);
 }
 
@@ -122,8 +125,8 @@
 .rowExplain {
   margin: 0;
   font-size: 16px;
-  line-height: 16px;
-  letter-spacing: 0.32px;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: var(--bw-400);
 }
 
@@ -146,8 +149,8 @@
   border: 0;
   padding: 2px 4px;
   font-size: 24px;
-  line-height: 24px;
-  letter-spacing: 0.48px;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: var(--black);
   cursor: pointer;
   transition:
@@ -183,8 +186,8 @@
   font-family: var(--font-sans);
   font-weight: 700;
   font-size: 48px;
-  line-height: 48px;
-  letter-spacing: 0.96px;
+  line-height: 1;
+  letter-spacing: 0.02em;
   color: var(--black);
   cursor: pointer;
   transition: opacity 0.15s ease, transform 120ms ease-out;
@@ -207,8 +210,8 @@
   font-family: var(--font-sans);
   font-weight: 700;
   font-size: 48px;
-  line-height: 48px;
-  letter-spacing: 0.96px;
+  line-height: 1;
+  letter-spacing: 0.02em;
   /* Fixed width holds 3 digits — buttons never shift as qty grows */
   width: 3ch;
   text-align: center;
@@ -216,10 +219,15 @@
 }
 
 /* ---------- Responsive ---------- */
+/* 8-col tablet and below: image stacks above the configurator, both full-row */
 @media (max-width: 900px) {
   .layout {
-    grid-template-columns: 1fr;
-    gap: 32px;
+    row-gap: 32px;
+  }
+
+  .imageCol,
+  .body {
+    grid-column: 1 / -1;
   }
 
   .image {
@@ -238,7 +246,6 @@
   .rowLabel,
   .priceLabel {
     font-size: 20px;
-    line-height: 20px;
   }
 
   .title {
@@ -248,7 +255,6 @@
   .qtyBtn,
   .qtyValue {
     font-size: 36px;
-    line-height: 36px;
   }
 }
 

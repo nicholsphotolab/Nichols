@@ -1,0 +1,112 @@
+.section {
+  width: 100%;
+  background: var(--paper-white);
+  color: var(--black);
+  padding: 0 var(--page-pad) 120px;
+}
+
+.grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  gap: var(--grid-gap);
+  align-items: start;
+}
+
+/* 16-col desktop: 4 cards × 4 columns */
+.card {
+  grid-column: span 4;
+  min-width: 0;
+}
+
+.link {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--black);
+}
+
+.label {
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.number {
+  font-weight: 400;
+  margin-right: 8px;
+}
+
+.image {
+  display: block;
+  width: 100%;
+  /* Landscape variant of the logo-rectangle shape — these cards are large
+     enough that the portrait default would push the row below the fold. */
+  aspect-ratio: var(--image-ratio-wide);
+  background: var(--bw-200);
+  overflow: hidden;
+}
+
+.image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transform-origin: center;
+  transition:
+    filter 550ms var(--ease-soft),
+    transform 550ms var(--ease-soft);
+}
+
+/* Hover: the hovered card's image zooms slightly; every other card's image
+   drops to black & white. Matches the film stocks grid. */
+@media (hover: hover) and (pointer: fine) {
+  .grid:has(.card:hover) .card:not(:hover) .image img {
+    filter: saturate(0);
+  }
+  .card:hover .image img {
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .image img {
+    transition: none;
+  }
+}
+
+/* 8-col tablet: still one row — 4 cards × 2 columns */
+@media (max-width: 900px) {
+  .card {
+    grid-column: span 2;
+  }
+
+  .section {
+    padding-bottom: 80px;
+  }
+}
+
+/* 4-col mobile: a single airy column — each card centered at a 3-column
+   measure with its label hanging off the image's left edge, big gaps
+   between cards (Adcker-style index). */
+@media (max-width: 700px) {
+  .grid {
+    row-gap: 96px;
+  }
+
+  .card {
+    grid-column: 1 / -1;
+    justify-self: center;
+    /* 3 of 4 columns: 100% × 3/4 − gap × 1/4 */
+    width: calc(100% * 3 / 4 - var(--grid-gap) / 4);
+    min-width: 220px;
+  }
+
+  .label {
+    font-size: 14px;
+  }
+}

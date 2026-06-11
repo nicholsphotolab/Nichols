@@ -1,0 +1,192 @@
+/* ---------- Wrapper: full-width track with overlay arrows ----------
+   The track spans the full content width so visible cards land exactly on
+   the site column grid: 4 visible = 4-col spans (16-col), 2 visible = 4-col
+   spans (8-col), 1 visible = full width (4-col). */
+.wrapper {
+  --gap: var(--grid-gap);
+  --visible: 4; /* cards shown at once on desktop */
+  position: relative;
+  width: 100%;
+}
+
+/* ---------- Track: horizontal scroll-snap row ---------- */
+.track {
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  gap: var(--gap);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Card ---------- */
+.card {
+  flex: 0 0 calc((100% - (var(--visible) - 1) * var(--gap)) / var(--visible));
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cardImage {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  /* Placeholder fill until real service imagery is added. */
+  border: 1px solid var(--black);
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(0, 0, 0, 0.06) 10px,
+    rgba(0, 0, 0, 0.06) 20px
+  );
+}
+
+.cardImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+  transition:
+    filter 550ms var(--ease-soft),
+    transform 550ms var(--ease-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wrapper:has(.card:hover) .card:not(:hover) .cardImage img {
+    filter: saturate(0);
+  }
+  .card:hover .cardImage img {
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardImage img {
+    transition: none;
+  }
+}
+
+.cardMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardName {
+  margin: 0;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--black);
+  white-space: nowrap;
+}
+
+.cardPrice {
+  margin: 0;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+.cardCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--paper-white);
+  border: 1px solid var(--black);
+  color: var(--black);
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.cardCta:hover,
+.card:hover .cardCta {
+  background: var(--darkroom-red);
+  color: var(--paper-white);
+  border-color: var(--darkroom-red);
+}
+
+/* ---------- Arrow buttons ----------
+   Overlaid on the track edges (not flex items) so the track keeps the full
+   content width. Vertically centered on the card image: image height =
+   card width × 3/4, card width = (content − (visible−1)·gap) / visible,
+   content = 100vw − 2·page-pad. */
+.arrow {
+  position: absolute;
+  top: calc((100vw - 2 * var(--page-pad) - (var(--visible) - 1) * var(--gap)) / var(--visible) * 3 / 8);
+  transform: translateY(-50%);
+  display: inline-flex;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--black);
+  background: var(--paper-white);
+  color: var(--black);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  z-index: 5;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.arrow[data-dir="prev"] { left: 0; }
+.arrow[data-dir="next"] { right: 0; }
+
+.arrow[data-hidden] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.arrow:hover {
+  background: var(--black);
+  color: var(--paper-white);
+}
+
+/* ---------- Responsive: fewer cards visible as the viewport narrows ---------- */
+@media (max-width: 1100px) {
+  .wrapper {
+    --visible: 3;
+  }
+}
+
+@media (max-width: 900px) {
+  .wrapper {
+    --visible: 2;
+  }
+}
+
+@media (max-width: 700px) {
+  .wrapper {
+    --visible: 1;
+  }
+
+  .cardMeta {
+    margin-top: 4px;
+  }
+
+  .cardName {
+    white-space: normal;
+    font-size: 20px;
+  }
+
+  .cardCta {
+    font-size: 16px;
+  }
+}

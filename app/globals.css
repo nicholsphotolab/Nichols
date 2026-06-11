@@ -33,11 +33,39 @@
 
   /* Horizontal page padding — reduced on small screens below */
   --page-pad: 40px;
+
+  /* ---------- Layout grid ----------
+     Site-wide column grid: 16 columns on desktop, 8 on tablet (≤900px),
+     4 on mobile (≤700px), with 24px gutters. Layout containers use:
+       display: grid;
+       grid-template-columns: repeat(var(--grid-cols), 1fr);
+       gap: var(--grid-gap);
+     Nested grids with the same gap align exactly with the parent's column
+     lines (an n-column span subdivided into n equal 1fr tracks reproduces
+     the parent columns). For a non-grid element that must match an
+     n-column span:
+       width: calc(100% * n / cols - var(--grid-gap) * (cols - n) / cols); */
+  --grid-cols: 16;
+  --grid-gap: 24px;
+
+  /* Default image aspect ratio: the shape of the front rectangle in the
+     Nichols logo mark (15.1929 × 20.3075 in the SVG — portrait, ≈3:4).
+     Every image on the site uses this unless a component specifies otherwise.
+     --image-ratio-wide is the same rectangle rotated, for landscape uses. */
+  --image-ratio: 15.1929 / 20.3075;
+  --image-ratio-wide: 20.3075 / 15.1929;
+}
+
+@media (max-width: 900px) {
+  :root {
+    --grid-cols: 8;
+  }
 }
 
 @media (max-width: 700px) {
   :root {
     --page-pad: 20px;
+    --grid-cols: 4;
   }
 }
 

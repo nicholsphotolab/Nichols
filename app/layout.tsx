@@ -18,6 +18,14 @@ export const metadata: Metadata = {
   title: "Nichols Photo Lab",
   description:
     "Salt Lake City film lab. Develop, scan, and print. Prints, video transfer, and passport photos.",
+  icons: {
+    icon: [
+      { url: "/Favicon%20Light%20Mode.png", type: "image/png", media: "(prefers-color-scheme: light)" },
+      { url: "/Favicon%20Dark%20Mode.png", type: "image/png", media: "(prefers-color-scheme: dark)" },
+      { url: "/Favicon.svg", type: "image/svg+xml" },
+    ],
+    apple: [{ url: "/Apple%20Touch%20Icon.png", sizes: "180x180" }],
+  },
 };
 
 export default function RootLayout({
