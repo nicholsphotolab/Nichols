@@ -1,7 +1,7 @@
 .brand {
   position: fixed;
   top: 20.5px;
-  left: 40px;
+  left: var(--page-pad);
   width: 136px;
   height: 33px;
   color: #fff;

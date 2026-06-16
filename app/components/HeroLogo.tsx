@@ -6,14 +6,14 @@ import NicholsLogoSvg from "./NicholsLogoSvg";
 import styles from "./HeroLogo.module.css";
 
 // Endpoint reference (matches the old nav brand position/size):
-//   top: 20.5px, left: 40px, height: 33px (width ≈ 136px from SVG aspect)
-const END_LEFT = 40;
+//   top: 20.5px, left: 60px, height: 33px (width ≈ 136px from SVG aspect)
+const END_LEFT = 60;
 const END_TOP = 20.5;
 const END_HEIGHT = 33;
 const NATIVE_W = 136;
 const NATIVE_H = 33;
 // Side padding when fully expanded over the hero.
-const SIDE_PAD = 40;
+const SIDE_PAD = 60;
 // Logo top offset below the nav at scroll 0. Hero.module.css mirrors this
 // (plus the logo height) to reserve the space in the document flow.
 const START_TOP = 120;

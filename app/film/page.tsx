@@ -1,5 +1,5 @@
+import Image from "next/image";
 import Nav from "../components/Nav";
-import FilmHeroImage from "./FilmHeroImage";
 import FilmStocksGrid from "./FilmStocksGrid";
 import FilmProcessSteps from "./FilmProcessSteps";
 import styles from "./page.module.css";
@@ -10,10 +10,28 @@ export default function FilmPage() {
       <Nav activeHref="/film" />
 
       <main className={styles.page}>
-        <section className={styles.heroRow} aria-label="Film">
-          <h1 className={styles.title}>FILM</h1>
-          <div className={styles.heroImage}>
-            <FilmHeroImage />
+        <section className={styles.hero} aria-label="Film">
+          <Image
+            className={styles.heroBg}
+            src="/Film-Hero.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+          />
+          <div className={styles.heroScrim} aria-hidden="true" />
+
+          <div className={styles.heroContent}>
+            <h1 className={styles.title}>FILM</h1>
+            <p className={styles.heroDescription}>
+              We carefully develop your film the way it deserves, so every frame
+              comes back as rich as the moment you shot it.
+            </p>
+            <p className={styles.heroMeta}>
+              PORTRA 400
+              <br />
+              C-41 • 36EXP
+            </p>
           </div>
         </section>
 

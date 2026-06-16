@@ -43,7 +43,7 @@
 }
 
 .cta {
-  right: 40px;
+  right: var(--page-pad);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -57,8 +57,10 @@
   transition: filter 0.15s ease;
 }
 
-.cta:hover {
-  filter: brightness(1.08);
+@media (hover: hover) and (pointer: fine) {
+  .cta:hover {
+    filter: brightness(1.08);
+  }
 }
 
 @media (max-width: 900px) {
@@ -66,8 +68,9 @@
     left: 20px;
   }
 
+  /* The CTA moves into the mobile menu below 900px */
   .cta {
-    right: 20px;
+    display: none;
   }
 
   .links {

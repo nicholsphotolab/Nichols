@@ -1,0 +1,110 @@
+/* VideoTransferConfigurator.module.css
+   Layout for the video category estimator pages — mirrors the film
+   configurator's page shell and type scale. The option rows, pills, and
+   quantity stepper come from the shared ConfiguratorControls module. */
+
+.page {
+  background: var(--paper-white);
+  color: var(--black);
+  padding: 133.5px var(--page-pad) 80px;
+}
+
+/* Site column grid — no product imagery for these categories yet, so the
+   body takes the film configurator's 11-column measure from column 1. */
+.layout {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  gap: var(--grid-gap);
+  align-items: start;
+}
+
+.body {
+  grid-column: span 11;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+  min-width: 0;
+}
+
+.backBtn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-family: inherit;
+  font-size: 40px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+}
+
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.title {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(72px, 9vw, 128px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+.price {
+  margin: 0;
+  font-weight: 400;
+  font-size: clamp(40px, 4.5vw, 64px);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--black);
+  font-variant-numeric: tabular-nums;
+}
+
+.priceLabel {
+  margin: 0;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .body {
+    grid-column: 1 / -1;
+    gap: 32px;
+  }
+
+  .rows {
+    gap: 28px;
+  }
+
+  .priceLabel {
+    font-size: 20px;
+  }
+
+  .title {
+    font-size: clamp(48px, 11vw, 96px);
+  }
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding-top: 100px;
+    padding-bottom: 60px;
+  }
+}

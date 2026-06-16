@@ -1,61 +1,110 @@
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 0 var(--page-pad) 40px;
+  padding: 133.5px var(--page-pad) 40px;
   display: flex;
   flex-direction: column;
   gap: 48px;
 }
 
-/* ---------- Hero reel: full-bleed from the very top ---------- */
-.heroVideo {
+/* ---------- Hero: full-bleed reel + VIDEO wordmark over a dark scrim ----------
+   Same pattern as the film/passport pages (Figma node 1775:1334): the hero
+   breaks out of the page padding to span the full viewport, under the fixed
+   global nav. The looping reel (VideoHeroReel) is the background layer; title
+   and description are pinned bottom-left on the site column grid. */
+.hero {
   position: relative;
-  width: calc(100% + 2 * var(--page-pad));
-  margin-inline: calc(-1 * var(--page-pad));
-  aspect-ratio: var(--image-ratio-wide);
-  background: var(--bw-200);
-  overflow: hidden;
-}
-
-/* ---------- Overlay container: text clears the fixed nav (same offset
-   as the page titles elsewhere) while the video bleeds to the top ---------- */
-.overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  /* Full-bleed: cancel the page's top padding (133.5px) and side padding so
+     the reel runs edge-to-edge and starts at the very top of the viewport. */
+  margin: -133.5px calc(-1 * var(--page-pad)) 0;
+  min-height: 100svh;
   display: flex;
   flex-direction: column;
-  gap: clamp(16px, 3vw, 48px);
-  padding: 133.5px var(--page-pad) 0;
+  justify-content: flex-end;
+  /* Clear the fixed nav up top; ~13% of the hero sits below the text. */
+  padding: 133.5px var(--page-pad) 13svh;
+  overflow: hidden;
+  isolation: isolate;
 }
 
-/* ---------- Huge VIDEO wordmark — spans all 16 content columns ---------- */
+/* Bottom-weighted gradient for legibility. Same character as the film/passport
+   heroes, but a touch stronger: the reel footage runs dark and varies frame to
+   frame, so the photo pages' lighter scrim reads as invisible here. This keeps
+   a consistent dark wash at the bottom regardless of the current frame. */
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(1, 1, 1, 0.7) 0%,
+    rgba(1, 1, 1, 0.4) 28%,
+    rgba(102, 102, 102, 0) 62%
+  );
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+}
+
 .title {
+  grid-column: 1 / 9;
+  grid-row: 1;
   margin: 0;
+  /* V's left side bearing (InterVariable, wght 700 / opsz 32) — pull the ink
+     onto the column-1 line. */
+  margin-left: -0.0045em;
   min-width: 0;
   font-weight: 700;
-  /* Fill the full content width (16-col span = 100vw − 2 × page pad).
-     Divide by 2.96 (≈ width-to-font-size ratio of "VIDEO" in Inter Bold
-     at -0.02em tracking). */
-  font-size: clamp(40px,
-      calc((100vw - 2 * var(--page-pad)) / 2.96),
-      760px);
-  line-height: 0.82;
-  letter-spacing: -0.02em;
-  color: var(--paper-white);
+  /* Fluid hero scale anchored to the Figma design: 200px at a 1440px-wide
+     viewport, scaling linearly with screen width. Mobile/tablet later. */
+  font-size: calc(100vw * 200 / 1440);
+  line-height: 0.85;
+  letter-spacing: 0.02em;
+  color: #fff;
   white-space: nowrap;
+  text-box: trim-both cap alphabetic;
 }
 
-/* ---------- Description just below the title ---------- */
-.description {
+.heroDescription {
+  /* Wider span than the other heroes so this longer copy still lands on
+     exactly two lines; text-wrap: balance evens the two lines. */
+  grid-column: 1 / 15;
+  grid-row: 2;
   margin: 0;
-  max-width: 600px;
-  font-size: clamp(18px, 2.2vw, 32px);
-  font-weight: 700;
-  line-height: 1.25;
+  margin-top: clamp(14px, 1.8vw, 28px);
+  /* Tracks the title: 24px at 1440px wide, scaling with screen width. */
+  font-size: calc(100vw * 24 / 1440);
+  font-weight: 400;
+  line-height: 1.3;
   letter-spacing: -0.01em;
   color: var(--paper-white);
+  text-wrap: balance;
+  /* Trim the block-end to the alphabetic baseline so it bottom-aligns with the
+     caption regardless of the font-size difference. */
+  text-box: trim-both cap alphabetic;
+}
+
+/* Format caption in the last 2 columns, right-aligned to the content edge and
+   bottom-aligned with the description (matches the film/passport heroes).
+   14px at 1440, scaling with the hero. */
+.heroMeta {
+  grid-column: 15 / 17;
+  grid-row: 2;
+  align-self: end;
+  margin: 0;
+  font-size: calc(100vw * 14 / 1440);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: var(--paper-white);
+  white-space: nowrap;
+  text-align: right;
+  text-box: trim-both cap alphabetic;
 }
 
 /* ---------- Divider ---------- */
@@ -69,26 +118,18 @@
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
   .page {
+    padding-top: 120px;
     padding-bottom: 80px;
     gap: 40px;
   }
-
-  .overlay {
-    padding-top: 120px;
-  }
 }
 
+/* Tablet/mobile hero breakpoints are intentionally not retuned yet — the hero
+   title and description scale fluidly with viewport width for now. */
 @media (max-width: 700px) {
   .page {
+    padding-top: 100px;
     padding-bottom: 60px;
     gap: 32px;
-  }
-
-  .overlay {
-    padding-top: 100px;
-  }
-
-  .description {
-    font-size: clamp(15px, 4.5vw, 22px);
   }
 }

@@ -5,6 +5,10 @@
 export const ORDER_URL =
   "https://www.roesweb.com/configs/NicholsRW/products/standard";
 
+// Destination for quote/intake requests sent from the /quote form.
+// TODO: confirm this is the right address before launch.
+export const QUOTE_EMAIL = "info@nicholsphotolab.com";
+
 export type NavItem = {
   href: string;
   /** Short label used in the top nav. */

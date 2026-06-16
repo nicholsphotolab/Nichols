@@ -25,6 +25,10 @@ const SHARED_EXPOSURES = {
 // displaying an EXP selector row.
 const DISPOSABLE_DEFAULTS = { "DISPOSABLE CAMERA": "27" };
 
+// Sheet film dimensions — shown in a secondary row (where EXP would sit)
+// when SHEET is the selected size. Billed per sheet, so no exposure data.
+const SHEET_SIZES = ["4X5", "5X7", "8X10"];
+
 // Per-exposure surcharge in dollars, keyed by [size][output].
 const SHARED_RATES = {
   "35MM": { SCANS: 0.35, "PRINTS/SCANS": 0.6 },
@@ -40,7 +44,8 @@ export const STOCKS: Record<string, FilmStock> = {
     name: "C‑41",
     basePrice: 6.5,
     image: "/C-41.webp",
-    sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "4X5", "5X7", "8X10"],
+    sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
+    sheetSizes: SHEET_SIZES,
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,
@@ -52,7 +57,8 @@ export const STOCKS: Record<string, FilmStock> = {
     name: "B&W",
     basePrice: 8.5,
     image: "/B&W.webp",
-    sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "4X5", "5X7", "8X10"],
+    sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
+    sheetSizes: SHEET_SIZES,
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,
@@ -65,7 +71,8 @@ export const STOCKS: Record<string, FilmStock> = {
     basePrice: 8.5,
     image: "/E-6.webp",
     // E-6 doesn't come in 110 format.
-    sizes: ["35MM", "120", "4X5", "5X7", "8X10"],
+    sizes: ["35MM", "120", "SHEET"],
+    sheetSizes: SHEET_SIZES,
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,

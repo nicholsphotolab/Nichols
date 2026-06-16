@@ -38,6 +38,7 @@
 
 
 .image {
+  position: relative; /* anchor for next/image fill */
   width: 100%;
   aspect-ratio: 199 / 266;
   overflow: hidden;
@@ -90,132 +91,12 @@
   color: var(--black);
 }
 
+/* Option rows, pills, and the quantity stepper live in the shared
+   ConfiguratorControls module (app/components/ConfiguratorControls.module.css). */
 .rows {
   display: flex;
   flex-direction: column;
   gap: 36px;
-}
-
-.row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.rowLine {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.rowLabel {
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--black);
-}
-
-.rowOptions {
-  display: flex;
-  align-items: center;
-}
-
-.rowExplain {
-  margin: 0;
-  font-size: 16px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--bw-400);
-}
-
-.rowDivider {
-  border: 0;
-  border-top: 1px solid var(--black);
-  margin: 12px 0 0;
-}
-
-/* ---------- Pills ---------- */
-.pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-}
-
-.pill {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  padding: 2px 4px;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--black);
-  cursor: pointer;
-  transition:
-    background-color 160ms var(--ease-out),
-    color 160ms var(--ease-out),
-    transform 120ms ease-out;
-}
-
-.pill:active {
-  transform: scale(0.97);
-}
-
-.pill[data-active] {
-  background: var(--darkroom-red);
-  color: var(--paper-white);
-}
-
-/* ---------- Quantity ---------- */
-.qtyRow {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  padding-top: 8px;
-  border-bottom: 2px solid var(--black);
-  padding-bottom: 12px;
-}
-
-.qtyBtn {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 48px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--black);
-  cursor: pointer;
-  transition: opacity 0.15s ease, transform 120ms ease-out;
-}
-
-.qtyBtn:hover {
-  opacity: 0.7;
-}
-
-.qtyBtn:active {
-  transform: scale(0.92);
-}
-
-.qtyBtn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.qtyValue {
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 48px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  /* Fixed width holds 3 digits — buttons never shift as qty grows */
-  width: 3ch;
-  text-align: center;
-  flex-shrink: 0;
 }
 
 /* ---------- Responsive ---------- */
@@ -242,8 +123,6 @@
     gap: 28px;
   }
 
-  .pill,
-  .rowLabel,
   .priceLabel {
     font-size: 20px;
   }
@@ -251,24 +130,11 @@
   .title {
     font-size: clamp(56px, 14vw, 96px);
   }
-
-  .qtyBtn,
-  .qtyValue {
-    font-size: 36px;
-  }
 }
 
 @media (max-width: 700px) {
   .page {
     padding-top: 100px;
     padding-bottom: 60px;
-  }
-
-  .pills {
-    gap: 16px;
-  }
-
-  .rowLine {
-    gap: 12px;
   }
 }

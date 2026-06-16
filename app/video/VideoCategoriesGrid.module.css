@@ -1,0 +1,156 @@
+/* VideoCategoriesGrid.module.css
+   Two category cards on the site grid — same card anatomy and hover
+   behaviour as FilmStocksGrid, adapted from 3 cards to 2. */
+
+/* ---------- Wrapper ---------- */
+.wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* ---------- Track: site column grid ---------- */
+.track {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  gap: var(--grid-gap);
+  align-items: start;
+  width: 100%;
+}
+
+/* ---------- Card ---------- */
+/* 16-col desktop: 2 cards × 8 columns */
+.card {
+  grid-column: span 8;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cardImage {
+  position: relative; /* anchor for next/image fill */
+  width: 100%;
+  /* Wide variant of the site image ratio — these cards hold video stills */
+  aspect-ratio: var(--image-ratio-wide);
+  overflow: hidden;
+  /* Placeholder fill until real category imagery is added. */
+  border: 1px solid var(--black);
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(0, 0, 0, 0.06) 10px,
+    rgba(0, 0, 0, 0.06) 20px
+  );
+}
+
+.cardImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transform-origin: center;
+  transition:
+    filter 550ms var(--ease-soft),
+    transform 550ms var(--ease-soft);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .wrapper:has(.card:hover) .card:not(:hover) .cardImage img {
+    filter: saturate(0);
+  }
+  .card:hover .cardImage img {
+    transform: scale(1.1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardImage img {
+    transition: none;
+  }
+}
+
+.cardMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardName {
+  margin: 0;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--black);
+  white-space: nowrap;
+}
+
+.cardPrice {
+  margin: 0;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+.cardCta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 6px 10px;
+  background: var(--paper-white);
+  border: 1px solid var(--black);
+  color: var(--black);
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cardCta:hover,
+  .card:hover .cardCta {
+    background: var(--darkroom-red);
+    color: var(--paper-white);
+    border-color: var(--darkroom-red);
+  }
+}
+
+/* ---------- 8-col tablet: 2 cards × 4 columns ---------- */
+@media (max-width: 900px) {
+  .card {
+    grid-column: span 4;
+  }
+}
+
+/* ---------- 4-col mobile: single centered column ----------
+   Cards stack vertically and scroll with the page — same sizing as the
+   film stocks grid. */
+@media (max-width: 700px) {
+  .track {
+    row-gap: 96px;
+  }
+
+  .card {
+    grid-column: 1 / -1;
+    justify-self: center;
+    /* 3 of 4 columns: 100% × 3/4 − gap × 1/4 */
+    width: calc(100% * 3 / 4 - var(--grid-gap) / 4);
+    min-width: 220px;
+  }
+
+  .cardMeta {
+    margin-top: 16px;
+  }
+
+  .cardName {
+    white-space: normal;
+    font-size: 20px;
+  }
+
+  .cardCta {
+    font-size: 16px;
+  }
+}

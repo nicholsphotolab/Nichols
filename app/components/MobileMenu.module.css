@@ -1,0 +1,109 @@
+/* Mobile/tablet hamburger menu (≤900px, where the desktop links hide).
+   The trigger reads MENU/CLOSE in the same type as the desktop links and
+   sits in the same centered slot. The panel slides down from the top at
+   z-index 9 — under the brand mark, CTA, and trigger (all z-index 10+,
+   mix-blend-mode: difference), so they invert to black over the paper-
+   white panel automatically. */
+
+.toggle {
+  display: none;
+}
+
+.panel {
+  display: none;
+}
+
+@media (max-width: 900px) {
+  .toggle {
+    display: block;
+    position: fixed;
+    top: 20.5px;
+    right: 20px;
+    z-index: 11;
+    appearance: none;
+    background: transparent;
+    border: 0;
+    padding: 0;
+    font-family: var(--font-sans);
+    font-weight: 400;
+    font-size: 16px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--paper-white);
+    mix-blend-mode: difference;
+    cursor: pointer;
+  }
+
+  .panel {
+    position: fixed;
+    inset: 0;
+    z-index: 9;
+    display: flex;
+    flex-direction: column;
+    /* Rows start below the fixed header area */
+    padding-top: 88px;
+    background: var(--paper-white);
+    overflow-y: auto;
+    transform: translateY(-100%);
+    visibility: hidden;
+    transition:
+      transform 600ms var(--ease-out),
+      visibility 0s linear 600ms;
+  }
+
+  .panel[data-open] {
+    transform: translateY(0);
+    visibility: visible;
+    transition: transform 600ms var(--ease-out);
+  }
+
+  /* Nav rows — hero wordmark type: Inter Bold, tight tracking, all caps */
+  .link {
+    display: block;
+    padding: clamp(22px, 5vw, 36px) var(--page-pad);
+    border-top: 1px solid var(--black);
+    text-align: center;
+    font-weight: 700;
+    font-size: clamp(44px, 13vw, 96px);
+    line-height: 0.9;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--black);
+    transition: background 0.15s ease, color 0.15s ease;
+  }
+
+  .link:last-child {
+    border-bottom: 1px solid var(--black);
+  }
+
+  /* Current page — filled row, like the reference */
+  .active {
+    background: var(--darkroom-red);
+    color: var(--paper-white);
+  }
+
+  /* Order-prints CTA: the site's red pill button, scaled up and centered
+     below the nav rows. Rows = navigation, red pill = action — same
+     hierarchy as the desktop header. */
+  .cta {
+    align-self: center;
+    margin: 40px 0 60px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--darkroom-red);
+    color: var(--paper-white);
+    font-weight: 400;
+    font-size: 20px;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    padding: 12px 18px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panel[data-open] {
+    transition: none;
+  }
+}

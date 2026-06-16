@@ -8,12 +8,33 @@
 ## Run
 
 ```bash
-cd Nichols/V3
 npm install
 npm run dev
 ```
 
-Then open http://localhost:3000.
+Then open http://localhost:3001.
+
+## Deploy (Network Solutions)
+
+The site is configured for **static export** (`output: "export"` in `next.config.mjs`),
+because the host has no Node runtime.
+
+```bash
+npm run build      # outputs a static site to ./out
+npm run serve      # optional: preview ./out locally at http://localhost:3001
+```
+
+Upload the **contents of `out/`** to the host's web root (e.g. via FTP/File Manager).
+Do **not** upload `.next/` — that's the build cache, not the deployable site.
+
+## Images
+
+- All images use `next/image`, which adds lazy-loading automatically.
+- Static export can't run the on-the-fly optimizer, so `images.unoptimized` is set
+  and source files are served as-is. **Resize/compress large images before adding
+  them to `public/`** (e.g. `sips --resampleHeightWidthMax 1600 -s format jpeg -s formatOptions 70 in.jpg --out out.jpg`).
+- If the site ever moves to Vercel or a Node host, remove `unoptimized: true` and
+  every `<Image>` starts auto-resizing and serving WebP/AVIF with no other changes.
 
 ## Structure
 
@@ -28,7 +49,6 @@ app/
     ServicesCarousel.tsx + .module.css # arrow-driven carousel, mobile = vertical stack
     SmoothScroll.tsx                 # Lenis init (client component)
 public/
-  hero.png             # was V2/Hero Image.png
   nichols-logo.svg     # was V2/Nichols Logo.svg
 ```
 

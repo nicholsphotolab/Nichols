@@ -1,0 +1,131 @@
+.page {
+  background: var(--paper-white);
+  color: var(--black);
+  padding: 133.5px var(--page-pad) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+/* ---------- Hero: full-bleed photo + PASSPORT wordmark over a dark scrim ----------
+   Same pattern as the film page (Figma node 1773:1159): the hero breaks out of
+   the page padding to span the full viewport, under the fixed global nav (white
+   + mix-blend-difference, so it reads over the photo). Title and description
+   are pinned bottom-left on the site column grid. */
+.hero {
+  position: relative;
+  /* Full-bleed: cancel the page's top padding (133.5px) and side padding so
+     the photo runs edge-to-edge and starts at the very top of the viewport. */
+  margin: -133.5px calc(-1 * var(--page-pad)) 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* Clear the fixed nav up top. Bottom space leaves ~13% of the hero below
+     the text, matching the Figma composition. */
+  padding: 133.5px var(--page-pad) 13svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.heroBg {
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* Bottom-weighted gradient for legibility — matches Figma:
+   black 50% at 17.38% up, fading to transparent at ~61% up. */
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(1, 1, 1, 0.5) 17.38%,
+    rgba(102, 102, 102, 0) 61.235%
+  );
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+}
+
+.title {
+  /* Cell is just the left anchor; the long wordmark runs past it (nowrap) and
+     stays within the content area at every width since both scale with vw. */
+  grid-column: 1 / 9;
+  grid-row: 1;
+  margin: 0;
+  /* Inter Bold's leading glyph carries a 0.0543em left side bearing — pull the
+     text left by it so the ink (not the glyph box) sits on the column-1 line. */
+  margin-left: -0.0543em;
+  min-width: 0;
+  font-weight: 700;
+  /* Fluid hero scale anchored to the Figma design: 200px at a 1440px-wide
+     viewport, scaling linearly with screen width. Mobile/tablet later. */
+  font-size: calc(100vw * 200 / 1440);
+  line-height: 0.85;
+  letter-spacing: 0.02em;
+  color: #fff;
+  white-space: nowrap;
+  text-box: trim-both cap alphabetic;
+}
+
+.heroDescription {
+  /* Wider than film's (cols 1–11) to fit the longer passport copy. */
+  grid-column: 1 / 12;
+  grid-row: 2;
+  margin: 0;
+  margin-top: clamp(14px, 1.8vw, 28px);
+  /* Tracks the title: 24px at 1440px wide, scaling with screen width. */
+  font-size: calc(100vw * 24 / 1440);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--paper-white);
+  text-wrap: balance;
+  /* Trim the block-end to the alphabetic baseline so it bottom-aligns with the
+     caption regardless of the font-size difference. */
+  text-box: trim-both cap alphabetic;
+}
+
+/* Film-stock caption in the last 2 columns, right-aligned to the content edge
+   and bottom-aligned with the description (matches the film hero). 14px at
+   1440, scaling with the hero. */
+.heroMeta {
+  grid-column: 15 / 17;
+  grid-row: 2;
+  align-self: end;
+  margin: 0;
+  font-size: calc(100vw * 14 / 1440);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: var(--paper-white);
+  white-space: nowrap;
+  text-align: right;
+  text-box: trim-both cap alphabetic;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .page {
+    padding-top: 120px;
+    padding-bottom: 80px;
+    gap: 40px;
+  }
+}
+
+/* Tablet/mobile hero breakpoints are intentionally not retuned yet — the hero
+   title and description scale fluidly with viewport width for now. */
+@media (max-width: 700px) {
+  .page {
+    padding-top: 100px;
+    padding-bottom: 60px;
+    gap: 32px;
+  }
+}

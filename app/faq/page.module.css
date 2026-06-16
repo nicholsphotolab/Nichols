@@ -7,17 +7,73 @@
   gap: 48px;
 }
 
+/* ---------- Hero: full-bleed photo + FAQ wordmark over a dark scrim ----------
+   Same pattern as the film/passport/video heroes (Figma node 1781:1455). */
+.hero {
+  position: relative;
+  /* Full-bleed: cancel the page's top padding (133.5px) and side padding. */
+  margin: -133.5px calc(-1 * var(--page-pad)) 0;
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 133.5px var(--page-pad) 13svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.heroBg {
+  object-fit: cover;
+  z-index: 0;
+}
+
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(1, 1, 1, 0.5) 17.38%,
+    rgba(102, 102, 102, 0) 61.235%
+  );
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+}
+
 .title {
+  grid-column: 1 / 9;
+  grid-row: 1;
   margin: 0;
+  /* F's left side bearing — pull the ink onto the column-1 line. */
+  margin-left: -0.0543em;
+  min-width: 0;
   font-weight: 700;
-  /* "FAQ" in Inter Bold fills the available content width.
-     Divisor ≈ sum of F/A/Q advance widths (2.103) minus letter-spacing (0.06) = 2.04.
-     Adjust the divisor here if the fit is slightly off. */
-  font-size: clamp(40px, calc((100vw - 2 * var(--page-pad)) / 2.04), 800px);
+  /* Fluid hero scale: 200px at 1440px wide, scaling with screen width. */
+  font-size: calc(100vw * 200 / 1440);
   line-height: 0.85;
-  letter-spacing: -0.02em;
-  color: var(--black);
+  letter-spacing: 0.02em;
+  color: #fff;
   white-space: nowrap;
+  text-box: trim-both cap alphabetic;
+}
+
+.heroDescription {
+  grid-column: 1 / 10;
+  grid-row: 2;
+  margin: 0;
+  margin-top: clamp(14px, 1.8vw, 28px);
+  font-size: calc(100vw * 24 / 1440);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--paper-white);
+  text-wrap: balance;
   text-box: trim-both cap alphabetic;
 }
 

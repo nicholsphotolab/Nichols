@@ -7,44 +7,108 @@
   gap: 48px;
 }
 
-/* ---------- Hero row: huge FILM wordmark + canister ---------- */
-.heroRow {
-  --gap: clamp(16px, 4.2vw, 60px);
+/* ---------- Hero: full-bleed photo + FILM wordmark over a dark scrim ----------
+   The hero breaks out of the page's padding to span the full viewport, sitting
+   under the fixed global nav (which is white + mix-blend-difference, so it
+   reads over the photo). Title and description are pinned to the bottom-left,
+   laid out on the site column grid. Mirrors Figma node 1760:690. */
+.hero {
+  position: relative;
+  /* Full-bleed: cancel the page's top padding (133.5px) and side padding so
+     the photo runs edge-to-edge and starts at the very top of the viewport. */
+  margin: -133.5px calc(-1 * var(--page-pad)) 0;
+  min-height: 100svh;
   display: flex;
-  align-items: center;
-  gap: var(--gap);
-  width: 100%;
+  flex-direction: column;
+  justify-content: flex-end;
+  /* Clear the fixed nav up top. Bottom space leaves ~13% of the hero below
+     the text, matching the Figma composition (the wordmark's ink bottom lands
+     at ~79% of the hero height rather than jammed against the edge). */
+  padding: 133.5px var(--page-pad) 13svh;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.heroBg {
+  object-fit: cover;
+  z-index: 0;
+}
+
+/* Bottom-weighted gradient for legibility — matches Figma:
+   black 50% at 17.38% up, fading to transparent at ~61% up. */
+.heroScrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(1, 1, 1, 0.5) 17.38%,
+    rgba(102, 102, 102, 0) 61.235%
+  );
+}
+
+.heroContent {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gap);
 }
 
 .title {
+  grid-column: 1 / 9;
+  grid-row: 1;
   margin: 0;
-  flex: 0 1 auto;
+  /* Inter Bold's F carries a 0.0543em left side bearing — pull the text left
+     by it so the F's ink (not the glyph box) sits on the column-1 line. */
+  margin-left: -0.0543em;
   min-width: 0;
   font-weight: 700;
-  /* Title + canister fill the row at every viewport.
-     Avail width = 100vw - (page padding * 2) - gap.
-     Divide by 2.7835 (≈ width-to-font-size ratio of "FILM" in Inter Bold
-     plus the canister's relative footprint at aspect 199:266). */
-  font-size: clamp(40px,
-      calc((100vw - 2 * var(--page-pad) - var(--gap)) / 2.7835),
-      640px);
-  line-height: 0.78;
-  letter-spacing: -0.02em;
-  color: var(--black);
+  /* Fluid hero scale anchored to the Figma design: 200px at a 1440px-wide
+     viewport, scaling linearly with screen width. Mobile/tablet breakpoints
+     are handled separately. */
+  font-size: calc(100vw * 200 / 1440);
+  line-height: 0.85;
+  letter-spacing: 0.02em;
+  color: #fff;
   white-space: nowrap;
   /* Modern: trims line box to cap height in supporting browsers. */
   text-box: trim-both cap alphabetic;
 }
 
-.heroImage {
-  flex: 0 0 auto;
-  /* Canister width = font-size * (line-height 0.78) * (aspect 199/266 ≈ 0.748)
-     = 0.5835F. Combined with the title formula, simplifies to avail * 0.209. */
-  width: clamp(28px,
-      calc((100vw - 2 * var(--page-pad) - var(--gap)) * 0.209),
-      380px);
-  aspect-ratio: 199 / 266;
-  position: relative;
+.heroDescription {
+  grid-column: 1 / 10;
+  grid-row: 2;
+  margin: 0;
+  margin-top: clamp(14px, 1.8vw, 28px);
+  /* Tracks the title: 24px at 1440px wide, scaling with screen width. */
+  font-size: calc(100vw * 24 / 1440);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--paper-white);
+  text-wrap: balance;
+  /* Trim the block-end to the alphabetic baseline so it bottom-aligns with the
+     caption regardless of the font-size difference. */
+  text-box: trim-both cap alphabetic;
+}
+
+/* Film-stock caption in the last 2 columns, right-aligned to the content edge
+   and bottom-aligned with the description (Figma node 1781:1509). 14px at 1440,
+   scaling with the hero. */
+.heroMeta {
+  grid-column: 15 / 17;
+  grid-row: 2;
+  align-self: end;
+  margin: 0;
+  font-size: calc(100vw * 14 / 1440);
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: var(--paper-white);
+  white-space: nowrap;
+  text-align: right;
+  text-box: trim-both cap alphabetic;
 }
 
 /* ---------- Divider ---------- */
@@ -78,6 +142,9 @@
   }
 }
 
+/* Tablet/mobile hero breakpoints are intentionally not retuned yet — the
+   hero title and description scale fluidly with viewport width for now, and
+   dedicated small-screen treatments will be added in a later pass. */
 @media (max-width: 700px) {
   .page {
     padding-top: 100px;

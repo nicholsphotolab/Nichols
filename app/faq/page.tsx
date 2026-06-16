@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Nav from "../components/Nav";
 import FaqAccordion from "./FaqAccordion";
 import { FAQ_SECTIONS } from "./faqData";
@@ -14,7 +15,26 @@ export default function FaqPage() {
     <>
       <Nav activeHref="/faq" />
       <main className={styles.page}>
-        <h1 className={styles.title}>FAQ</h1>
+        <section className={styles.hero} aria-label="FAQ">
+          <Image
+            className={styles.heroBg}
+            src="/FAQ-Hero.jpg"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+          />
+          <div className={styles.heroScrim} aria-hidden="true" />
+
+          <div className={styles.heroContent}>
+            <h1 className={styles.title}>FAQ</h1>
+            <p className={styles.heroDescription}>
+              Answers to the questions we hear most, from film processing and
+              prints to passport photos and visiting the shop.
+            </p>
+          </div>
+        </section>
+
         <div className={styles.sections}>
           {FAQ_SECTIONS.map((section) => (
             <section key={section.heading} className={styles.section}>

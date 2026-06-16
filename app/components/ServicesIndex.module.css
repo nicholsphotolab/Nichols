@@ -43,6 +43,7 @@
 
 .image {
   display: block;
+  position: relative; /* anchor for next/image fill */
   width: 100%;
   /* Landscape variant of the logo-rectangle shape — these cards are large
      enough that the portrait default would push the row below the fold. */

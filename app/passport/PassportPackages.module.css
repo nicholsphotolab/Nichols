@@ -1,0 +1,172 @@
+/* ---------- Passport packages (accordion) ----------
+   Two expandable cards (Figma "Package Card", Closed/Opened variants). Closed
+   shows image + title/price + a down arrow; clicking expands a description and
+   flips the arrow up. */
+.packages {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+}
+
+.packagesHeading {
+  margin: 0;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  align-items: start;
+  width: 100%;
+}
+
+/* Two cards: 7 columns each, with a 2-column gap between (7 + 2 + 7 = 16). */
+.card {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.card:nth-child(1) {
+  grid-column: 1 / span 7;
+}
+
+.card:nth-child(2) {
+  grid-column: 10 / span 7;
+}
+
+/* The clickable area: image + title/price + arrow. */
+.cardToggle {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+  color: var(--black);
+}
+
+.cardImage {
+  width: 100%;
+  /* Landscape — the logo rectangle rotated (matches the Figma placeholder). */
+  aspect-ratio: var(--image-ratio-wide);
+  background: var(--bw-200);
+}
+
+.cardMeta {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.cardName {
+  margin: 0;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+.cardPrice {
+  margin: 0;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+.cardArrow {
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 42px;
+  line-height: 1;
+  color: var(--black);
+  /* Closed = pointing down; rotates up when open. */
+  transform: rotate(180deg);
+  transition: transform 0.3s var(--ease-soft);
+}
+
+.cardToggle[aria-expanded="true"] .cardArrow {
+  transform: rotate(0deg);
+}
+
+/* Reveal panel: animates height via grid-template-rows 0fr -> 1fr. */
+.cardPanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.35s var(--ease-soft);
+}
+
+.card[data-open="true"] .cardPanel {
+  grid-template-rows: 1fr;
+}
+
+.cardPanelInner {
+  overflow: hidden;
+}
+
+.cardDescription {
+  margin: 0;
+  padding-top: 12px;
+  font-weight: 400;
+  font-size: 16px;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+.cardDivider {
+  border: 0;
+  border-top: 1px solid var(--black);
+  width: 100%;
+  margin: 12px 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cardArrow,
+  .cardPanel {
+    transition: none;
+  }
+}
+
+/* ---------- Responsive ---------- */
+/* 8-col tablet: two cards, 4 columns each (4 + 4 = 8, gutter between). */
+@media (max-width: 900px) {
+  .card:nth-child(1) {
+    grid-column: 1 / span 4;
+  }
+  .card:nth-child(2) {
+    grid-column: 5 / span 4;
+  }
+}
+
+/* 4-col mobile: stack the cards full width. */
+@media (max-width: 700px) {
+  .cards {
+    row-gap: 48px;
+  }
+  .card:nth-child(n) {
+    grid-column: 1 / -1;
+  }
+  .cardName {
+    font-size: 20px;
+  }
+}

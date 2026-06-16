@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NAV_ITEMS, ORDER_URL } from "../lib/site";
+import MobileMenu from "./MobileMenu";
 import styles from "./Nav.module.css";
 
 export default function Nav({ activeHref }: { activeHref?: string }) {
@@ -7,7 +8,7 @@ export default function Nav({ activeHref }: { activeHref?: string }) {
     <>
       {/* Brand mark is rendered globally by <HeroLogo /> in layout.tsx,
           which morphs from the giant hero into this nav slot
-          (top: 20.5px, left: 40px, height: 33px). */}
+          (top: 20.5px, left: 60px, height: 33px). */}
       <nav className={styles.links} aria-label="Primary">
         {NAV_ITEMS.map((l) => (
           <Link
@@ -24,6 +25,8 @@ export default function Nav({ activeHref }: { activeHref?: string }) {
       <Link className={styles.cta} href={ORDER_URL}>
         order prints →
       </Link>
+
+      <MobileMenu activeHref={activeHref} />
     </>
   );
 }

@@ -13,6 +13,7 @@ import "lenis/dist/lenis.css";
 import LenisScrollProvider from "./components/LenisScrollProvider";
 import BrandLogoSwitch from "./components/BrandLogoSwitch";
 import Footer from "./components/Footer";
+import GridOverlay from "./components/GridOverlay";
 
 export const metadata: Metadata = {
   title: "Nichols Photo Lab",
@@ -42,6 +43,8 @@ export default function RootLayout({
         <BrandLogoSwitch />
         {children}
         <Footer />
+        {/* Press G to toggle the column-grid debug overlay */}
+        <GridOverlay />
       </body>
     </html>
   );

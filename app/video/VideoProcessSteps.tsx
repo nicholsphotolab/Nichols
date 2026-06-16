@@ -8,7 +8,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { FORMATS } from "./videoFormatsData";
+import { CATEGORIES, OUTPUTS } from "./videoTransferData";
 import styles from "./VideoProcessSteps.module.css";
 
 type Item = {
@@ -22,32 +22,35 @@ type Step = {
   items: Item[];
 };
 
+// Output descriptions keyed by the option names in videoTransferData.
+const OUTPUT_DESCRIPTIONS: Record<string, string> = {
+  USB: "Your footage loaded onto a USB drive to keep — easiest to share and back up.",
+  "YOUR USB": "Bring your own drive and we load your footage onto it.",
+  "DVD/CD": "Your memories burned to disc for easy playback on any player.",
+};
+
 const STEPS: Step[] = [
   {
     label: "Format",
-    // Sourced from videoFormatsData so the carousel and steps never drift.
-    items: FORMATS.map((f) => ({
-      name: f.name,
-      description: f.description,
-      href: `/video/${f.slug}`,
-    })),
+    // Sourced from videoTransferData so the category cards, estimator, and
+    // steps never drift. Tape/disc formats link to their category page;
+    // reels appear as one item.
+    items: CATEGORIES.flatMap((c) =>
+      c.slug === "reels"
+        ? [{ name: c.name, description: c.description, href: `/video/${c.slug}` }]
+        : c.options.map((o) => ({
+            name: o.name,
+            description: o.description ?? "",
+            href: `/video/${c.slug}`,
+          }))
+    ),
   },
   {
     label: "Output",
-    items: [
-      {
-        name: "Digital Files",
-        description: "Your footage is delivered as MP4 files via a dropbox link sent to your email.",
-      },
-      {
-        name: "USB Drive",
-        description: "Get your transferred footage loaded onto a physical USB drive to keep.",
-      },
-      {
-        name: "DVD",
-        description: "Your memories burned to DVD for easy playback on any disc player.",
-      },
-    ],
+    items: OUTPUTS.map((o) => ({
+      name: o.name,
+      description: `${OUTPUT_DESCRIPTIONS[o.name] ?? ""} $${o.price}.00${o.recommended ? " — recommended." : "."}`,
+    })),
   },
   {
     label: "Pickup",

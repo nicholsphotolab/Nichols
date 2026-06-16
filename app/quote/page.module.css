@@ -1,0 +1,165 @@
+/* Quote page — full-width wordmark title (FAQ treatment), short intro, and
+   the intake form on a comfortable reading measure. */
+
+.page {
+  background: var(--paper-white);
+  color: var(--black);
+  padding: 133.5px var(--page-pad) 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.title {
+  margin: 0;
+  /* Q's left side bearing (InterVariable, wght 700 / opsz 32) — pull the
+     ink onto the content edge. */
+  margin-left: -0.0308em;
+  font-weight: 700;
+  /* Same height as every hero title (defined in globals.css); the right
+     edge falls where the ink ends. */
+  font-size: var(--hero-type-size);
+  line-height: 0.78;
+  letter-spacing: -0.02em;
+  color: var(--black);
+  white-space: nowrap;
+  text-box: trim-both cap alphabetic;
+}
+
+.intro {
+  margin: 0;
+  max-width: 600px;
+  font-size: clamp(16px, 1.4vw, 20px);
+  line-height: 1.5;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+/* ---------- Form ---------- */
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 36px;
+  /* 11 of 16 site-grid columns, same measure as the FAQ sections */
+  width: calc(100% * 11 / 16 - var(--grid-gap) * 5 / 16);
+  max-width: 720px;
+}
+
+.summaryBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px 20px;
+  border: 1px solid var(--black);
+}
+
+.summaryLabel {
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--bw-400);
+}
+
+.summaryText {
+  margin: 0;
+  font-size: 20px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldLabel {
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.input {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--black);
+  border-radius: 0;
+  padding: 4px 0 10px;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  color: var(--black);
+}
+
+.input:focus-visible {
+  outline: none;
+  border-bottom-color: var(--darkroom-red);
+}
+
+.input::placeholder {
+  color: var(--bw-400);
+}
+
+.textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+.submit {
+  align-self: flex-start;
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--darkroom-red);
+  color: var(--paper-white);
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 20px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 10px 16px;
+  transition: filter 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .submit:hover {
+    filter: brightness(1.08);
+  }
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 1024px) {
+  .page {
+    padding-top: 120px;
+    padding-bottom: 60px;
+  }
+}
+
+@media (max-width: 900px) {
+  .form {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding-top: 100px;
+    padding-bottom: 48px;
+    gap: 32px;
+  }
+
+  .input {
+    font-size: 20px;
+  }
+
+  .submit {
+    font-size: 16px;
+  }
+}

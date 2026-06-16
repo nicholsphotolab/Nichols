@@ -4,6 +4,7 @@
 // other cards' images desaturate (same treatment as the film stocks grid).
 
 import Link from "next/link";
+import Image from "next/image";
 import styles from "./ServicesIndex.module.css";
 
 type Service = {
@@ -31,8 +32,7 @@ export default function ServicesIndex() {
               </span>
               <span className={styles.image}>
                 {s.image && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={s.image} alt="" />
+                  <Image src={s.image} alt="" fill sizes="(max-width: 900px) 50vw, 25vw" />
                 )}
               </span>
             </Link>

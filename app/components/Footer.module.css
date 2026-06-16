@@ -140,10 +140,12 @@
   transition: color 0.15s ease;
 }
 
-.nav a:hover,
-.address:hover,
-.phone:hover {
-  color: var(--darkroom-red);
+@media (hover: hover) and (pointer: fine) {
+  .nav a:hover,
+  .address:hover,
+  .phone:hover {
+    color: var(--darkroom-red);
+  }
 }
 
 /* ---------- Responsive ---------- */
@@ -168,5 +170,43 @@
   /* Copyright moves to the bottom of the stacked columns */
   .copyright {
     order: 3;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Nav links live in the hamburger menu on mobile — drop them here */
+  .nav {
+    display: none;
+  }
+
+  /* One row on the 4-col mobile grid: ©2026 (1 col) | hours (1 col) |
+     address + phone (2 cols). Undoes the tablet full-width stack. */
+  .copyright {
+    order: 0;
+    grid-column: span 1;
+  }
+
+  .hoursBlock {
+    grid-column: span 1;
+  }
+
+  .contact {
+    grid-column: span 2;
+  }
+
+  /* Mobile tracks are narrow — scale the unified type down and keep each
+     line unbroken so lines spill slightly into the gutters (as in the
+     design) instead of wrapping mid-phrase. */
+  .copyright,
+  .address,
+  .phone,
+  .hoursGroup span {
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .hoursBlock,
+  .contact {
+    gap: 14px;
   }
 }

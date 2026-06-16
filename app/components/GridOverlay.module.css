@@ -1,0 +1,33 @@
+/* GridOverlay.module.css
+   Fixed full-viewport column guides, laid out with the same grid rules as
+   the .grid utility in globals.css so the tiles land exactly on the site
+   columns at every breakpoint. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  padding-inline: var(--page-pad);
+}
+
+.overlay span {
+  background: rgba(255, 92, 92, 0.18);
+}
+
+/* Fewer columns below the site breakpoints — hide the extra tiles or
+   they'd wrap onto a second row. */
+@media (max-width: 900px) {
+  .overlay span:nth-child(n + 9) {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  .overlay span:nth-child(n + 5) {
+    display: none;
+  }
+}

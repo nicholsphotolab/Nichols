@@ -11,6 +11,9 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { Row, Pills, QtyStepper } from "../components/ConfiguratorControls";
+import QuoteCta from "../components/QuoteCta";
 import styles from "./FilmStockConfigurator.module.css";
 
 // Shape of a single film stock's pricing and option data.
@@ -21,6 +24,9 @@ export type FilmStock = {
   basePrice: number;
   image: string; // path relative to /public
   sizes: string[];
+  // Sheet dimensions (4X5, 5X7, 8X10) shown in a secondary row when the
+  // SHEET size is selected. Billed per sheet — no exposure data.
+  sheetSizes?: string[];
   outputs: string[];
   // Available exposure counts keyed by [size][output]. Missing = no EXP row shown.
   exposures: Partial<Record<string, Partial<Record<string, string[]>>>>;
@@ -60,6 +66,7 @@ export default function FilmStockConfigurator({ stock }: { stock: FilmStock }) {
 
   // Selection state — each row is independent except EXP which depends on size+output.
   const [size, setSize] = useState<string>(stock.sizes[0] ?? "");
+  const [sheetSize, setSheetSize] = useState<string | null>(null);
   const [output, setOutput] = useState<string | null>(stock.outputs[0] ?? null);
   const [exp, setExp] = useState<string | null>(null);
   const [qty, setQty] = useState<number>(1);
@@ -79,6 +86,13 @@ export default function FilmStockConfigurator({ stock }: { stock: FilmStock }) {
   const unitPrice = computeUnitPrice(stock, size, output, exp);
   const total = unitPrice * qty;
 
+  // Selection summary handed to the /quote intake form by the CTA.
+  const summary = `${stock.name} — ${size}${
+    size === "SHEET" && sheetSize ? ` ${sheetSize}` : ""
+  }${output && output !== "NONE" ? `, ${output}` : ""}${
+    exp ? `, ${exp} exp` : ""
+  } × ${qty} — estimated ${formatUSD(total)}`;
+
   return (
     <main className={styles.page}>
       <div className={styles.layout}>
@@ -86,8 +100,7 @@ export default function FilmStockConfigurator({ stock }: { stock: FilmStock }) {
         {/* Left column: product image */}
         <div className={styles.imageCol}>
           <div className={styles.image} aria-hidden="true">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={stock.image} alt="" />
+            <Image src={stock.image} alt="" fill sizes="(max-width: 700px) 320px, 31vw" />
           </div>
         </div>
 
@@ -106,7 +119,7 @@ export default function FilmStockConfigurator({ stock }: { stock: FilmStock }) {
             <p className={styles.price}>{formatUSD(total)}</p>
           </header>
 
-          <p className={styles.priceLabel}>Price</p>
+          <p className={styles.priceLabel}>Estimated price</p>
 
           <div className={styles.rows}>
             <Row label="SIZE">
@@ -117,6 +130,18 @@ export default function FilmStockConfigurator({ stock }: { stock: FilmStock }) {
               <Pills values={stock.outputs} selected={output} onSelect={setOutput} />
             </Row>
 
+            {/* Sheet dimensions take the EXP slot when SHEET is selected
+                (sheet film is billed per sheet — no exposure count) */}
+            {size === "SHEET" && (stock.sheetSizes?.length ?? 0) > 0 && (
+              <Row label="SHEET SIZE">
+                <Pills
+                  values={stock.sheetSizes!}
+                  selected={sheetSize}
+                  onSelect={setSheetSize}
+                />
+              </Row>
+            )}
+
             {/* EXP row only appears when the selected size+output has exposure options */}
             {output && expOptions.length > 0 && (
               <Row label="EXP" explanation={stock.expExplanation}>
@@ -124,82 +149,12 @@ export default function FilmStockConfigurator({ stock }: { stock: FilmStock }) {
               </Row>
             )}
 
-            {/* Quantity stepper — minimum 1, no maximum */}
-            <div className={styles.qtyRow}>
-              <button
-                className={styles.qtyBtn}
-                aria-label="Decrease quantity"
-                onClick={() => setQty((q) => Math.max(1, q - 1))}
-                disabled={qty <= 1}
-              >
-                −
-              </button>
-              <span className={styles.qtyValue} aria-live="polite">
-                {qty}
-              </span>
-              <button
-                className={styles.qtyBtn}
-                aria-label="Increase quantity"
-                onClick={() => setQty((q) => q + 1)}
-              >
-                +
-              </button>
-            </div>
+            <QtyStepper qty={qty} onChange={setQty} />
           </div>
+
+          <QuoteCta summary={summary} />
         </div>
       </div>
     </main>
-  );
-}
-
-// A labeled option row with a horizontal rule beneath it.
-function Row({
-  label,
-  explanation,
-  children,
-}: {
-  label: string;
-  explanation?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className={styles.row}>
-      <div className={styles.rowLine}>
-        <span className={styles.rowLabel}>{label}</span>
-        <div className={styles.rowOptions}>{children}</div>
-      </div>
-      {explanation && <p className={styles.rowExplain}>{explanation}</p>}
-      <hr className={styles.rowDivider} />
-    </div>
-  );
-}
-
-// Renders a set of toggle buttons. Active pill gets the red background.
-function Pills<T extends string>({
-  values,
-  selected,
-  onSelect,
-}: {
-  values: T[];
-  selected: T | null;
-  onSelect: (v: T) => void;
-}) {
-  return (
-    <div className={styles.pills}>
-      {values.map((v) => {
-        const isActive = v === selected;
-        return (
-          <button
-            key={v}
-            type="button"
-            className={styles.pill}
-            data-active={isActive || undefined}
-            onClick={() => onSelect(v)}
-          >
-            {v}
-          </button>
-        );
-      })}
-    </div>
   );
 }

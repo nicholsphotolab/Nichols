@@ -1,4 +1,8 @@
+/* Full-bleed background layer for the hero — sits behind the scrim + text. */
 .reel {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
   display: block;
   width: 100%;
   height: 100%;

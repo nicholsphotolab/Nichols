@@ -48,8 +48,10 @@
   font-weight: 700;
 }
 
-.stepBtn:hover {
-  color: var(--black);
+@media (hover: hover) and (pointer: fine) {
+  .stepBtn:hover {
+    color: var(--black);
+  }
 }
 
 .stepNum {
@@ -99,8 +101,10 @@
   transition: color 0.15s ease;
 }
 
-.itemLink:hover {
-  color: var(--darkroom-red);
+@media (hover: hover) and (pointer: fine) {
+  .itemLink:hover {
+    color: var(--darkroom-red);
+  }
 }
 
 .itemDescription {

@@ -5,5 +5,5 @@
 .hero {
   position: relative;
   width: 100%;
-  height: calc(200px + (100vw - 80px) * 0.24265);
+  height: calc(200px + (100vw - 120px) * 0.24265);
 }
