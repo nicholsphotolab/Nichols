@@ -11,7 +11,14 @@ const nextConfig = {
   // Static HTML export — required for Network Solutions (no Node runtime).
   // Produces an `out/` folder of plain files on `next build`.
   output: "export",
-  basePath,
+  // actions/configure-pages (static_site_generator: "next") auto-patches this
+  // file on the CI runner to inject basePath. Its injector replaces a
+  // property's value in place but can't handle the `basePath,` shorthand —
+  // it corrupts the file into a bare string literal with no key, which is a
+  // syntax error. Spelling out `basePath: basePath` keeps the injector's
+  // patch well-formed (and harmlessly idempotent, since it injects the same
+  // value we already computed).
+  basePath: basePath,
   assetPrefix: basePath,
   // Exposed so app code can prefix root-relative asset paths (next/image's
   // `unoptimized` loader does NOT add basePath on its own — see lib/basePath.ts).
