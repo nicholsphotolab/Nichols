@@ -7,7 +7,7 @@ import FilmJourney from "./FilmJourney";
 import FilmProcessSteps from "./FilmProcessSteps";
 import styles from "./page.module.css";
 
-// Auto-build the hero slides from the image files in public/Film/. Each file is
+// Auto-build the hero slides from the image files in public/FILM/. Each file is
 // named "Stock_Process_Frames" (underscore-delimited) — e.g.
 // "Portra 400_C-41_36EXP.jpg" → caption "Portra 400" / "C-41 • 36EXP". A trailing
 // "-N" before the extension (used to keep multiple shots of one stock unique,
@@ -16,7 +16,7 @@ import styles from "./page.module.css";
 const IMAGE_RE = /\.(jpe?g|png|webp)$/i;
 
 function getHeroSlides(): HeroSlide[] {
-  const filmDir = path.join(process.cwd(), "public", "Film");
+  const filmDir = path.join(process.cwd(), "public", "FILM");
   let files: string[];
   try {
     files = fs.readdirSync(filmDir).sort();
@@ -37,7 +37,7 @@ function getHeroSlides(): HeroSlide[] {
       .filter(Boolean);
 
     slides.push({
-      src: `/Film/${encodeURIComponent(file)}`,
+      src: `/FILM/${encodeURIComponent(file)}`,
       meta: [stock, rest.join(" • ")],
     });
   }
