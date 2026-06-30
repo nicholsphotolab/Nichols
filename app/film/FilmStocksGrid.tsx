@@ -11,6 +11,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { withBasePath } from "../lib/basePath";
 import styles from "./FilmStocksGrid.module.css";
 
 const STOCKS = [
@@ -87,7 +88,7 @@ export default function FilmStocksGrid() {
           <Link key={s.title} href={s.href} className={styles.card}>
             <div className={styles.cardImage} aria-hidden="true">
               <Image
-                src={s.image}
+                src={withBasePath(s.image)}
                 alt=""
                 fill
                 className={styles.cardImg}

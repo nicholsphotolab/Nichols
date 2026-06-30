@@ -15,6 +15,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
+import { withBasePath } from "../lib/basePath";
 import styles from "./page.module.css";
 
 // Hold + dissolve timings (calm pacing). The caption flips at the midpoint of
@@ -72,7 +73,7 @@ export default function FilmHero({ slides }: { slides: HeroSlide[] }) {
           className={`${styles.heroSlide} ${
             i === imageIndex ? styles.heroSlideActive : ""
           }`}
-          src={slide.src}
+          src={withBasePath(slide.src)}
           alt=""
           fill
           priority={i === 0}

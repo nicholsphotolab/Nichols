@@ -2,6 +2,7 @@ import Image from "next/image";
 import Nav from "../components/Nav";
 import FaqAccordion from "./FaqAccordion";
 import { FAQ_SECTIONS } from "./faqData";
+import { withBasePath } from "../lib/basePath";
 import styles from "./page.module.css";
 
 export const metadata = {
@@ -18,7 +19,7 @@ export default function FaqPage() {
         <section className={styles.hero} aria-label="FAQ">
           <Image
             className={styles.heroBg}
-            src="/FAQ-Hero.jpg"
+            src={withBasePath("/FAQ-Hero.jpg")}
             alt=""
             fill
             priority

@@ -16,6 +16,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { Pills } from "../components/ConfiguratorControls";
 import { STOCKS } from "./filmStocksData";
+import { withBasePath } from "../lib/basePath";
 import styles from "./FilmStockConfigurator.module.css";
 
 // Shape of a single film stock's pricing and option data.
@@ -88,7 +89,7 @@ function RowLabel({ label }: { label: string }) {
             aria-label={`About ${label}`}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/info.svg" alt="" width={18} height={18} aria-hidden="true" />
+            <img src={withBasePath("/info.svg")} alt="" width={18} height={18} aria-hidden="true" />
           </button>
           <span role="tooltip" className={styles.tooltip}>
             {info}
@@ -199,7 +200,7 @@ export default function FilmStockConfigurator({
         <div className={styles.imageCol}>
           <div className={styles.image} aria-hidden="true">
             <Image
-              src={imageSrc}
+              src={withBasePath(imageSrc)}
               alt=""
               fill
               sizes="(max-width: 900px) 360px, 31vw"

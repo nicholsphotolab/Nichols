@@ -7,6 +7,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { CATEGORIES } from "./videoTransferData";
+import { withBasePath } from "../lib/basePath";
 import styles from "./VideoCategoriesGrid.module.css";
 
 export default function VideoCategoriesGrid() {
@@ -21,7 +22,7 @@ export default function VideoCategoriesGrid() {
           >
             <div className={styles.cardImage} aria-hidden="true">
               {c.image && (
-                <Image src={c.image} alt="" fill sizes="(max-width: 700px) 90vw, 50vw" />
+                <Image src={withBasePath(c.image)} alt="" fill sizes="(max-width: 700px) 90vw, 50vw" />
               )}
             </div>
             <div className={styles.cardMeta}>

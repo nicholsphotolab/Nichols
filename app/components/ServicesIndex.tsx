@@ -5,6 +5,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { withBasePath } from "../lib/basePath";
 import styles from "./ServicesIndex.module.css";
 
 type Service = {
@@ -32,7 +33,7 @@ export default function ServicesIndex() {
               </span>
               <span className={styles.image}>
                 {s.image && (
-                  <Image src={s.image} alt="" fill sizes="(max-width: 900px) 50vw, 25vw" />
+                  <Image src={withBasePath(s.image)} alt="" fill sizes="(max-width: 900px) 50vw, 25vw" />
                 )}
               </span>
             </Link>

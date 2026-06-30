@@ -7,6 +7,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { withBasePath } from "../lib/basePath";
 import styles from "./VideoHeroReel.module.css";
 
 export default function VideoHeroReel() {
@@ -26,8 +27,8 @@ export default function VideoHeroReel() {
     <video
       ref={ref}
       className={styles.reel}
-      src="/Video-Reel.mp4"
-      poster="/Video-Reel-Poster.jpg"
+      src={withBasePath("/Video-Reel.mp4")}
+      poster={withBasePath("/Video-Reel-Poster.jpg")}
       muted
       loop
       playsInline

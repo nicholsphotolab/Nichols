@@ -25,6 +25,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { withBasePath } from "../lib/basePath";
 import styles from "./FilmJourney.module.css";
 
 type AccordionItem = {
@@ -345,7 +346,7 @@ export default function FilmJourney() {
             {/* Full-bleed background photo + dark scrim for legibility */}
             <div
               className={styles.bg}
-              style={{ backgroundImage: `url("${step.image}")` }}
+              style={{ backgroundImage: `url("${withBasePath(step.image)}")` }}
               aria-hidden="true"
             />
             <div className={styles.scrim} aria-hidden="true" />

@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Nav from "../components/Nav";
 import PassportPackages from "./PassportPackages";
+import { withBasePath } from "../lib/basePath";
 import styles from "./page.module.css";
 
 export default function PassportPage() {
@@ -12,7 +13,7 @@ export default function PassportPage() {
         <section className={styles.hero} aria-label="Passport">
           <Image
             className={styles.heroBg}
-            src="/Passport-Hero.jpg"
+            src={withBasePath("/Passport-Hero.jpg")}
             alt=""
             fill
             priority
