@@ -28,7 +28,7 @@ export default async function FilmStockPage({
   return (
     <>
       <Nav activeHref="/film" />
-      <FilmStockConfigurator stock={data} />
+      <FilmStockConfigurator initialSlug={stock} />
     </>
   );
 }

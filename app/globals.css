@@ -22,6 +22,7 @@
   --black: #010101;         /* near-black for all body text */
   --bw-200: #d6d3cc;        /* light grey — borders, dividers */
   --bw-400: #a09991;        /* mid grey — secondary text */
+  --bw-600: #666666;        /* dark grey — body copy, captions */
 
   /* Font stack — Inter Variable first, then system fallbacks */
   --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;

@@ -1,0 +1,351 @@
+/* FilmJourney.module.css
+   Full-bleed photo section with a numbered step nav (left) and collapsible
+   step content (right), all in paper-white over a dark scrim. Type follows the
+   site's Inter scale: 64px header, 24px subheaders/medium body, 20px body, all
+   at 0.02em tracking on the uppercase labels. Mirrors Figma node 1987:779. */
+
+.section {
+  position: relative;
+  /* Break out of the page's side padding so the photos run edge-to-edge.
+     NOTE: no overflow/clipping here — that would break the panels' sticky
+     positioning. */
+  margin-inline: calc(-1 * var(--page-pad));
+  color: var(--paper-white);
+}
+
+/* ---------- Stacking panels ----------
+   Each step is a full-viewport panel pinned to the top of the viewport. Because
+   the panels are laid out in normal flow (so the section is ~4×100vh tall) and
+   each one is sticky at top:0, scrolling makes the next panel slide up and
+   overtake the pinned one below it — like the YLLW "Stage" sections. */
+/* Each panel is pinned to the top of the viewport (sticky) at a fixed viewport
+   height. Because the panels sit in normal flow (with a spacer after each), the
+   next panel rises up and overtakes the pinned one as you scroll — the stacking
+   effect. dvh fills the real viewport exactly (svh can compute short on some
+   desktop browsers, leaving a sliver of the neighbouring panel). */
+.panel {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  overflow: hidden;
+  isolation: isolate;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Background photo + dark scrim (40% black). Image set per-panel inline. */
+.bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Site column grid, filling the panel so the content column can bound its own
+   clip area. */
+.grid {
+  position: relative;
+  z-index: 2;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  grid-template-rows: minmax(0, 1fr);
+  column-gap: var(--grid-gap);
+  align-items: start;
+  /* Type sits at the top of the photo, clear of the fixed nav. */
+  padding: 100px var(--page-pad);
+}
+
+/* ---------- Left: persistent numbered step nav ----------
+   A zero-height sticky wrapper pinned at the top of the section, so it doesn't
+   take layout space but stays fixed in the viewport across all four panels. The
+   nav is absolutely positioned inside it, on top of the photos. */
+.navOverlay {
+  position: sticky;
+  top: 0;
+  height: 0;
+  z-index: 5;
+}
+
+.steps {
+  position: absolute;
+  top: 100px;
+  left: var(--page-pad);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.stepBtn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  text-align: left;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--bw-400);
+  /* dimmed by default */
+  transition: color 0.15s ease;
+}
+
+.stepBtn[data-active] {
+  color: var(--paper-white);
+}
+
+.stepNum {
+  font-weight: 400;
+  /* number stays regular weight */
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stepBtn:hover {
+    color: var(--paper-white);
+  }
+}
+
+/* ---------- Right: active step content ---------- */
+/* Clip box: masks the card to the available height (viewport minus the grid's
+   100px top/bottom padding) so the translated content below is hidden until
+   scrolled into view. */
+.content {
+  grid-column: 9 / 17;
+  height: calc(100dvh - 200px);
+  overflow: hidden;
+}
+
+/* Inner wrapper translated up by the scroll hook (the "primary scroll"). */
+.contentScroll {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  will-change: transform;
+}
+
+/* Adds the extra scroll distance for a panel whose content overflows; height is
+   set inline by the scroll hook (0 when the content fits the viewport). */
+.spacer {
+  width: 100%;
+  height: 0;
+}
+
+.heading {
+  margin: 0;
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* Header + intro share one block with no gap between them; the group sits in
+   the content's normal 20px rhythm. */
+.headGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.intro {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 400;
+  line-height: 1.25;
+}
+
+.placeholder {
+  margin: 0;
+  font-size: 20px;
+  color: var(--bw-400);
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid var(--paper-white);
+  width: 100%;
+  margin: 0;
+}
+
+/* ---------- Accordion ---------- */
+/* Items and dividers are direct children of .content, so they share its 20px
+   gap. Each item is followed by a sibling .divider — giving every divider an
+   even 20px above and below, matching the Figma frame structure. */
+.item {
+  display: flex;
+  flex-direction: column;
+  /* No gap here: the title→body spacing lives inside the collapsible body (see
+     .bodyContent padding-top) so it's 28px when open and disappears when
+     closed. Closed, the only space below the title is the content's 20px gap
+     to the divider below. */
+}
+
+.trigger {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.itemTitle {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--paper-white);
+  transition: color 0.15s ease;
+}
+
+.indicator {
+  flex-shrink: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--paper-white);
+  /* Arrow points down when collapsed, up (rotated) when open. */
+  transition: transform 300ms var(--ease-out), color 0.15s ease;
+}
+
+.indicatorOpen {
+  transform: rotate(180deg);
+}
+
+/* Smooth height animation — bodyInner has overflow:hidden so the grid can
+   collapse it to 0 (same mechanism as the FAQ accordion). */
+.body {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 300ms var(--ease-out);
+}
+
+.bodyOpen {
+  grid-template-rows: 1fr;
+}
+
+.bodyInner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.bodyContent {
+  display: flex;
+  flex-direction: column;
+  /* 28px between the title and the body — lives inside the collapsible region
+     so it only shows when open (closed leaves just the 20px content gap below
+     the title). */
+  padding-top: 28px;
+  /* 20px between the body text and the hours block / download button — in
+     Figma these sit outside the item frame precisely because their gap is
+     20px, not the 28px title→body gap. */
+  gap: 20px;
+}
+
+.bodyText {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.hours {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+.cta {
+  align-self: flex-start;
+  background: var(--darkroom-red);
+  color: var(--paper-white);
+  padding: 10px 20px;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+/* ---------- Responsive ---------- */
+/* 8-col tablet: step nav becomes a horizontal row pinned at the top, content
+   spans full width below it. */
+@media (max-width: 900px) {
+  .grid {
+    /* Extra top padding so the content clears the horizontal nav row. */
+    padding: 132px var(--page-pad) 64px;
+  }
+
+  .content {
+    grid-column: 1 / -1;
+  }
+
+  .steps {
+    top: 64px;
+    right: var(--page-pad);
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 16px 20px;
+  }
+
+  .heading {
+    font-size: 48px;
+  }
+}
+
+@media (max-width: 700px) {
+  .grid {
+    /* Keep the top room for the pinned nav row; tighten the bottom. */
+    padding: 120px var(--page-pad) 48px;
+  }
+
+  .stepBtn {
+    font-size: 14px;
+    gap: 6px;
+  }
+
+  .heading {
+    font-size: 36px;
+  }
+
+  .intro {
+    font-size: 20px;
+  }
+
+  .itemTitle,
+  .indicator {
+    font-size: 20px;
+  }
+
+  .bodyText,
+  .hours {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .body,
+  .indicator {
+    transition: none;
+  }
+}

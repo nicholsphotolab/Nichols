@@ -29,9 +29,84 @@
   isolation: isolate;
 }
 
-.heroBg {
+/* Stacked hero slides — all share the same box; only the active one is sharp.
+   "Focus-pull dissolve": the incoming photo resolves from soft (blur) + slightly
+   scaled into sharp as it fades in; the outgoing one softens back out. The blur
+   masks the crossfade (you read one photo coming into focus, not two overlapping)
+   and reads as a film "developing" moment. Duration matches DISSOLVE_MS (1000ms). */
+.heroSlide {
   object-fit: cover;
   z-index: 0;
+  opacity: 0;
+  transform: scale(1.04);
+  filter: blur(12px);
+  transition:
+    opacity 1000ms var(--ease-out),
+    transform 1000ms var(--ease-out),
+    filter 1000ms var(--ease-out);
+  will-change: opacity, transform, filter;
+}
+
+.heroSlideActive {
+  opacity: 1;
+  transform: scale(1);
+  filter: blur(0);
+  z-index: 1; /* sit above the other slides, below the scrim (also z-index 1, later in DOM) */
+}
+
+/* Reduced motion: drop the blur + scale; keep a quick, gentle crossfade only. */
+@media (prefers-reduced-motion: reduce) {
+  .heroSlide {
+    transform: none;
+    filter: none;
+    transition: opacity 200ms var(--ease-out);
+  }
+  .heroSlideActive {
+    transform: none;
+    filter: none;
+  }
+}
+
+/* ---------- Hold-time progress bar ----------
+   Full-bleed track pinned to the bottom edge of the hero; the red fill grows
+   left→right over each slide's hold time, telling the viewer when it'll change.
+   transform/scaleX only (GPU-friendly). */
+.progress {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  z-index: 3;
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.progressBar {
+  display: block;
+  height: 100%;
+  width: 100%;
+  background: var(--darkroom-red);
+  transform: scaleX(0);
+  transform-origin: left center;
+  will-change: transform;
+  animation: heroProgressFill linear forwards;
+}
+
+@keyframes heroProgressFill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+/* Reduced motion: the slideshow doesn't auto-advance, so there's nothing to
+   count down — hide the bar entirely. */
+@media (prefers-reduced-motion: reduce) {
+  .progress {
+    display: none;
+  }
 }
 
 /* Bottom-weighted gradient for legibility — matches Figma:

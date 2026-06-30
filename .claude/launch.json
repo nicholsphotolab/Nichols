@@ -4,19 +4,33 @@
     {
       "name": "Next dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
       "port": 3001
     },
     {
       "name": "Python HTTP Server",
       "runtimeExecutable": "python3",
-      "runtimeArgs": ["-m", "http.server", "3000", "--directory", "Nichols"],
+      "runtimeArgs": [
+        "-m",
+        "http.server",
+        "3000",
+        "--directory",
+        "Nichols"
+      ],
       "port": 3000
     },
     {
       "name": "npx serve",
       "runtimeExecutable": "npx",
-      "runtimeArgs": ["serve", "Nichols", "-p", "3000"],
+      "runtimeArgs": [
+        "serve",
+        "Nichols",
+        "-p",
+        "3000"
+      ],
       "port": 3000
     }
   ]

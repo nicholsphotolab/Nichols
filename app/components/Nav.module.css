@@ -1,20 +1,53 @@
-/* Links + CTA are fixed independently. The brand mark is rendered globally
-   by <Brand /> (HeroLogo on home, NavBrand elsewhere), not here. */
-
-.links,
-.cta {
+/* The nav bar: a real flex container with 40px top/bottom padding. Its height
+   comes from that padding + the content (the brand slot sets the content
+   height). The brand mark is rendered globally by <BrandLogoSwitch /> in
+   layout.tsx (HeroLogo on home, NavBrand elsewhere) and overlays the slot.
+   Soft scrim at the top of the page; snaps to a solid paper-white bar once
+   scrolled (data-scrolled set by NavBar.tsx). */
+.bar {
   position: fixed;
-  top: 20.5px;
-  z-index: 10;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  padding: 40px var(--page-pad);
+  /* Slight black gradient behind the nav (from the Figma frame) — a smooth
+     top-down fade, darker at the top, to nothing at the bottom. */
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  transition: background 220ms var(--ease-out);
 }
 
+.bar[data-scrolled="true"] {
+  background: var(--paper-white);
+  /* Solid, even bar when scrolled — drop the soft-edge mask (it's only for the
+     transparent scrim at the top). */
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+/* Reserves the brand mark's footprint on the left and sets the content height
+   the 40px padding wraps (so the bar is a true 40 + 33 + 40). */
+.brandSlot {
+  flex: none;
+  width: 136px;
+  height: 33px;
+}
+
+/* Centered to the viewport, vertically centered in the padded bar. */
 .links {
+  position: absolute;
   left: 50%;
-  transform: translateX(-50%);
+  top: 50%;
+  transform: translate(-50%, -50%);
   display: flex;
   align-items: flex-start;
   gap: 40px;
-  mix-blend-mode: difference;
 }
 
 .links a {
@@ -28,6 +61,12 @@
   align-items: center;
   gap: 2px;
   line-height: normal;
+  transition: color 220ms var(--ease-out);
+}
+
+/* Once the solid white bar snaps in, recolor to dark so it stays readable. */
+:global(html[data-nav-scrolled="true"]) .links a {
+  color: var(--black);
 }
 
 .underline {
@@ -36,6 +75,11 @@
   width: 100%;
   background: var(--paper-white);
   opacity: 0;
+  transition: background 220ms var(--ease-out);
+}
+
+:global(html[data-nav-scrolled="true"]) .underline {
+  background: var(--black);
 }
 
 .active .underline {
@@ -43,10 +87,11 @@
 }
 
 .cta {
-  right: var(--page-pad);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  /* Flex child pushed to the right edge of the padded bar. */
+  margin-left: auto;
+  flex: none;
+  display: inline-block;
+  text-align: center;
   font-weight: 400;
   font-size: 14px;
   letter-spacing: 0.02em;
@@ -55,6 +100,15 @@
   background: var(--darkroom-red);
   padding: 6px 10px;
   transition: filter 0.15s ease;
+}
+
+/* The ↗ aligns to the cap height of the label so its top lines up with the top
+   of the letters (e.g. the T). Same vertical-align:top + line-height:1 trick the
+   site's reveal-arrow utility uses for uppercase text. */
+.ctaArrow {
+  display: inline-block;
+  vertical-align: top;
+  line-height: 1;
 }
 
 @media (hover: hover) and (pointer: fine) {

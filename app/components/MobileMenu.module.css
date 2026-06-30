@@ -17,7 +17,7 @@
   .toggle {
     display: block;
     position: fixed;
-    top: 20.5px;
+    top: 40px;
     right: 20px;
     z-index: 11;
     appearance: none;
@@ -88,9 +88,8 @@
   .cta {
     align-self: center;
     margin: 40px 0 60px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: inline-block;
+    text-align: center;
     background: var(--darkroom-red);
     color: var(--paper-white);
     font-weight: 400;
@@ -98,6 +97,13 @@
     letter-spacing: 0.02em;
     text-transform: uppercase;
     padding: 12px 18px;
+  }
+
+  /* ↗ cap-aligned to the label top (matches the desktop CTA). */
+  .ctaArrow {
+    display: inline-block;
+    vertical-align: top;
+    line-height: 1;
   }
 }
 

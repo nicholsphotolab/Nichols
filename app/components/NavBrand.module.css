@@ -1,13 +1,18 @@
 .brand {
   position: fixed;
-  top: 20.5px;
+  top: 40px;
   left: var(--page-pad);
   width: 136px;
   height: 33px;
-  color: #fff;
-  mix-blend-mode: difference;
+  color: var(--paper-white);
   z-index: 10;
   display: block;
+  transition: color 220ms var(--ease-out);
+}
+
+/* Recolor to dark once the solid white bar snaps in. */
+:global(html[data-nav-scrolled="true"]) .brand {
+  color: var(--black);
 }
 
 .svg {

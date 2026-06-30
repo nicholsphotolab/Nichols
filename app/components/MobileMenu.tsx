@@ -63,7 +63,8 @@ export default function MobileMenu({ activeHref }: { activeHref?: string }) {
           href={ORDER_URL}
           onClick={() => setOpen(false)}
         >
-          order prints →
+          order prints{" "}
+          <span className={styles.ctaArrow} aria-hidden="true">↗</span>
         </Link>
       </nav>
     </>

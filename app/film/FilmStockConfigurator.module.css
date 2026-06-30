@@ -1,10 +1,18 @@
+/* FilmStockConfigurator.module.css
+   Layout for the single-stock pricing panel. Mirrors the Figma "Desktop - 54"
+   design: a ~50/50 two-column grid (product image left, configurator right) with
+   a consistent 20px vertical rhythm between every section and hairline dividers
+   separating the header, the option rows, the itemized total, and the price.
+   Option rows stack a small grey label over the shared pill group; pills come
+   from ConfiguratorControls.module.css. */
+
 .page {
   background: var(--paper-white);
   color: var(--black);
   padding: 133.5px var(--page-pad) 80px;
 }
 
-/* Site column grid: image column spans 4, configurator body spans 8 */
+/* Site column grid; each column spans half (8 of 16). */
 .layout {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), 1fr);
@@ -13,33 +21,16 @@
 }
 
 .imageCol {
-  grid-column: span 5;
+  grid-column: span 8;
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  justify-content: center;
 }
-
-.backBtn {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  font-family: inherit;
-  font-size: 40px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--black);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  align-self: flex-start;
-}
-
 
 .image {
-  position: relative; /* anchor for next/image fill */
+  position: relative;
+  /* anchor for next/image fill */
   width: 100%;
+  max-width: 550px;
   aspect-ratio: 199 / 266;
   overflow: hidden;
 }
@@ -50,57 +41,233 @@
   object-fit: contain;
 }
 
+/* 24px rhythm between every section. */
 .body {
-  grid-column: span 11;
+  grid-column: span 8;
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  gap: 24px;
   min-width: 0;
 }
 
+/* ---------- Header ---------- */
 .header {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 8px;
 }
 
 .title {
   margin: 0;
   font-weight: 700;
-  font-size: clamp(72px, 9vw, 128px);
-  line-height: 1;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: normal;
   letter-spacing: 0.02em;
   color: var(--black);
 }
 
+.blurb {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 20px;
+  line-height: normal;
+  letter-spacing: 0.01em;
+  color: var(--black);
+}
+
+/* ---------- Dividers ---------- */
+.divider {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: 2px solid var(--black);
+}
+
+/* ---------- Option rows ----------
+   Label over pills, no per-row rule (the section dividers do that work). */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rowLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+/* ---------- Info tooltip ---------- */
+.info {
+  position: relative;
+  display: inline-flex;
+}
+
+.infoBtn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: help;
+  opacity: 0.55;
+}
+
+.infoBtn img {
+  display: block;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: max-content;
+  max-width: 260px;
+  padding: 10px 12px;
+  background: var(--black);
+  color: var(--paper-white);
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.info:hover .infoBtn,
+.infoBtn:focus-visible {
+  opacity: 1;
+}
+
+.info:hover .tooltip,
+.infoBtn:focus-visible ~ .tooltip {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tooltip {
+    transition: none;
+  }
+}
+
+/* ---------- Itemized estimate ---------- */
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.totalLabel {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Subdivides each line into 8 equal tracks with the site gutter. Because .body
+   spans 8 of the 16 site columns, these tracks line up exactly with the site
+   grid: the label spans 3 columns, the amount takes the rest (left-aligned). */
+.lineItem {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  align-items: baseline;
+}
+
+.lineLabel {
+  grid-column: span 3;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lineAmount {
+  grid-column: span 5;
+}
+
+.lineName {
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.01em;
+  color: var(--black);
+}
+
+.lineSub {
+  font-size: 12px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  color: var(--bw-400);
+}
+
+.lineAmount {
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.01em;
+  text-align: left;
+  color: var(--black);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Headline price ---------- */
 .price {
   margin: 0;
   font-weight: 400;
-  font-size: clamp(40px, 4.5vw, 64px);
-  line-height: 1;
+  font-size: clamp(48px, 6vw, 64px);
+  line-height: normal;
   letter-spacing: 0.02em;
   color: var(--black);
   font-variant-numeric: tabular-nums;
 }
 
-.priceLabel {
+/* ---------- Notice ---------- */
+.notice {
   margin: 0;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--black);
-}
-
-/* Option rows, pills, and the quantity stepper live in the shared
-   ConfiguratorControls module (app/components/ConfiguratorControls.module.css). */
-.rows {
   display: flex;
   flex-direction: column;
-  gap: 36px;
+  gap: 4px;
+}
+
+.noticeLabel {
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--darkroom-red);
+}
+
+.noticeText {
+  font-size: 16px;
+  line-height: normal;
+  color: var(--darkroom-red);
 }
 
 /* ---------- Responsive ---------- */
-/* 8-col tablet and below: image stacks above the configurator, both full-row */
+/* 8-col tablet and below: image stacks above the configurator. */
 @media (max-width: 900px) {
   .layout {
     row-gap: 32px;
@@ -111,24 +278,12 @@
     grid-column: 1 / -1;
   }
 
+  .imageCol {
+    justify-content: flex-start;
+  }
+
   .image {
-    max-width: 320px;
-  }
-
-  .body {
-    gap: 32px;
-  }
-
-  .rows {
-    gap: 28px;
-  }
-
-  .priceLabel {
-    font-size: 20px;
-  }
-
-  .title {
-    font-size: clamp(56px, 14vw, 96px);
+    max-width: 360px;
   }
 }
 
@@ -136,5 +291,13 @@
   .page {
     padding-top: 100px;
     padding-bottom: 60px;
+  }
+
+  .title {
+    font-size: clamp(40px, 12vw, 56px);
+  }
+
+  .price {
+    font-size: clamp(40px, 14vw, 56px);
   }
 }

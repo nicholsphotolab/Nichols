@@ -19,6 +19,8 @@ const expByOutput = (list: string[]) => ({
 const SHARED_EXPOSURES = {
   "35MM": expByOutput(["24", "36"]),
   "110": expByOutput(["12", "24"]),
+  // 120 frame counts vary by camera format (6x7, 6x6, 6x4.5).
+  "120": expByOutput(["10", "12", "16"]),
 };
 
 // Silent default exposure count per size — used in price calculation without
@@ -42,8 +44,11 @@ export const STOCKS: Record<string, FilmStock> = {
   "c-41": {
     slug: "c-41",
     name: "C‑41",
+    blurb:
+      "The standard process for almost any color film. Warm tones, great skin colors, and forgiving enough that even a point-and-shoot turns out.",
     basePrice: 6.5,
     image: "/C-41.webp",
+    sizeImages: { "35MM": "/C-41_35mm.webp", "120": "/C-41-120.webp" },
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
@@ -55,8 +60,11 @@ export const STOCKS: Record<string, FilmStock> = {
   bw: {
     slug: "bw",
     name: "B&W",
+    blurb:
+      "Developed in dedicated black & white chemistry for true neutral tones and deep blacks. Timeless, grain-forward, and beautifully simple.",
     basePrice: 8.5,
     image: "/B&W.webp",
+    sizeImages: { "35MM": "/B&W-35mm.webp" },
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
@@ -68,8 +76,11 @@ export const STOCKS: Record<string, FilmStock> = {
   "e-6": {
     slug: "e-6",
     name: "E‑6",
+    blurb:
+      "Color slide film developed as positives you can hold up to the light. Punchy saturation and fine grain — the connoisseur's choice.",
     basePrice: 8.5,
     image: "/E-6.webp",
+    sizeImages: { "35MM": "/E-6_35mm.webp" },
     // E-6 doesn't come in 110 format.
     sizes: ["35MM", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,

@@ -5,10 +5,10 @@ import Link from "next/link";
 import NicholsLogoSvg from "./NicholsLogoSvg";
 import styles from "./HeroLogo.module.css";
 
-// Endpoint reference (matches the old nav brand position/size):
-//   top: 20.5px, left: 60px, height: 33px (width ≈ 136px from SVG aspect)
+// Endpoint reference (matches the nav brand position/size):
+//   top: 40px, left: 60px, height: 33px (width ≈ 136px from SVG aspect)
 const END_LEFT = 60;
-const END_TOP = 20.5;
+const END_TOP = 40;
 const END_HEIGHT = 33;
 const NATIVE_W = 136;
 const NATIVE_H = 33;
