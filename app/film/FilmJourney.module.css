@@ -29,8 +29,22 @@
   height: 100dvh;
   overflow: hidden;
   isolation: isolate;
-  display: flex;
-  flex-direction: column;
+}
+
+/* Wraps the photo, scrim, and text together so they move as a single unit as
+   the panel is scrolled through — the photo pans to reveal more of itself in
+   sync with the text, rather than sitting frozen behind a separately
+   scrolling text column. Height is set inline by the scroll hook to the
+   panel's own height plus its content overflow, and translated up by that
+   same overflow, so it always still fully covers the panel (no gap at the
+   bottom) however far it's shifted. */
+.panelInner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  will-change: transform;
 }
 
 /* Background photo + dark scrim (40% black). Image set per-panel inline. */
@@ -49,20 +63,18 @@
   background: rgba(0, 0, 0, 0.4);
 }
 
-/* Site column grid, filling the panel so the content column can bound its own
-   clip area. */
+/* Site column grid, sized to panelInner so the content column can span it. */
 .grid {
   position: relative;
   z-index: 2;
-  flex: 1;
-  min-height: 0;
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
-  grid-template-rows: minmax(0, 1fr);
   column-gap: var(--grid-gap);
   align-items: start;
-  /* Type sits at the top of the photo, clear of the fixed nav. */
-  padding: 100px var(--page-pad);
+  /* Type sits at the top of the photo, clear of the fixed nav (60px tall,
+     solid by the time this section is in view — 80.5px matches the
+     clearance used on the other pages). */
+  padding: 80.5px var(--page-pad) 100px;
 }
 
 /* ---------- Left: persistent numbered step nav ----------
@@ -78,7 +90,7 @@
 
 .steps {
   position: absolute;
-  top: 100px;
+  top: 80.5px;
   left: var(--page-pad);
   display: flex;
   flex-direction: column;
@@ -122,21 +134,13 @@
 }
 
 /* ---------- Right: active step content ---------- */
-/* Clip box: masks the card to the available height (viewport minus the grid's
-   100px top/bottom padding) so the translated content below is hidden until
-   scrolled into view. */
+/* Sits at its natural height (no internal clip/scroll of its own) — it moves
+   as part of .panelInner, and is masked only by the panel's own overflow. */
 .content {
   grid-column: 9 / 17;
-  height: calc(100dvh - 200px);
-  overflow: hidden;
-}
-
-/* Inner wrapper translated up by the scroll hook (the "primary scroll"). */
-.contentScroll {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  will-change: transform;
 }
 
 /* Adds the extra scroll distance for a panel whose content overflows; height is

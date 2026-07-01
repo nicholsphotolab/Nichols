@@ -1,7 +1,7 @@
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 133.5px var(--page-pad) 80px;
+  padding: 80.5px var(--page-pad) 80px;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -11,13 +11,13 @@
    Same pattern as the film/passport/video heroes (Figma node 1781:1455). */
 .hero {
   position: relative;
-  /* Full-bleed: cancel the page's top padding (133.5px) and side padding. */
-  margin: -133.5px calc(-1 * var(--page-pad)) 0;
+  /* Full-bleed: cancel the page's top padding (80.5px) and side padding. */
+  margin: -80.5px calc(-1 * var(--page-pad)) 0;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  padding: 133.5px var(--page-pad) 13svh;
+  padding: 80.5px var(--page-pad) 13svh;
   overflow: hidden;
   isolation: isolate;
 }

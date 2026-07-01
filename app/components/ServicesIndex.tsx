@@ -15,7 +15,7 @@ type Service = {
 };
 
 const SERVICES: Service[] = [
-  { label: "Film", href: "/film", image: "/Film.jpg" },
+  { label: "Film", href: "/film", image: "/Film.webp" },
   { label: "Prints", href: "/prints" },
   { label: "Video", href: "/video" },
   { label: "Passport", href: "/passport" },

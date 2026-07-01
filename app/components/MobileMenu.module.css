@@ -17,7 +17,7 @@
   .toggle {
     display: block;
     position: fixed;
-    top: 40px;
+    top: 13.5px;
     right: 20px;
     z-index: 11;
     appearance: none;
@@ -40,8 +40,8 @@
     z-index: 9;
     display: flex;
     flex-direction: column;
-    /* Rows start below the fixed header area */
-    padding-top: 88px;
+    /* Rows start below the fixed header area (60px bar + a little breathing room) */
+    padding-top: 76px;
     background: var(--paper-white);
     overflow-y: auto;
     transform: translateY(-100%);

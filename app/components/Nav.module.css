@@ -1,9 +1,10 @@
-/* The nav bar: a real flex container with 40px top/bottom padding. Its height
-   comes from that padding + the content (the brand slot sets the content
-   height). The brand mark is rendered globally by <BrandLogoSwitch /> in
-   layout.tsx (HeroLogo on home, NavBrand elsewhere) and overlays the slot.
-   Soft scrim at the top of the page; snaps to a solid paper-white bar once
-   scrolled (data-scrolled set by NavBar.tsx). */
+/* The nav bar: a real flex container with 13.5px top/bottom padding. Its
+   height comes from that padding + the content (the brand slot sets the
+   content height) — 13.5 + 33 + 13.5 = 60px total. The brand mark is
+   rendered globally by <BrandLogoSwitch /> in layout.tsx (HeroLogo on home,
+   NavBrand elsewhere) and overlays the slot. Soft scrim at the top of the
+   page; snaps to a solid paper-white bar once scrolled (data-scrolled set by
+   NavBar.tsx). */
 .bar {
   position: fixed;
   top: 0;
@@ -12,23 +13,38 @@
   z-index: 9;
   display: flex;
   align-items: center;
-  padding: 40px var(--page-pad);
-  /* Slight black gradient behind the nav (from the Figma frame) — a smooth
-     top-down fade, darker at the top, to nothing at the bottom. */
+  padding: 13.5px var(--page-pad);
+  transition: background 220ms var(--ease-out);
+}
+
+/* Slight black gradient behind the nav (from the Figma frame) — a smooth
+   top-down fade, darker at the top, to nothing at the bottom. A separate
+   pseudo-element sized taller than the (now 60px) bar so the fade tapers out
+   gradually instead of hard-cutting at the bar's bottom edge. */
+.bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 160px;
+  z-index: -1;
+  pointer-events: none;
   background: linear-gradient(
     to bottom,
     rgba(0, 0, 0, 0.5) 0%,
     rgba(0, 0, 0, 0) 100%
   );
-  transition: background 220ms var(--ease-out);
+  transition: opacity 220ms var(--ease-out);
 }
 
 .bar[data-scrolled="true"] {
   background: var(--paper-white);
-  /* Solid, even bar when scrolled — drop the soft-edge mask (it's only for the
-     transparent scrim at the top). */
-  -webkit-mask-image: none;
-  mask-image: none;
+}
+
+/* Solid, even bar when scrolled — drop the gradient scrim entirely. */
+.bar[data-scrolled="true"]::before {
+  opacity: 0;
 }
 
 /* Reserves the brand mark's footprint on the left and sets the content height

@@ -18,7 +18,11 @@ const STOCKS = [
   { title: "C‑41 • 35MM", priceLine: "Starting at $6.50", image: "/C-41_35mm.webp", href: "/film/c-41" },
   { title: "B&W • 35MM", priceLine: "Starting at $8.50", image: "/B%26W_35mm.webp", href: "/film/bw" },
   { title: "E‑6 • 35MM", priceLine: "Starting at $8.50", image: "/E-6_35mm.webp", href: "/film/e-6" },
+  { title: "C‑41 • DISPOSABLE", priceLine: "Starting at $6.50", image: null, href: "/film/c-41" },
+  { title: "B&W • DISPOSABLE", priceLine: "Starting at $8.50", image: null, href: "/film/bw" },
   { title: "C‑41 • 120", priceLine: "Starting at $6.50", image: "/C-41-120.webp", href: "/film/c-41" },
+  { title: "B&W • 120", priceLine: "Starting at $8.50", image: null, href: "/film/bw" },
+  { title: "E‑6 • 120", priceLine: "Starting at $8.50", image: null, href: "/film/e-6" },
 ];
 
 export default function FilmStocksGrid() {
@@ -87,13 +91,17 @@ export default function FilmStocksGrid() {
         {STOCKS.map((s) => (
           <Link key={s.title} href={s.href} className={styles.card}>
             <div className={styles.cardImage} aria-hidden="true">
-              <Image
-                src={withBasePath(s.image)}
-                alt=""
-                fill
-                className={styles.cardImg}
-                sizes="(max-width: 700px) 90vw, (max-width: 900px) 45vw, 25vw"
-              />
+              {s.image ? (
+                <Image
+                  src={withBasePath(s.image)}
+                  alt=""
+                  fill
+                  className={styles.cardImg}
+                  sizes="(max-width: 700px) 90vw, (max-width: 900px) 45vw, 25vw"
+                />
+              ) : (
+                <div className={styles.cardImageFill} />
+              )}
             </div>
             <div className={styles.cardMeta}>
               <div className={styles.cardText}>

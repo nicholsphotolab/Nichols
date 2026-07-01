@@ -31,6 +31,14 @@ const DISPOSABLE_DEFAULTS = { "DISPOSABLE CAMERA": "27" };
 // when SHEET is the selected size. Billed per sheet, so no exposure data.
 const SHEET_SIZES = ["4X5", "5X7", "8X10"];
 
+// Placeholder per-sheet pricing, keyed by [sheetSize][output]. TODO: replace
+// with real rates once pricing is finalized.
+const SHEET_RATES = {
+  "4X5": { SCANS: 1.5, "PRINTS/SCANS": 2.5 },
+  "5X7": { SCANS: 2.5, "PRINTS/SCANS": 3.5 },
+  "8X10": { SCANS: 3.5, "PRINTS/SCANS": 4.5 },
+};
+
 // Per-exposure surcharge in dollars, keyed by [size][output].
 const SHARED_RATES = {
   "35MM": { SCANS: 0.35, "PRINTS/SCANS": 0.6 },
@@ -51,6 +59,7 @@ export const STOCKS: Record<string, FilmStock> = {
     sizeImages: { "35MM": "/C-41_35mm.webp", "120": "/C-41-120.webp" },
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,
+    sheetSizeRates: SHEET_RATES,
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,
@@ -64,9 +73,10 @@ export const STOCKS: Record<string, FilmStock> = {
       "Developed in dedicated black & white chemistry for true neutral tones and deep blacks. Timeless, grain-forward, and beautifully simple.",
     basePrice: 8.5,
     image: "/B&W.webp",
-    sizeImages: { "35MM": "/B&W-35mm.webp" },
+    sizeImages: { "35MM": "/B&W_35mm.webp" },
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,
+    sheetSizeRates: SHEET_RATES,
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,
@@ -84,6 +94,7 @@ export const STOCKS: Record<string, FilmStock> = {
     // E-6 doesn't come in 110 format.
     sizes: ["35MM", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,
+    sheetSizeRates: SHEET_RATES,
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,

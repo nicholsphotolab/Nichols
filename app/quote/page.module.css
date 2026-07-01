@@ -4,7 +4,7 @@
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 133.5px var(--page-pad) 80px;
+  padding: 80.5px var(--page-pad) 80px;
   display: flex;
   flex-direction: column;
   gap: 48px;

@@ -1,7 +1,7 @@
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 133.5px var(--page-pad) 40px;
+  padding: 80.5px var(--page-pad) 40px;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -14,9 +14,9 @@
    laid out on the site column grid. Mirrors Figma node 1760:690. */
 .hero {
   position: relative;
-  /* Full-bleed: cancel the page's top padding (133.5px) and side padding so
+  /* Full-bleed: cancel the page's top padding (80.5px) and side padding so
      the photo runs edge-to-edge and starts at the very top of the viewport. */
-  margin: -133.5px calc(-1 * var(--page-pad)) 0;
+  margin: -80.5px calc(-1 * var(--page-pad)) 0;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -24,88 +24,44 @@
   /* Clear the fixed nav up top. Bottom space leaves ~13% of the hero below
      the text, matching the Figma composition (the wordmark's ink bottom lands
      at ~79% of the hero height rather than jammed against the edge). */
-  padding: 133.5px var(--page-pad) 13svh;
+  padding: 80.5px var(--page-pad) 13svh;
   overflow: hidden;
   isolation: isolate;
 }
 
-/* Stacked hero slides — all share the same box; only the active one is sharp.
-   "Focus-pull dissolve": the incoming photo resolves from soft (blur) + slightly
-   scaled into sharp as it fades in; the outgoing one softens back out. The blur
-   masks the crossfade (you read one photo coming into focus, not two overlapping)
-   and reads as a film "developing" moment. Duration matches DISSOLVE_MS (1000ms). */
+/* Stacked hero slides — all share the same box, parked off-screen to the
+   right until it's their turn. On change, the active slide slides out to the
+   left (heroSlidePrev) while the next slide slides in from the right
+   (heroSlideActive), both easing in/out together for a smooth, unhurried
+   glide. Slides that are neither active nor the one just retired snap back
+   to their parked position with no transition, so the snap never shows on
+   screen. Duration matches SLIDE_MS (1600ms). */
 .heroSlide {
   object-fit: cover;
   z-index: 0;
-  opacity: 0;
-  transform: scale(1.04);
-  filter: blur(12px);
-  transition:
-    opacity 1000ms var(--ease-out),
-    transform 1000ms var(--ease-out),
-    filter 1000ms var(--ease-out);
-  will-change: opacity, transform, filter;
+  transform: translateX(100%);
+  transition: none;
 }
 
 .heroSlideActive {
-  opacity: 1;
-  transform: scale(1);
-  filter: blur(0);
-  z-index: 1; /* sit above the other slides, below the scrim (also z-index 1, later in DOM) */
+  transform: translateX(0);
+  transition: transform 1600ms var(--ease-carousel);
+  z-index: 2; /* incoming slide rides over the outgoing one */
 }
 
-/* Reduced motion: drop the blur + scale; keep a quick, gentle crossfade only. */
+.heroSlidePrev {
+  transform: translateX(-100%);
+  transition: transform 1600ms var(--ease-carousel);
+  z-index: 1;
+}
+
+/* Reduced motion: no slideshow timer runs, so there's nothing to animate —
+   just drop the transition so the resting position never tweens. */
 @media (prefers-reduced-motion: reduce) {
-  .heroSlide {
-    transform: none;
-    filter: none;
-    transition: opacity 200ms var(--ease-out);
-  }
-  .heroSlideActive {
-    transform: none;
-    filter: none;
-  }
-}
-
-/* ---------- Hold-time progress bar ----------
-   Full-bleed track pinned to the bottom edge of the hero; the red fill grows
-   left→right over each slide's hold time, telling the viewer when it'll change.
-   transform/scaleX only (GPU-friendly). */
-.progress {
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  z-index: 3;
-  width: 100%;
-  height: 3px;
-  background: rgba(255, 255, 255, 0.22);
-}
-
-.progressBar {
-  display: block;
-  height: 100%;
-  width: 100%;
-  background: var(--darkroom-red);
-  transform: scaleX(0);
-  transform-origin: left center;
-  will-change: transform;
-  animation: heroProgressFill linear forwards;
-}
-
-@keyframes heroProgressFill {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-
-/* Reduced motion: the slideshow doesn't auto-advance, so there's nothing to
-   count down — hide the bar entirely. */
-@media (prefers-reduced-motion: reduce) {
-  .progress {
-    display: none;
+  .heroSlide,
+  .heroSlideActive,
+  .heroSlidePrev {
+    transition: none;
   }
 }
 
@@ -114,7 +70,7 @@
 .heroScrim {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 3;
   background: linear-gradient(
     to top,
     rgba(1, 1, 1, 0.5) 17.38%,
@@ -124,7 +80,7 @@
 
 .heroContent {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   column-gap: var(--grid-gap);
@@ -166,6 +122,31 @@
   /* Trim the block-end to the alphabetic baseline so it bottom-aligns with the
      caption regardless of the font-size difference. */
   text-box: trim-both cap alphabetic;
+}
+
+/* Slide indicator lines — one thin line per hero slide, sitting under the
+   description and sized to the same column tracks it sits above. The active
+   slide's line is full white; the rest sit at 50% opacity. */
+.heroIndicators {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  margin-top: clamp(14px, 1.8vw, 28px);
+}
+
+.heroIndicatorLine {
+  display: block;
+  height: 2px;
+  width: 100%;
+  background: var(--paper-white);
+  opacity: 0.5;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.heroIndicatorLineActive {
+  opacity: 1;
 }
 
 /* Film-stock caption in the last 2 columns, right-aligned to the content edge

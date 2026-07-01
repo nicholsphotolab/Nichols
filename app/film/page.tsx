@@ -4,7 +4,6 @@ import Nav from "../components/Nav";
 import FilmHero, { type HeroSlide } from "./FilmHero";
 import FilmStocksGrid from "./FilmStocksGrid";
 import FilmJourney from "./FilmJourney";
-import FilmProcessSteps from "./FilmProcessSteps";
 import styles from "./page.module.css";
 
 // Auto-build the hero slides from the image files in public/FILM/. Each file is
@@ -58,14 +57,6 @@ export default function FilmPage() {
         <FilmStocksGrid />
 
         <FilmJourney />
-
-        <p className={styles.intro}>
-          Film deserves to be developed right. We process C&#8209;41, B&amp;W,
-          and E&#8209;6 all in-house across every major format, backed by 45+
-          years of experience.
-        </p>
-
-        <FilmProcessSteps />
       </main>
     </>
   );

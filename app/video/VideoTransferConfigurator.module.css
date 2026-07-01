@@ -6,7 +6,7 @@
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 133.5px var(--page-pad) 80px;
+  padding: 80.5px var(--page-pad) 80px;
 }
 
 /* Site column grid — no product imagery for these categories yet, so the

@@ -1,7 +1,7 @@
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 133.5px var(--page-pad) 40px;
+  padding: 80.5px var(--page-pad) 40px;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -14,16 +14,16 @@
    are pinned bottom-left on the site column grid. */
 .hero {
   position: relative;
-  /* Full-bleed: cancel the page's top padding (133.5px) and side padding so
+  /* Full-bleed: cancel the page's top padding (80.5px) and side padding so
      the photo runs edge-to-edge and starts at the very top of the viewport. */
-  margin: -133.5px calc(-1 * var(--page-pad)) 0;
+  margin: -80.5px calc(-1 * var(--page-pad)) 0;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
   /* Clear the fixed nav up top. Bottom space leaves ~13% of the hero below
      the text, matching the Figma composition. */
-  padding: 133.5px var(--page-pad) 13svh;
+  padding: 80.5px var(--page-pad) 13svh;
   overflow: hidden;
   isolation: isolate;
 }

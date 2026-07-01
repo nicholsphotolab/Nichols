@@ -31,14 +31,17 @@ export type FilmStock = {
   // Optional per-size image overrides, keyed by size. Falls back to `image`.
   sizeImages?: Partial<Record<string, string>>;
   sizes: string[];
-  // Sheet dimensions (4X5, 5X7, 8X10) shown in a secondary row when the
-  // SHEET size is selected. Billed per sheet — no exposure data.
+  // Sheet dimensions (4X5, 5X7, 8X10) shown in a secondary row in place of
+  // EXPOSURE when the SHEET format is selected. Billed per sheet.
   sheetSizes?: string[];
   outputs: string[];
   // Available exposure counts keyed by [size][output]. Missing = no EXP row shown.
   exposures: Partial<Record<string, Partial<Record<string, string[]>>>>;
   // Per-exposure surcharge in dollars, keyed by [size][output].
   perExposureRate: Partial<Record<string, Partial<Record<string, number>>>>;
+  // Per-sheet surcharge in dollars, keyed by [sheetSize][output]. Placeholder
+  // pricing until real sheet rates are set.
+  sheetSizeRates?: Partial<Record<string, Partial<Record<string, number>>>>;
   // Silent default exposure count per size — used in price calculation without
   // showing the EXP selector (e.g. disposable cameras are always 27 exp).
   defaultExposures?: Partial<Record<string, string>>;
@@ -70,9 +73,10 @@ type LineItem = { name: string; sub?: string; amount: number };
 // Short plain-language explanation shown in the tooltip beside each row label.
 const ROW_INFO: Record<string, string> = {
   Type: "C-41 is standard color film, B&W is black & white, and E-6 is color slide (reversal) film.",
-  Size: "The format you shot: 35mm, a disposable camera, 120, 110, or sheet film.",
+  Format: "The format you shot: 35mm, a disposable camera, 120, 110, or sheet film.",
   Output: "What you get back — scans only, prints plus scans, or develop only.",
   Exposure: "The number of frames on your roll, usually 24 or 36.",
+  "Sheet Size": "The sheet film dimensions you're developing: 4x5, 5x7, or 8x10.",
 };
 
 // Row label with an info icon that reveals a tooltip on hover or keyboard focus.
@@ -111,11 +115,26 @@ function buildBreakdown(
   stock: FilmStock,
   size: string,
   output: string | null,
-  exp: string | null
+  exp: string | null,
+  sheetSize: string | null
 ): LineItem[] {
   const items: LineItem[] = [
     { name: `${stock.name} Development`, amount: stock.basePrice },
   ];
+
+  if (size === "SHEET") {
+    if (output && output !== "NONE" && sheetSize) {
+      const rate = stock.sheetSizeRates?.[sheetSize]?.[output];
+      if (rate) {
+        items.push({
+          name: `${sheetSize.toLowerCase()} ${SCAN_LINE_LABEL[output] ?? "Scans"}`,
+          sub: "per sheet",
+          amount: rate,
+        });
+      }
+    }
+    return items;
+  }
 
   const resolvedExp = exp ?? stock.defaultExposures?.[size] ?? null;
   if (output && output !== "NONE" && resolvedExp) {
@@ -156,8 +175,10 @@ export default function FilmStockConfigurator({
   const [size, setSize] = useState<string>(init.size);
   const [output, setOutput] = useState<string | null>(init.output);
   const [exp, setExp] = useState<string | null>(init.exp);
+  const [sheetSize, setSheetSize] = useState<string | null>(null);
 
   // Exposure options for the current size+output. Missing → no EXPOSURE row.
+  // SHEET has no entry in `exposures`, so this is naturally empty for it.
   const expOptions = output ? stock.exposures[size]?.[output] ?? [] : [];
 
   // Keep the exposure selection valid as size/output change: auto-pick 36 (or
@@ -167,6 +188,18 @@ export default function FilmStockConfigurator({
     queueMicrotask(() => setExp(expOptions.includes("36") ? "36" : expOptions[0]));
   } else if (expOptions.length === 0 && exp) {
     queueMicrotask(() => setExp(null));
+  }
+
+  // SHEET format shows a Sheet Size row (4x5/5x7/8x10) in place of EXPOSURE.
+  // Keep the selection valid the same way: auto-pick a default on entering
+  // SHEET, clear it on leaving.
+  const sheetSizeOptions = size === "SHEET" ? stock.sheetSizes ?? [] : [];
+  if (sheetSizeOptions.length > 0 && (!sheetSize || !sheetSizeOptions.includes(sheetSize))) {
+    queueMicrotask(() =>
+      setSheetSize(sheetSizeOptions.includes("4X5") ? "4X5" : sheetSizeOptions[0])
+    );
+  } else if (sheetSizeOptions.length === 0 && sheetSize) {
+    queueMicrotask(() => setSheetSize(null));
   }
 
   // Switching TYPE swaps the stock but keeps the current size/output/exposure
@@ -184,7 +217,7 @@ export default function FilmStockConfigurator({
     );
   }
 
-  const breakdown = buildBreakdown(stock, size, output, exp);
+  const breakdown = buildBreakdown(stock, size, output, exp, sheetSize);
   const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
 
   // Use a per-size image when the stock defines one (e.g. C-41 + 120).
@@ -229,7 +262,7 @@ export default function FilmStockConfigurator({
             </div>
 
             <div className={styles.row}>
-              <RowLabel label="Size" />
+              <RowLabel label="Format" />
               <Pills
                 values={stock.sizes}
                 selected={size}
@@ -253,6 +286,18 @@ export default function FilmStockConfigurator({
               <div className={styles.row}>
                 <RowLabel label="Exposure" />
                 <Pills values={expOptions} selected={exp} onSelect={setExp} />
+              </div>
+            )}
+
+            {/* SHEET format swaps EXPOSURE for a Sheet Size row (4x5/5x7/8x10) */}
+            {sheetSizeOptions.length > 0 && (
+              <div className={styles.row}>
+                <RowLabel label="Sheet Size" />
+                <Pills
+                  values={sheetSizeOptions}
+                  selected={sheetSize}
+                  onSelect={setSheetSize}
+                />
               </div>
             )}
           </div>

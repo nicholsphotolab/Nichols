@@ -105,6 +105,13 @@
   object-position: center;
 }
 
+/* Solid placeholder used in place of a product photo for cards without one. */
+.cardImageFill {
+  position: absolute;
+  inset: 0;
+  background: var(--bw-600);
+}
+
 /* Meta row: [title + price] on the left, the ↗ arrow on the right. */
 .cardMeta {
   display: flex;

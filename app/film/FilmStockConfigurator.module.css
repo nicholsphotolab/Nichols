@@ -9,7 +9,7 @@
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 133.5px var(--page-pad) 80px;
+  padding: 80.5px var(--page-pad) 80px;
 }
 
 /* Site column grid; each column spans half (8 of 16). */
