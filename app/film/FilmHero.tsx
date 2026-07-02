@@ -44,17 +44,21 @@ export default function FilmHero({ slides }: { slides: HeroSlide[] }) {
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (reduce.matches || slides.length <= 1) return;
 
+    // Track the current index locally so each tick is a plain sequence of
+    // state sets — no side effects inside a setState updater (React may call
+    // updaters more than once, e.g. under StrictMode, which would
+    // double-schedule the caption timer).
+    let current = 0;
     const interval = setInterval(() => {
-      setImageIndex((i) => {
-        const next = (i + 1) % slides.length;
-        setPrevIndex(i);
-        // Flip the caption at the slide midpoint.
-        captionTimer.current = setTimeout(
-          () => setCaptionIndex(next),
-          SLIDE_MS / 2,
-        );
-        return next;
-      });
+      const prev = current;
+      current = (current + 1) % slides.length;
+      setPrevIndex(prev);
+      setImageIndex(current);
+      // Flip the caption at the slide midpoint. Clear any pending flip first
+      // so timers never stack.
+      if (captionTimer.current) clearTimeout(captionTimer.current);
+      const next = current;
+      captionTimer.current = setTimeout(() => setCaptionIndex(next), SLIDE_MS / 2);
     }, HOLD_MS);
 
     return () => {

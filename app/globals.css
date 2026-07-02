@@ -109,6 +109,12 @@ body {
   padding: 0;
 }
 
+/* Canvas colour — what Safari paints in the elastic-overscroll zone (body's
+   background doesn't reach it; the root element's does). */
+html {
+  background: var(--paper-white);
+}
+
 body {
   font-family: var(--font-sans);
   font-weight: 400;

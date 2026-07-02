@@ -64,7 +64,6 @@ export const STOCKS: Record<string, FilmStock> = {
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,
     defaultExposures: DISPOSABLE_DEFAULTS,
-    expExplanation: "some explanation",
   },
   bw: {
     slug: "bw",
@@ -81,7 +80,6 @@ export const STOCKS: Record<string, FilmStock> = {
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,
     defaultExposures: DISPOSABLE_DEFAULTS,
-    expExplanation: "some explanation",
   },
   "e-6": {
     slug: "e-6",
@@ -98,6 +96,5 @@ export const STOCKS: Record<string, FilmStock> = {
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,
-    expExplanation: "some explanation",
   },
 };

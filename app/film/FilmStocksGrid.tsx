@@ -4,7 +4,7 @@
 // product cards below it. Each card is 4 grid columns wide with a single gutter
 // between them, so 4 cards fill the 16-column row on desktop. The arrows page
 // the row one card at a time and grey out (disabled) at each end. No free
-// scroll — the arrows drive a programmatic scroll, so it never fights Lenis.
+// scroll — the arrows drive a programmatic scroll.
 
 "use client";
 

@@ -5,29 +5,40 @@
 // (faint tint + backdrop blur) at the top of the page and snaps to a solid
 // paper-white bar once scrolled past a small threshold. The threshold toggle
 // is driven by the same scroll pattern as HeroLogo (passive scroll listener +
-// rAF throttle), reading the Lenis scroll position when available.
+// rAF throttle). Pages without a dark hero (e.g. the configurators) pass
+// `solid` to skip the scrim entirely and pin the solid white bar from the top.
 
 import { useEffect, useRef, type ReactNode } from "react";
 import styles from "./Nav.module.css";
 
 const THRESHOLD = 40; // px scrolled before the solid bar snaps in
 
-export default function NavBar({ children }: { children: ReactNode }) {
+export default function NavBar({
+  children,
+  solid = false,
+}: {
+  children: ReactNode;
+  solid?: boolean;
+}) {
   const ref = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
 
+    // Forced-solid pages: set the scrolled state once and skip the listener.
+    if (solid) {
+      el.dataset.scrolled = "true";
+      document.documentElement.dataset.navScrolled = "true";
+      return;
+    }
+
     let raf = 0;
     let scrolled = false;
 
     const update = () => {
       raf = 0;
-      const y =
-        (window as unknown as { __lenis?: { scroll?: number } }).__lenis
-          ?.scroll ?? window.scrollY;
-      const next = y > THRESHOLD;
+      const next = window.scrollY > THRESHOLD;
       if (next !== scrolled) {
         scrolled = next;
         el.dataset.scrolled = next ? "true" : "false";
@@ -47,7 +58,7 @@ export default function NavBar({ children }: { children: ReactNode }) {
       window.removeEventListener("scroll", onScroll);
       if (raf) cancelAnimationFrame(raf);
     };
-  }, []);
+  }, [solid]);
 
   return (
     <div ref={ref} className={styles.bar}>

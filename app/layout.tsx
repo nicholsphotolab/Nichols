@@ -4,16 +4,13 @@
 // next/font/local, which bakes the correct basePath into the font URL at
 // build time — unlike a plain CSS @font-face url(), which always resolves
 // against the domain root and breaks on the GitHub Pages /Nichols/ subpath.
-// Mounts three global components that persist across all routes:
-//   - LenisScrollProvider: initialises smooth scrolling via the Lenis library
+// Mounts global components that persist across all routes:
 //   - BrandLogoSwitch: renders the hero logo on / and the nav logo everywhere else
 //   - Footer: site-wide footer with logo scroll-reveal animation
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import "lenis/dist/lenis.css";
-import LenisScrollProvider from "./components/LenisScrollProvider";
 import BrandLogoSwitch from "./components/BrandLogoSwitch";
 import Footer from "./components/Footer";
 import GridOverlay from "./components/GridOverlay";
@@ -26,6 +23,12 @@ const interVariable = localFont({
   display: "swap",
   variable: "--font-inter",
 });
+
+// Tints browser chrome (Safari's tab bar / overscroll areas) to the site's
+// paper-white so the elastic-bounce zone doesn't read as a foreign grey strip.
+export const viewport: Viewport = {
+  themeColor: "#f9f8f4",
+};
 
 export const metadata: Metadata = {
   title: "Nichols Photo Lab",
@@ -49,14 +52,12 @@ export default function RootLayout({
   return (
     <html lang="en" className={interVariable.variable}>
       <body>
-        {/* Smooth scroll — must be first so scroll events are intercepted early */}
-        <LenisScrollProvider />
         {/* Switches between the hero logo (home) and nav logo (all other pages) */}
         <BrandLogoSwitch />
         {children}
         <Footer />
-        {/* Press G to toggle the column-grid debug overlay */}
-        <GridOverlay />
+        {/* Press G to toggle the column-grid debug overlay — dev builds only */}
+        {process.env.NODE_ENV !== "production" && <GridOverlay />}
       </body>
     </html>
   );

@@ -4,12 +4,13 @@
 // panel laid over its own photo with a dark scrim, plus a numbered step nav and
 // a set of collapsible items.
 //
-// Scroll behaviour (YLLW-style stacking): the panels are sticky-piled at the top
-// of the viewport, so as you scroll each panel rises up and overtakes the one
-// before it. Each panel's photo, scrim, and text move together as a single
-// unit as it's scrolled through — see useStackingScroll for how that motion
-// and the next panel's rise stay in sync. The overflow is measured live, so
-// opening/closing an item recomputes the scroll length automatically.
+// Scroll behaviour (YLLW-style stacking, pure CSS): each panel's photo is a
+// sticky layer that pins at the top of the viewport while the panel's content
+// scrolls past it in normal document flow — the text never freezes and moves
+// at native scroll speed. Each panel then overlaps the next by one viewport
+// (padding-bottom + negative margin), so the outgoing photo stays pinned while
+// the next panel rises over it, its edge tracking the outgoing text 1:1. The
+// only JS is the active-step highlight (useActiveStep).
 //
 // Only the "Drop Off" step is populated for now — the other three are scaffolded
 // with empty `items` arrays so their content (and any CTAs) drop straight in
@@ -123,7 +124,8 @@ function Accordion({ items }: { items: AccordionItem[] }) {
   const toggle = (id: string) =>
     setCollapsed((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
 
@@ -183,14 +185,11 @@ function Accordion({ items }: { items: AccordionItem[] }) {
   );
 }
 
-// Smooth-scroll to a panel. Uses the page's Lenis instance when present so the
-// jump matches the site's smooth scrolling; falls back to native scrollIntoView.
+// Smooth-scroll to a panel.
 function scrollToStep(key: string) {
-  const el = document.getElementById(`film-step-${key}`);
-  if (!el) return;
-  const lenis = (window as unknown as { __lenis?: { scrollTo: (t: Element) => void } }).__lenis;
-  if (lenis?.scrollTo) lenis.scrollTo(el);
-  else el.scrollIntoView({ behavior: "smooth" });
+  document
+    .getElementById(`film-step-${key}`)
+    ?.scrollIntoView({ behavior: "smooth" });
 }
 
 // Document Y of an element's top, summed via offsetTop — unaffected by sticky
@@ -206,83 +205,32 @@ function getDocTop(el: HTMLElement | null): number {
 }
 
 // Drives the stacking scroll. Each panel is sticky at top:0 (so the next panel
-// rises over it). Photo, scrim, and text live together in one `.panelInner`
-// wrapper that moves as a single unit ("outgoing" motion) — when a panel's
-// content is taller than its viewport area, the spacer after it adds that
-// much extra scroll, and during that distance panelInner (photo included)
-// translates up by the scroll delta, panning the photo in sync with the text
-// rather than leaving it frozen behind a separately-scrolling text column.
-// panelInner is sized taller than the panel by exactly that overflow (set
-// inline below) so translating it up never exposes a gap at the bottom.
+// Tracks which panel is front-most, for the step-nav highlight. All the
+// stacking motion itself is pure CSS — sticky pinned photos, in-flow content,
+// and a negative-margin overlap for the handoff (see FilmJourney.module.css) —
+// so the scroll is native-smooth with no JS transforms to jitter.
 //
-// The next panel's rise is *not* deferred until that outgoing motion finishes.
-// Native sticky/flow would only reveal it during the trailing one-viewport
-// stretch of the spacer, so a panel with a lot of overflow content gets a long
-// "content has settled, nothing on screen is moving" wait before the next
-// panel appears. Instead each panel gets a small corrective lift during its
-// pre-arrival phase, proportional to how much of the *previous* panel's span
-// was padding beyond one viewport — pulling its rise earlier so it grows
-// concurrently with the outgoing motion instead of only after it.
-//
-// A rAF loop reads the current scroll each frame (robust to Lenis suppressing
-// native scroll events), and a ResizeObserver recomputes the overflow when
-// accordions open/close.
-function useStackingScroll(count: number, onActive: (i: number) => void) {
+// A passive scroll listener (rAF-throttled) tracks the scroll position, and a
+// ResizeObserver re-measures the panel offsets when accordions open/close
+// (they change every later panel's position).
+function useActiveStep(count: number, onActive: (i: number) => void) {
   const panelRefs = useRef<(HTMLElement | null)[]>([]);
-  const innerRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const gridRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const spacerRefs = useRef<(HTMLDivElement | null)[]>([]);
-  const overflows = useRef<number[]>([]);
-  const spans = useRef<number[]>([]); // one viewport + this panel's overflow
-  const pinStarts = useRef<number[]>([]);
+  const docTops = useRef<number[]>([]);
   const onActiveRef = useRef(onActive);
   onActiveRef.current = onActive;
 
   useLayoutEffect(() => {
     let lastActive = -1;
 
-    const getScroll = () => {
-      const lenis = (window as unknown as { __lenis?: { scroll?: number } }).__lenis;
-      return lenis?.scroll ?? window.scrollY;
-    };
-
     const apply = (scroll: number) => {
-      // Outgoing: photo + text move together, translating up through the
-      // panel's own content overflow, starting the moment it becomes active.
-      for (let i = 0; i < count; i++) {
-        const inner = innerRefs.current[i];
-        if (!inner) continue;
-        const ov = overflows.current[i] || 0;
-        const start = pinStarts.current[i] || 0;
-        const delta = ov > 0 ? Math.min(Math.max(scroll - start, 0), ov) : 0;
-        inner.style.transform = delta ? `translate3d(0, ${-delta}px, 0)` : "";
-      }
-
-      // Incoming rise: pull panel i up early, in proportion to how much of
-      // the *previous* panel's span was overflow padding, so the two panels'
-      // motion reads as one continuous scroll instead of "settle, then swap."
-      // No-op once panel i has reached its own pin start (native sticky takes
-      // over from there), and a no-op entirely when the previous panel had no
-      // overflow (its span is exactly one viewport, so the native reveal is
-      // already concurrent).
-      for (let i = 1; i < count; i++) {
-        const panel = panelRefs.current[i];
-        if (!panel) continue;
-        const prevOverflow = overflows.current[i - 1] || 0;
-        const prevSpan = spans.current[i - 1] || 1;
-        const d = Math.max((pinStarts.current[i] || 0) - scroll, 0);
-        const lift = d * (prevOverflow / prevSpan);
-        panel.style.transform = lift > 0.5 ? `translate3d(0, ${-lift}px, 0)` : "";
-      }
-
-      // Active step = the last panel that has risen to cover ~half the viewport.
-      // Its pin start is where it fully pins (top of viewport); it covers half
-      // a viewport before that, so switch the highlight then.
+      // Active step = the last panel that has risen to cover ~half the
+      // viewport. Its doc top reaching the scroll position is where it's
+      // fully in place; it covers half a viewport before that, so switch
+      // the highlight then.
       const half = window.innerHeight * 0.5;
       let active = 0;
       for (let i = 0; i < count; i++) {
-        if (scroll >= (pinStarts.current[i] || 0) - half) active = i;
+        if (scroll >= (docTops.current[i] || 0) - half) active = i;
       }
       if (active !== lastActive) {
         lastActive = active;
@@ -291,70 +239,42 @@ function useStackingScroll(count: number, onActive: (i: number) => void) {
     };
 
     const measure = () => {
-      const vh = window.innerHeight;
       for (let i = 0; i < count; i++) {
-        const panel = panelRefs.current[i];
-        const inner = innerRefs.current[i];
-        const grid = gridRefs.current[i];
-        const content = contentRefs.current[i];
-        const spacer = spacerRefs.current[i];
-        if (!panel || !inner || !grid || !content || !spacer) continue;
-
-        // Available height = the panel's own height minus the grid's
-        // top/bottom padding (read live so this stays correct across the
-        // responsive breakpoints, which use different padding values).
-        const gridStyle = getComputedStyle(grid);
-        const padding =
-          (parseFloat(gridStyle.paddingTop) || 0) +
-          (parseFloat(gridStyle.paddingBottom) || 0);
-        const available = panel.clientHeight - padding;
-        const realOverflow = Math.max(0, content.scrollHeight - available);
-
-        overflows.current[i] = realOverflow;
-        spans.current[i] = vh + realOverflow;
-        spacer.style.height = `${realOverflow}px`;
-        inner.style.height = `${panel.clientHeight + realOverflow}px`;
+        docTops.current[i] = getDocTop(panelRefs.current[i]);
       }
-      for (let i = 0; i < count; i++) {
-        pinStarts.current[i] = getDocTop(panelRefs.current[i]);
-      }
-      apply(getScroll());
+      apply(window.scrollY);
     };
 
     measure();
 
     const ro = new ResizeObserver(() => measure());
-    contentRefs.current.forEach((el) => el && ro.observe(el));
+    panelRefs.current.forEach((el) => el && ro.observe(el));
     window.addEventListener("resize", measure);
 
-    let rafId = 0;
-    let last = -1;
-    const tick = () => {
-      const sc = getScroll();
-      if (sc !== last) {
-        last = sc;
-        apply(sc);
-      }
-      rafId = requestAnimationFrame(tick);
+    let raf = 0;
+    const onScroll = () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        apply(window.scrollY);
+      });
     };
-    rafId = requestAnimationFrame(tick);
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
-      cancelAnimationFrame(rafId);
+      if (raf) cancelAnimationFrame(raf);
       ro.disconnect();
+      window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", measure);
     };
   }, [count]);
 
-  return { panelRefs, innerRefs, gridRefs, contentRefs, spacerRefs };
+  return { panelRefs };
 }
 
 export default function FilmJourney() {
   const [active, setActive] = useState(0);
-  const { panelRefs, innerRefs, gridRefs, contentRefs, spacerRefs } = useStackingScroll(
-    STEPS.length,
-    setActive
-  );
+  const { panelRefs } = useActiveStep(STEPS.length, setActive);
 
   return (
     <section className={styles.section} aria-label="How your film moves through the lab">
@@ -378,67 +298,43 @@ export default function FilmJourney() {
       </div>
 
       {STEPS.map((step, idx) => (
-        <Fragment key={step.key}>
-          <article
-            ref={(el) => {
-              panelRefs.current[idx] = el;
-            }}
-            id={`film-step-${step.key}`}
-            className={styles.panel}
-            aria-label={`Step ${idx + 1}: ${step.label}`}
-          >
-            {/* Photo, scrim, and text share one wrapper so they translate
-                together as the scroll hook pans the panel — see .panelInner. */}
+        <article
+          key={step.key}
+          ref={(el) => {
+            panelRefs.current[idx] = el;
+          }}
+          id={`film-step-${step.key}`}
+          className={styles.panel}
+          aria-label={`Step ${idx + 1}: ${step.label}`}
+        >
+          {/* Sticky rail spanning the whole panel; the photo inside pins at
+              the top of the viewport until the next panel covers it. */}
+          <div className={styles.bgWrap} aria-hidden="true">
             <div
-              className={styles.panelInner}
-              ref={(el) => {
-                innerRefs.current[idx] = el;
-              }}
+              className={styles.bg}
+              style={{ backgroundImage: `url("${withBasePath(step.image)}")` }}
             >
-              <div
-                className={styles.bg}
-                style={{ backgroundImage: `url("${withBasePath(step.image)}")` }}
-                aria-hidden="true"
-              />
-              <div className={styles.scrim} aria-hidden="true" />
-
-              <div
-                className={styles.grid}
-                ref={(el) => {
-                  gridRefs.current[idx] = el;
-                }}
-              >
-                <div
-                  className={styles.content}
-                  ref={(el) => {
-                    contentRefs.current[idx] = el;
-                  }}
-                >
-                  <div className={styles.headGroup}>
-                    <h2 className={styles.heading}>{step.heading}</h2>
-                    {step.intro && <p className={styles.intro}>{step.intro}</p>}
-                  </div>
-                  <hr className={styles.divider} />
-                  {step.items.length > 0 ? (
-                    <Accordion items={step.items} />
-                  ) : (
-                    <p className={styles.placeholder}>Coming soon.</p>
-                  )}
-                </div>
-              </div>
+              <div className={styles.scrim} />
             </div>
-          </article>
+          </div>
 
-          {/* Spacer adds the extra scroll distance equal to this panel's content
-              overflow; height is set by the scroll hook. */}
-          <div
-            className={styles.spacer}
-            aria-hidden="true"
-            ref={(el) => {
-              spacerRefs.current[idx] = el;
-            }}
-          />
-        </Fragment>
+          <div className={styles.grid}>
+            {/* Right: this step's content, scrolling in normal flow past
+                the pinned photo. */}
+            <div className={styles.content}>
+              <div className={styles.headGroup}>
+                <h2 className={styles.heading}>{step.heading}</h2>
+                {step.intro && <p className={styles.intro}>{step.intro}</p>}
+              </div>
+              <hr className={styles.divider} />
+              {step.items.length > 0 ? (
+                <Accordion items={step.items} />
+              ) : (
+                <p className={styles.placeholder}>Coming soon.</p>
+              )}
+            </div>
+          </div>
+        </article>
       ))}
     </section>
   );

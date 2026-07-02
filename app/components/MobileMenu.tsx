@@ -8,13 +8,18 @@ import styles from "./MobileMenu.module.css";
 export default function MobileMenu({ activeHref }: { activeHref?: string }) {
   const [open, setOpen] = useState(false);
 
-  // Lock page scroll while the menu is open.
+  // Lock page scroll while the menu is open. Set on both roots: html for
+  // desktop/modern browsers, body for older iOS Safari (which historically
+  // ignored overflow on the root element for touch scrolling).
   useEffect(() => {
     if (!open) return;
-    const prev = document.body.style.overflow;
+    const prevHtml = document.documentElement.style.overflow;
+    const prevBody = document.body.style.overflow;
+    document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     return () => {
-      document.body.style.overflow = prev;
+      document.documentElement.style.overflow = prevHtml;
+      document.body.style.overflow = prevBody;
     };
   }, [open]);
 

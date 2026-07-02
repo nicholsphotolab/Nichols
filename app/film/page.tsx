@@ -7,11 +7,12 @@ import FilmJourney from "./FilmJourney";
 import styles from "./page.module.css";
 
 // Auto-build the hero slides from the image files in public/FILM/. Each file is
-// named "Stock_Process_Frames" (underscore-delimited) — e.g.
-// "Portra 400_C-41_36EXP.jpg" → caption "Portra 400" / "C-41 • 36EXP". A trailing
+// named "Stock_Process_Format" (underscore-delimited) — e.g.
+// "Portra 400_C-41_120.webp" → caption "Portra 400" / "C-41 • 120". A trailing
 // "-N" before the extension (used to keep multiple shots of one stock unique,
-// e.g. "..._27EXP-1.jpg") is ignored when building the caption. Each image is one
-// slide; drop more files in and they become slides, no code change needed.
+// e.g. "..._DISPOSABLE-2.webp") is ignored when building the caption. Each image
+// is one slide; drop more files in and they become slides, no code change
+// needed. Subdirectories (e.g. FILM/HighRes) are ignored.
 const IMAGE_RE = /\.(jpe?g|png|webp)$/i;
 
 function getHeroSlides(): HeroSlide[] {

@@ -12,7 +12,7 @@
   padding: 80.5px var(--page-pad) 80px;
 }
 
-/* Site column grid; each column spans half (8 of 16). */
+/* Site column grid; photo + thumbs on columns 1–8, configurator on 9–16. */
 .layout {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), 1fr);
@@ -20,30 +20,120 @@
   align-items: start;
 }
 
+/* Stretches to the right column's height (the tallest in the row), so the
+   thumbnail strip at its bottom lines up with the price block and the
+   layout never shifts as photos of different ratios swap in. */
 .imageCol {
-  grid-column: span 8;
+  grid-column: 1 / 9;
+  align-self: stretch;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  gap: var(--grid-gap);
+  min-height: 0;
 }
 
+/* Sliding viewport: whatever space is left above the thumbs. Clips the track
+   so only the current slide shows; the photo fits inside (contain — never
+   cropped), anchored to the bottom edge. */
 .image {
   position: relative;
-  /* anchor for next/image fill */
-  width: 100%;
-  max-width: 550px;
-  aspect-ratio: 199 / 266;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
+}
+
+/* Row of full-width slides; translated by one frame per gallery index. */
+.track {
+  display: flex;
+  height: 100%;
+  transition: transform 480ms var(--ease-carousel);
+}
+
+/* Type/format switches jump to the first slide with no glide — the whole set
+   swaps, so animating across unrelated photos would look wrong. */
+.track[data-instant] {
+  transition: none;
+}
+
+.slide {
+  position: relative;
+  /* anchor for next/image fill */
+  flex: 0 0 100%;
+  min-width: 0;
 }
 
 .image img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: center bottom;
 }
 
-/* 24px rhythm between every section. */
+/* Landscape shots have vertical slack under `contain`; center them in the
+   frame instead of bottom-anchoring (which strands them against the edge). */
+.image img[data-landscape] {
+  object-position: center center;
+}
+
+/* Respect reduced-motion: swap slides instantly, no horizontal glide. */
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    transition: none;
+  }
+}
+
+/* ---------- Thumbnail strip ----------
+   Apple Photos-style tiles: every thumb is a *square*, one site-column wide,
+   so the boxes read as uniform while each photo keeps its own shape inside
+   (scaled to fit, never cropped). Transparent tiles; the 2px selection
+   outline sits on the fitted photo itself — hugging its real edges — not on
+   the square container. Centered as a group under the photo. */
+.thumbs {
+  display: flex;
+  justify-content: center;
+  gap: var(--grid-gap);
+}
+
+.thumb {
+  appearance: none;
+  background: transparent;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  width: calc((100% - 7 * var(--grid-gap)) / 8);
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* The img sizes itself to fit the square at its natural ratio, so a border
+   here wraps exactly the visible photo. The transparent border is always
+   present to avoid any size jump on selection (border-box sizing). */
+.thumb img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  border: 2px solid transparent;
+  transition: border-color 0.15s ease;
+}
+
+.thumb[data-active] img {
+  border-color: var(--black);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .thumb:not([data-active]):hover img {
+    border-color: var(--bw-200);
+  }
+}
+
+/* 24px rhythm between every section. Pinned to the right half explicitly —
+   with the image on 2/8, auto-placement would otherwise start this at 8. */
 .body {
-  grid-column: span 8;
+  grid-column: 9 / 17;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -174,6 +264,13 @@
   gap: 12px;
 }
 
+/* Heading + notice, stacked with no gap so the red notice sits directly under
+   the label. */
+.totalHead {
+  display: flex;
+  flex-direction: column;
+}
+
 .totalLabel {
   font-size: 24px;
   font-weight: 700;
@@ -245,22 +342,8 @@
 }
 
 /* ---------- Notice ---------- */
-.notice {
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.noticeLabel {
-  font-size: 16px;
-  font-weight: 400;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--darkroom-red);
-}
-
 .noticeText {
+  margin: 0;
   font-size: 16px;
   line-height: normal;
   color: var(--darkroom-red);
@@ -278,12 +361,19 @@
     grid-column: 1 / -1;
   }
 
-  .imageCol {
-    justify-content: flex-start;
+  /* Stacked above the configurator, the column no longer stretches against
+     the right column — give the photo box an explicit height instead of
+     flex-fill (which would collapse to 0 in an auto-height column). */
+  .image {
+    flex: none;
+    height: min(56vh, 480px);
   }
 
-  .image {
-    max-width: 360px;
+  /* Wider tap targets: size thumbs to the 8-col tablet grid (2 columns each
+     at ≤900px would be huge, so quarter-width keeps four across). */
+  .thumb {
+    width: calc((100% - 3 * var(--grid-gap)) / 4);
+    max-width: 96px;
   }
 }
 

@@ -13,45 +13,46 @@
   color: var(--paper-white);
 }
 
-/* ---------- Stacking panels ----------
-   Each step is a full-viewport panel pinned to the top of the viewport. Because
-   the panels are laid out in normal flow (so the section is ~4×100vh tall) and
-   each one is sticky at top:0, scrolling makes the next panel slide up and
-   overtake the pinned one below it — like the YLLW "Stage" sections. */
-/* Each panel is pinned to the top of the viewport (sticky) at a fixed viewport
-   height. Because the panels sit in normal flow (with a spacer after each), the
-   next panel rises up and overtakes the pinned one as you scroll — the stacking
-   effect. dvh fills the real viewport exactly (svh can compute short on some
-   desktop browsers, leaving a sliver of the neighbouring panel). */
+/* ---------- Stacking panels (all pure CSS — the YLLW behaviour) ----------
+   Each panel is a normal-flow block sized by its own content (min one
+   viewport). Its photo is a sticky full-viewport layer that pins at the top
+   while the content scrolls past in ordinary document flow — so the text is
+   native-scroll smooth (no JS transforms, nothing to jitter) and never
+   freezes. The panel's box then extends one extra viewport past its content
+   (padding-bottom) while pulling the next panel up by the same amount
+   (negative margin): during that stretch this panel's photo is still within
+   its sticky range — pinned — while the next panel (a later sibling, so it
+   paints on top) rises over it in flow. Outgoing text and the incoming edge
+   both move at scroll speed, exiting together. */
 .panel {
-  position: sticky;
-  top: 0;
-  height: 100dvh;
-  overflow: hidden;
+  position: relative;
   isolation: isolate;
+  padding-bottom: 100dvh;
+  margin-bottom: -100dvh;
 }
 
-/* Wraps the photo, scrim, and text together so they move as a single unit as
-   the panel is scrolled through — the photo pans to reveal more of itself in
-   sync with the text, rather than sitting frozen behind a separately
-   scrolling text column. Height is set inline by the scroll hook to the
-   panel's own height plus its content overflow, and translated up by that
-   same overflow, so it always still fully covers the panel (no gap at the
-   bottom) however far it's shifted. */
-.panelInner {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  will-change: transform;
+/* The last panel has no successor rising over it — end the section at the
+   end of its own content instead of holding an empty pinned photo. */
+.panel:last-of-type {
+  padding-bottom: 0;
+  margin-bottom: 0;
 }
 
-/* Background photo + dark scrim (40% black). Image set per-panel inline. */
-.bg {
+/* Full-height sticky rail for the photo: spans the whole panel (content +
+   handoff padding) so the photo inside stays pinned until fully covered. */
+.bgWrap {
   position: absolute;
   inset: 0;
   z-index: 0;
+}
+
+/* Background photo + dark scrim (40% black). Image set per-panel inline.
+   dvh fills the real viewport exactly (svh can compute short on some desktop
+   browsers, leaving a sliver of the neighbouring panel). */
+.bg {
+  position: sticky;
+  top: 0;
+  height: 100dvh;
   background-size: cover;
   background-position: center;
 }
@@ -59,14 +60,15 @@
 .scrim {
   position: absolute;
   inset: 0;
-  z-index: 1;
   background: rgba(0, 0, 0, 0.4);
 }
 
-/* Site column grid, sized to panelInner so the content column can span it. */
+/* Site column grid on top of the photo, holding the in-flow content. Minimum
+   one viewport tall so sparse steps still fill a full panel. */
 .grid {
   position: relative;
   z-index: 2;
+  min-height: 100dvh;
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   column-gap: var(--grid-gap);
@@ -134,20 +136,12 @@
 }
 
 /* ---------- Right: active step content ---------- */
-/* Sits at its natural height (no internal clip/scroll of its own) — it moves
-   as part of .panelInner, and is masked only by the panel's own overflow. */
+/* Plain in-flow column — it scrolls natively past the pinned photo. */
 .content {
   grid-column: 9 / 17;
   display: flex;
   flex-direction: column;
   gap: 20px;
-}
-
-/* Adds the extra scroll distance for a panel whose content overflows; height is
-   set inline by the scroll hook (0 when the content fits the viewport). */
-.spacer {
-  width: 100%;
-  height: 0;
 }
 
 .heading {

@@ -45,7 +45,18 @@ export type FilmStock = {
   // Silent default exposure count per size — used in price calculation without
   // showing the EXP selector (e.g. disposable cameras are always 27 exp).
   defaultExposures?: Partial<Record<string, string>>;
-  expExplanation?: string; // optional caption below the EXP row
+};
+
+// Per-stock gallery, built server-side in [stock]/page.tsx from the size
+// subfolders under public/FILM/gallery/<slug>/ (e.g. 35mm/, 120/, Disposable/).
+// `product` holds any loose images at the stock's gallery root — shared shots
+// shown first for every size. `bySize` maps a SIZE pill value (e.g. "35MM",
+// "DISPOSABLE CAMERA", "120") to the photos in that size's folder. The bottom
+// carousel shows only `product` + the selected size's images, so switching
+// size swaps the strip entirely.
+export type StockGallery = {
+  product: string[];
+  bySize: Record<string, string[]>;
 };
 
 // ---------- Display maps ----------
@@ -165,63 +176,112 @@ function defaultsFor(stock: FilmStock) {
 
 export default function FilmStockConfigurator({
   initialSlug,
+  galleries,
 }: {
   initialSlug: string;
+  // Per-stock galleries, built server-side by [stock]/page.tsx from the size
+  // subfolders under public/FILM/gallery/<slug>/. Keyed by slug for every stock
+  // since TYPE switches stocks client-side.
+  galleries: Record<string, StockGallery>;
 }) {
   const [slug, setSlug] = useState<string>(initialSlug);
   const stock = STOCKS[slug] ?? STOCKS[initialSlug];
 
+  // State holds the *raw* selections as the user made them; anything the
+  // current stock/format combination doesn't offer is corrected by deriving
+  // an effective value at render time (below) rather than by writing state
+  // back. That keeps every render a pure function of the selections — no
+  // corrective re-renders — and means a remembered choice (e.g. 24 EXP)
+  // reapplies by itself when the user switches back to a format that has it.
   const init = defaultsFor(stock);
-  const [size, setSize] = useState<string>(init.size);
+  const [sizeSel, setSizeSel] = useState<string>(init.size);
   const [output, setOutput] = useState<string | null>(init.output);
-  const [exp, setExp] = useState<string | null>(init.exp);
-  const [sheetSize, setSheetSize] = useState<string | null>(null);
+  const [expSel, setExpSel] = useState<string | null>(init.exp);
+  const [sheetSizeSel, setSheetSizeSel] = useState<string | null>(null);
+
+  // Effective format: fall back to 35MM (or the first size) only if the
+  // current stock doesn't offer the selected one (e.g. E-6 has no 110).
+  const size = stock.sizes.includes(sizeSel)
+    ? sizeSel
+    : stock.sizes.includes("35MM")
+      ? "35MM"
+      : stock.sizes[0] ?? "";
 
   // Exposure options for the current size+output. Missing → no EXPOSURE row.
   // SHEET has no entry in `exposures`, so this is naturally empty for it.
+  // Effective exposure: the selection when valid, else 36 (or the first
+  // option), else null when this combination has no exposure counts.
   const expOptions = output ? stock.exposures[size]?.[output] ?? [] : [];
-
-  // Keep the exposure selection valid as size/output change: auto-pick 36 (or
-  // the first option) when entering a size that has exposures, and clear it when
-  // the size has none. queueMicrotask avoids a setState-during-render warning.
-  if (expOptions.length > 0 && (!exp || !expOptions.includes(exp))) {
-    queueMicrotask(() => setExp(expOptions.includes("36") ? "36" : expOptions[0]));
-  } else if (expOptions.length === 0 && exp) {
-    queueMicrotask(() => setExp(null));
-  }
+  const exp =
+    expSel && expOptions.includes(expSel)
+      ? expSel
+      : expOptions.length > 0
+        ? expOptions.includes("36")
+          ? "36"
+          : expOptions[0]
+        : null;
 
   // SHEET format shows a Sheet Size row (4x5/5x7/8x10) in place of EXPOSURE.
-  // Keep the selection valid the same way: auto-pick a default on entering
-  // SHEET, clear it on leaving.
+  // Effective sheet size follows the same pattern, defaulting to 4X5.
   const sheetSizeOptions = size === "SHEET" ? stock.sheetSizes ?? [] : [];
-  if (sheetSizeOptions.length > 0 && (!sheetSize || !sheetSizeOptions.includes(sheetSize))) {
-    queueMicrotask(() =>
-      setSheetSize(sheetSizeOptions.includes("4X5") ? "4X5" : sheetSizeOptions[0])
-    );
-  } else if (sheetSizeOptions.length === 0 && sheetSize) {
-    queueMicrotask(() => setSheetSize(null));
+  const sheetSize =
+    sheetSizeSel && sheetSizeOptions.includes(sheetSizeSel)
+      ? sheetSizeSel
+      : sheetSizeOptions.includes("4X5")
+        ? "4X5"
+        : sheetSizeOptions[0] ?? null;
+
+  // Gallery for the current stock + size. The bottom carousel shows only the
+  // shared product shots plus the photos in the selected size's folder, so
+  // switching size (or type) swaps the strip entirely — C-41 · 35MM never
+  // shows 120 or Disposable photos, and vice versa. Sizes with no folder fall
+  // back to the stock's per-size product shot, then its generic product image.
+  // The raw index is clamped so a switch to a shorter strip can't overshoot.
+  const stockGallery = galleries[slug];
+  const gallery = [
+    ...(stockGallery?.product ?? []),
+    ...(stockGallery?.bySize[size] ?? []),
+  ];
+  const [galleryIdxSel, setGalleryIdxSel] = useState(0);
+  const galleryIdx = Math.min(galleryIdxSel, Math.max(gallery.length - 1, 0));
+
+  // Whether the next track move should glide. Thumbnail clicks slide; switching
+  // type/format resets to the first slide instantly (the whole set swaps, so a
+  // glide across unrelated images looks wrong).
+  const [animateSlide, setAnimateSlide] = useState(true);
+
+  // The slides rendered in the sliding frame. When a size has no photos we
+  // still show a single fallback slide (its per-size product shot, then the
+  // stock's generic product image).
+  const slides =
+    gallery.length > 0 ? gallery : [stock.sizeImages?.[size] ?? stock.image];
+
+  // Portrait product shots fill the frame's height and sit on its bottom edge.
+  // Landscape shots leave vertical slack, so we vertically center them instead
+  // of bottom-anchoring (which would strand them against the bottom). Detected
+  // per photo from its natural dimensions once loaded, keyed by src.
+  const [landscape, setLandscape] = useState<Record<string, boolean>>({});
+
+  // Any change to the visible strip restarts it from the first photo, without
+  // gliding — the set changes, so the reset should be instant.
+  function selectFormat(next: string) {
+    setSizeSel(next);
+    setGalleryIdxSel(0);
+    setAnimateSlide(false);
   }
 
-  // Switching TYPE swaps the stock but keeps the current size/output/exposure
-  // selections. Any selection the new stock doesn't offer is corrected by the
-  // validity guards below (size) and the exposure logic above.
+  // Switching TYPE swaps the stock but keeps the raw selections — the
+  // derivations above absorb anything the new stock doesn't offer.
   function selectType(next: string) {
-    if (STOCKS[next]) setSlug(next);
-  }
-
-  // Keep size valid across a type switch — fall back to 35MM (or the first
-  // size) only if the new stock doesn't offer the current one (e.g. E-6 has no 110).
-  if (!stock.sizes.includes(size)) {
-    queueMicrotask(() =>
-      setSize(stock.sizes.includes("35MM") ? "35MM" : stock.sizes[0] ?? "")
-    );
+    if (STOCKS[next]) {
+      setSlug(next);
+      setGalleryIdxSel(0);
+      setAnimateSlide(false);
+    }
   }
 
   const breakdown = buildBreakdown(stock, size, output, exp, sheetSize);
   const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
-
-  // Use a per-size image when the stock defines one (e.g. C-41 + 120).
-  const imageSrc = stock.sizeImages?.[size] ?? stock.image;
 
   // Outputs/sizes in Figma display order, filtered to what this stock offers.
   const outputValues = OUTPUT_ORDER.filter((o) => stock.outputs.includes(o));
@@ -229,16 +289,65 @@ export default function FilmStockConfigurator({
   return (
     <main className={styles.page}>
       <div className={styles.layout}>
-        {/* Left column: product image */}
+        {/* Left column: main photo + thumbnail strip. The column stretches to
+            the right column's height so the thumbs bottom-align with the
+            price block; the photo fits (contain) in the remaining space,
+            anchored to the bottom. */}
         <div className={styles.imageCol}>
           <div className={styles.image} aria-hidden="true">
-            <Image
-              src={withBasePath(imageSrc)}
-              alt=""
-              fill
-              sizes="(max-width: 900px) 360px, 31vw"
-            />
+            {/* Horizontal track: all slides sit side by side and the track
+                slides by one frame width per gallery index. */}
+            <div
+              className={styles.track}
+              data-instant={!animateSlide || undefined}
+              style={{ transform: `translateX(-${galleryIdx * 100}%)` }}
+            >
+              {slides.map((src) => (
+                <div key={src} className={styles.slide}>
+                  <Image
+                    src={withBasePath(src)}
+                    alt=""
+                    fill
+                    sizes="(max-width: 900px) 100vw, 46vw"
+                    data-landscape={landscape[src] || undefined}
+                    onLoad={(e) => {
+                      const img = e.currentTarget;
+                      const isLandscape = img.naturalWidth > img.naturalHeight;
+                      setLandscape((m) =>
+                        m[src] === isLandscape ? m : { ...m, [src]: isLandscape }
+                      );
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           </div>
+
+          {/* Apple Photos-style thumbs: uniform square tiles, each photo
+              scaled to fit inside at its own ratio (plain <img> so it keeps
+              natural proportions — the selection border in the CSS wraps the
+              photo itself, not the square). */}
+          {gallery.length > 1 && (
+            <div className={styles.thumbs} role="group" aria-label="Product photos">
+              {gallery.map((src, i) => (
+                <button
+                  key={src}
+                  type="button"
+                  className={styles.thumb}
+                  data-active={i === galleryIdx || undefined}
+                  aria-pressed={i === galleryIdx}
+                  aria-label={`Photo ${i + 1} of ${gallery.length}`}
+                  onClick={() => {
+                    setAnimateSlide(true);
+                    setGalleryIdxSel(i);
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={withBasePath(src)} alt="" loading="lazy" decoding="async" />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right column: title + blurb, option rows, estimate, price, notice */}
@@ -266,7 +375,7 @@ export default function FilmStockConfigurator({
               <Pills
                 values={stock.sizes}
                 selected={size}
-                onSelect={setSize}
+                onSelect={selectFormat}
                 format={(v) => SIZE_LABELS[v] ?? v}
               />
             </div>
@@ -285,7 +394,7 @@ export default function FilmStockConfigurator({
             {expOptions.length > 0 && (
               <div className={styles.row}>
                 <RowLabel label="Exposure" />
-                <Pills values={expOptions} selected={exp} onSelect={setExp} />
+                <Pills values={expOptions} selected={exp} onSelect={setExpSel} />
               </div>
             )}
 
@@ -296,7 +405,7 @@ export default function FilmStockConfigurator({
                 <Pills
                   values={sheetSizeOptions}
                   selected={sheetSize}
-                  onSelect={setSheetSize}
+                  onSelect={setSheetSizeSel}
                 />
               </div>
             )}
@@ -306,7 +415,13 @@ export default function FilmStockConfigurator({
 
           {/* Itemized estimate */}
           <div className={styles.total}>
-            <span className={styles.totalLabel}>Estimated total</span>
+            <div className={styles.totalHead}>
+              <span className={styles.totalLabel}>Estimated total</span>
+              <p className={styles.noticeText}>
+                Final price will be calculated when film is finished developing
+                and scanning.
+              </p>
+            </div>
             <div className={styles.breakdown}>
               {breakdown.map((item) => (
                 <div className={styles.lineItem} key={item.name}>
@@ -324,14 +439,6 @@ export default function FilmStockConfigurator({
 
           <p className={styles.price} aria-live="polite">
             {formatUSD(total)}
-          </p>
-
-          <p className={styles.notice}>
-            <span className={styles.noticeLabel}>*Notice*</span>
-            <span className={styles.noticeText}>
-              Final price will be calculated when film is finished developing and
-              scanning.
-            </span>
           </p>
         </div>
       </div>

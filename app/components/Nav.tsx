@@ -4,15 +4,22 @@ import MobileMenu from "./MobileMenu";
 import NavBar from "./NavBar";
 import styles from "./Nav.module.css";
 
-export default function Nav({ activeHref }: { activeHref?: string }) {
+export default function Nav({
+  activeHref,
+  solid,
+}: {
+  activeHref?: string;
+  /** Pin the solid white bar from the top (pages without a dark hero). */
+  solid?: boolean;
+}) {
   return (
     <>
-      {/* The bar is a real flex container with 40px top/bottom padding; its
-          height comes from that padding + the content. The brand mark is
-          rendered globally by <BrandLogoSwitch /> in layout.tsx (HeroLogo on
-          home, NavBrand elsewhere), so a spacer reserves its slot on the left
-          and sets the content height the padding wraps. */}
-      <NavBar>
+      {/* The bar is a real flex container; its height comes from its padding
+          + the content. The brand mark is rendered globally by
+          <BrandLogoSwitch /> in layout.tsx (HeroLogo on home, NavBrand
+          elsewhere), so a spacer reserves its slot on the left and sets the
+          content height the padding wraps. */}
+      <NavBar solid={solid}>
         <span className={styles.brandSlot} aria-hidden="true" />
 
         <nav className={styles.links} aria-label="Primary">

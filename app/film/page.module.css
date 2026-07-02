@@ -138,7 +138,7 @@
 
 .heroIndicatorLine {
   display: block;
-  height: 2px;
+  height: 8px;
   width: 100%;
   background: var(--paper-white);
   opacity: 0.5;

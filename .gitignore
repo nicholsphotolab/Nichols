@@ -12,6 +12,9 @@
 .DS_Store
 *.pem
 
+# local image masters — kept out of the deploy artifact and out of git
+/masters/
+
 # debug
 npm-debug.log*
 yarn-debug.log*
