@@ -1,110 +1,303 @@
 /* VideoTransferConfigurator.module.css
-   Layout for the video category estimator pages — mirrors the film
-   configurator's page shell and type scale. The option rows, pills, and
-   quantity stepper come from the shared ConfiguratorControls module. */
+   Layout for the video-transfer estimator — mirrors the film stock configurator
+   (FilmStockConfigurator.module.css): a ~50/50 two-column grid with a product-
+   image placeholder on the left and the configurator on the right, a consistent
+   vertical rhythm, and hairline dividers separating the header, the option rows,
+   the itemized total, and the price. Option rows and pills come from
+   ConfiguratorControls.module.css. */
 
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 80.5px var(--page-pad) 80px;
+  padding: var(--nav-clearance) var(--page-pad) 80px;
 }
 
-/* Site column grid — no product imagery for these categories yet, so the
-   body takes the film configurator's 11-column measure from column 1. */
+/* Site column grid; placeholder on columns 1–8, configurator on 9–16. */
 .layout {
   display: grid;
-  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   gap: var(--grid-gap);
   align-items: start;
 }
 
-.body {
-  grid-column: span 11;
+/* Stretches to the right column's height (the tallest in the row) so the
+   placeholder always matches the configurator's height and the layout never
+   shifts as options change. */
+.imageCol {
+  grid-column: 1 / 9;
+  align-self: stretch;
   display: flex;
   flex-direction: column;
-  gap: 48px;
+  min-height: 0;
+}
+
+/* Product-image placeholder — no per-category photography yet, so the box is
+   filled with the same 45° stripe used on the /video category cards. Fills the
+   whole stretched column. */
+.image {
+  flex: 1;
+  min-height: 320px;
+  border: 1px solid var(--black);
+  background: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 10px,
+    rgba(0, 0, 0, 0.06) 10px,
+    rgba(0, 0, 0, 0.06) 20px
+  );
+}
+
+/* 24px rhythm between every section. Pinned to the right half explicitly. */
+.body {
+  grid-column: 9 / 17;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
   min-width: 0;
 }
 
-.backBtn {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  font-family: inherit;
-  font-size: 40px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--black);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  align-self: flex-start;
-}
-
+/* ---------- Header ---------- */
 .header {
   display: flex;
   flex-direction: column;
-  gap: 20px;
+  gap: 8px;
 }
 
 .title {
   margin: 0;
   font-weight: 700;
-  font-size: clamp(72px, 9vw, 128px);
-  line-height: 1;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: normal;
   letter-spacing: 0.02em;
   color: var(--black);
 }
 
+.blurb {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 20px;
+  line-height: normal;
+  letter-spacing: 0.01em;
+  color: var(--black);
+}
+
+/* ---------- Dividers ---------- */
+.divider {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: 2px solid var(--black);
+}
+
+/* ---------- Option rows ----------
+   Label over pills, no per-row rule (the section dividers do that work). */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rowLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+/* ---------- Info tooltip ---------- */
+.info {
+  position: relative;
+  display: inline-flex;
+}
+
+.infoBtn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: help;
+  opacity: 0.55;
+}
+
+.infoBtn img {
+  display: block;
+}
+
+.tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 0;
+  width: max-content;
+  max-width: 260px;
+  padding: 10px 12px;
+  background: var(--black);
+  color: var(--paper-white);
+  font-size: 13px;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
+  text-transform: none;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Hover reveal is scoped to real pointers (site convention) so touch users
+   don't get a stuck tooltip; keyboard focus reveals it everywhere. */
+.infoBtn:focus-visible {
+  opacity: 1;
+}
+
+.infoBtn:focus-visible ~ .tooltip {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .info:hover .infoBtn {
+    opacity: 1;
+  }
+
+  .info:hover .tooltip {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+/* ---------- Itemized estimate ---------- */
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Heading + notice, stacked with no gap so the red notice sits directly under
+   the label. */
+.totalHead {
+  display: flex;
+  flex-direction: column;
+}
+
+.totalLabel {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Subdivides each line into 8 equal tracks with the site gutter. Because .body
+   spans 8 of the 16 site columns, these tracks line up exactly with the site
+   grid: the label spans 3 columns, the amount takes the rest (left-aligned). */
+.lineItem {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  align-items: baseline;
+}
+
+.lineLabel {
+  grid-column: span 3;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lineName {
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.01em;
+  color: var(--black);
+}
+
+.lineSub {
+  font-size: 12px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  color: var(--bw-400);
+}
+
+.lineAmount {
+  grid-column: span 5;
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.01em;
+  text-align: left;
+  color: var(--black);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Headline price ---------- */
 .price {
   margin: 0;
   font-weight: 400;
-  font-size: clamp(40px, 4.5vw, 64px);
-  line-height: 1;
+  font-size: clamp(48px, 6vw, 64px);
+  line-height: normal;
   letter-spacing: 0.02em;
   color: var(--black);
   font-variant-numeric: tabular-nums;
 }
 
-.priceLabel {
+/* ---------- Notice ---------- */
+.noticeText {
   margin: 0;
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--black);
-}
-
-.rows {
-  display: flex;
-  flex-direction: column;
-  gap: 36px;
+  font-size: 16px;
+  line-height: normal;
+  color: var(--darkroom-red);
 }
 
 /* ---------- Responsive ---------- */
+/* 8-col tablet and below: placeholder stacks above the configurator. */
 @media (max-width: 900px) {
+  .layout {
+    row-gap: 32px;
+  }
+
+  .imageCol,
   .body {
     grid-column: 1 / -1;
-    gap: 32px;
   }
 
-  .rows {
-    gap: 28px;
-  }
-
-  .priceLabel {
-    font-size: 20px;
-  }
-
-  .title {
-    font-size: clamp(48px, 11vw, 96px);
+  /* Stacked above the configurator, the column no longer stretches against the
+     right column — give the placeholder an explicit height instead of flex-fill
+     (which would collapse to 0 in an auto-height column). */
+  .image {
+    flex: none;
+    height: min(48vh, 360px);
   }
 }
 
 @media (max-width: 700px) {
   .page {
-    padding-top: 100px;
     padding-bottom: 60px;
+  }
+
+  .title {
+    font-size: clamp(40px, 12vw, 56px);
+  }
+
+  .price {
+    font-size: clamp(40px, 14vw, 56px);
   }
 }

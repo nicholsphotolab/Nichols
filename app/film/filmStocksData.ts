@@ -31,12 +31,22 @@ const DISPOSABLE_DEFAULTS = { "DISPOSABLE CAMERA": "27" };
 // when SHEET is the selected size. Billed per sheet, so no exposure data.
 const SHEET_SIZES = ["4X5", "5X7", "8X10"];
 
-// Placeholder per-sheet pricing, keyed by [sheetSize][output]. TODO: replace
-// with real rates once pricing is finalized.
+// Per-sheet output pricing, keyed by [sheetSize][output]. Scans are a flat $5
+// per sheet at every size; PRINTS/SCANS adds the print on top of the scan
+// (+$0.60 / +$0.98 / +$4.00 by size). Shared by all stocks.
 const SHEET_RATES = {
-  "4X5": { SCANS: 1.5, "PRINTS/SCANS": 2.5 },
-  "5X7": { SCANS: 2.5, "PRINTS/SCANS": 3.5 },
-  "8X10": { SCANS: 3.5, "PRINTS/SCANS": 4.5 },
+  "4X5": { SCANS: 5, "PRINTS/SCANS": 5.6 },
+  "5X7": { SCANS: 5, "PRINTS/SCANS": 5.98 },
+  "8X10": { SCANS: 5, "PRINTS/SCANS": 9 },
+};
+
+// Per-sheet DEVELOPMENT fee, keyed by [stock slug][sheetSize]. Sheet film is
+// developed per sheet, so this replaces the stock's roll basePrice when the
+// SHEET format is selected.
+const SHEET_DEV_RATES: Record<string, Record<string, number>> = {
+  "c-41": { "4X5": 4.0, "5X7": 5.0, "8X10": 6.5 },
+  bw: { "4X5": 6.0, "5X7": 7.0, "8X10": 8.5 },
+  "e-6": { "4X5": 5.0, "5X7": 6.0, "8X10": 7.5 },
 };
 
 // Per-exposure surcharge in dollars, keyed by [size][output].
@@ -56,10 +66,13 @@ export const STOCKS: Record<string, FilmStock> = {
       "The standard process for almost any color film. Warm tones, great skin colors, and forgiving enough that even a point-and-shoot turns out.",
     basePrice: 6.5,
     image: "/C-41.webp",
-    sizeImages: { "35MM": "/C-41_35mm.webp", "120": "/C-41-120.webp" },
+    // Product shots by size — only 35mm exists so far. Sizes without one show
+    // the temporary bw-600 block in the product slot until theirs is shot.
+    sizeImages: { "35MM": "/C-41_35mm.webp" },
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,
     sheetSizeRates: SHEET_RATES,
+    sheetDevRates: SHEET_DEV_RATES["c-41"],
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,
@@ -76,6 +89,7 @@ export const STOCKS: Record<string, FilmStock> = {
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,
     sheetSizeRates: SHEET_RATES,
+    sheetDevRates: SHEET_DEV_RATES["bw"],
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,
@@ -93,6 +107,7 @@ export const STOCKS: Record<string, FilmStock> = {
     sizes: ["35MM", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,
     sheetSizeRates: SHEET_RATES,
+    sheetDevRates: SHEET_DEV_RATES["e-6"],
     outputs: ["NONE", "SCANS", "PRINTS/SCANS"],
     exposures: SHARED_EXPOSURES,
     perExposureRate: SHARED_RATES,

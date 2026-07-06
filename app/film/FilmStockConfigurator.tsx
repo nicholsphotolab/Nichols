@@ -12,11 +12,12 @@
 
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Pills } from "../components/ConfiguratorControls";
 import { STOCKS } from "./filmStocksData";
 import { withBasePath } from "../lib/basePath";
+import { buildQuery, matchOption, slugifyOption } from "../lib/urlState";
 import styles from "./FilmStockConfigurator.module.css";
 
 // Shape of a single film stock's pricing and option data.
@@ -28,7 +29,8 @@ export type FilmStock = {
   blurb: string;
   basePrice: number;
   image: string; // path relative to /public
-  // Optional per-size image overrides, keyed by size. Falls back to `image`.
+  // Per-size PRODUCT SHOT, always the first slide in the gallery lineup.
+  // Sizes without one show the temporary bw-600 placeholder block instead.
   sizeImages?: Partial<Record<string, string>>;
   sizes: string[];
   // Sheet dimensions (4X5, 5X7, 8X10) shown in a secondary row in place of
@@ -39,9 +41,12 @@ export type FilmStock = {
   exposures: Partial<Record<string, Partial<Record<string, string[]>>>>;
   // Per-exposure surcharge in dollars, keyed by [size][output].
   perExposureRate: Partial<Record<string, Partial<Record<string, number>>>>;
-  // Per-sheet surcharge in dollars, keyed by [sheetSize][output]. Placeholder
-  // pricing until real sheet rates are set.
+  // Per-sheet output surcharge in dollars, keyed by [sheetSize][output] —
+  // scans flat across sizes, prints+scans adds the print on top.
   sheetSizeRates?: Partial<Record<string, Partial<Record<string, number>>>>;
+  // Per-sheet DEVELOPMENT fee keyed by sheet size — used in place of the
+  // roll basePrice when the SHEET format is selected.
+  sheetDevRates?: Partial<Record<string, number>>;
   // Silent default exposure count per size — used in price calculation without
   // showing the EXP selector (e.g. disposable cameras are always 27 exp).
   defaultExposures?: Partial<Record<string, string>>;
@@ -129,11 +134,19 @@ function buildBreakdown(
   exp: string | null,
   sheetSize: string | null
 ): LineItem[] {
-  const items: LineItem[] = [
-    { name: `${stock.name} Development`, amount: stock.basePrice },
-  ];
-
+  // Sheet film develops per sheet at a rate set by stock + sheet size, so it
+  // replaces the roll basePrice line entirely.
   if (size === "SHEET") {
+    const devRate =
+      (sheetSize ? stock.sheetDevRates?.[sheetSize] : undefined) ??
+      stock.basePrice;
+    const items: LineItem[] = [
+      {
+        name: `${sheetSize ? `${sheetSize.toLowerCase()} ` : ""}${stock.name} Development`,
+        sub: "per sheet",
+        amount: devRate,
+      },
+    ];
     if (output && output !== "NONE" && sheetSize) {
       const rate = stock.sheetSizeRates?.[sheetSize]?.[output];
       if (rate) {
@@ -146,6 +159,10 @@ function buildBreakdown(
     }
     return items;
   }
+
+  const items: LineItem[] = [
+    { name: `${stock.name} Development`, amount: stock.basePrice },
+  ];
 
   const resolvedExp = exp ?? stock.defaultExposures?.[size] ?? null;
   if (output && output !== "NONE" && resolvedExp) {
@@ -199,6 +216,27 @@ export default function FilmStockConfigurator({
   const [expSel, setExpSel] = useState<string | null>(init.exp);
   const [sheetSizeSel, setSheetSizeSel] = useState<string | null>(null);
 
+  // Restore customization from the URL once on mount (?format=…&output=…&
+  // exp=…&sheet=…). The page is statically pre-rendered with defaults, so the
+  // query must be applied after hydration, not during the first render.
+  // Values are matched against this stock's real option lists — anything
+  // unknown is ignored, and the derivations below absorb any impossible
+  // combination. Declared before the URL-sync effect below so the query is
+  // captured before the first rewrite.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const format = matchOption(params.get("format"), stock.sizes);
+    if (format) setSizeSel(format);
+    const out = matchOption(params.get("output"), stock.outputs);
+    if (out) setOutput(out);
+    const exp = params.get("exp");
+    if (exp && /^\d+$/.test(exp)) setExpSel(exp);
+    const sheet = matchOption(params.get("sheet"), stock.sheetSizes ?? []);
+    if (sheet) setSheetSizeSel(sheet);
+    // Mount-only: the URL is an input here, not a subscription.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Effective format: fall back to 35MM (or the first size) only if the
   // current stock doesn't offer the selected one (e.g. E-6 has no 110).
   const size = stock.sizes.includes(sizeSel)
@@ -231,30 +269,66 @@ export default function FilmStockConfigurator({
         ? "4X5"
         : sheetSizeOptions[0] ?? null;
 
+  // Mirror the visible selection into the URL: path = stock, query = the
+  // customization with defaults omitted, so uncustomized URLs stay clean and
+  // a refresh (or shared link) restores exactly what's on screen.
+  // replaceState rewrites the current history entry — pill clicks never stack
+  // up in Back; Back always exits to the page the user came from.
+  useEffect(() => {
+    const d = defaultsFor(stock);
+    const expOpts = output ? stock.exposures[size]?.[output] ?? [] : [];
+    const defaultExp =
+      expOpts.length > 0 ? (expOpts.includes("36") ? "36" : expOpts[0]) : null;
+    const sheetOpts = size === "SHEET" ? stock.sheetSizes ?? [] : [];
+    const defaultSheet = sheetOpts.includes("4X5")
+      ? "4X5"
+      : sheetOpts[0] ?? null;
+
+    const query = buildQuery({
+      format: size !== d.size ? slugifyOption(size) : null,
+      output: output && output !== d.output ? slugifyOption(output) : null,
+      exp: exp && exp !== defaultExp ? exp : null,
+      sheet:
+        sheetSize && sheetSize !== defaultSheet
+          ? slugifyOption(sheetSize)
+          : null,
+    });
+    window.history.replaceState(null, "", withBasePath(`/film/${slug}`) + query);
+  }, [slug, stock, size, output, exp, sheetSize]);
+
   // Gallery for the current stock + size. The bottom carousel shows only the
   // shared product shots plus the photos in the selected size's folder, so
   // switching size (or type) swaps the strip entirely — C-41 · 35MM never
-  // shows 120 or Disposable photos, and vice versa. Sizes with no folder fall
-  // back to the stock's per-size product shot, then its generic product image.
+  // shows 120 or Disposable photos, and vice versa. SHEET adds the selected
+  // sheet size's photos (keyed "SHEET/4X5" etc. by the server-side scan), so
+  // flipping 4x5 → 8x10 swaps the strip too. Sizes with no folder fall back
+  // to the stock's per-size product shot, then its generic product image.
   // The raw index is clamped so a switch to a shorter strip can't overshoot.
   const stockGallery = galleries[slug];
   const gallery = [
     ...(stockGallery?.product ?? []),
     ...(stockGallery?.bySize[size] ?? []),
+    ...(size === "SHEET" && sheetSize
+      ? stockGallery?.bySize[`${size}/${sheetSize}`] ?? []
+      : []),
   ];
+
+  // The lineup always leads with the size's PRODUCT SHOT, then the gallery
+  // photos. `null` marks the temporary solid bw-600 block shown while a size
+  // has no product photography yet — deliberately shown even when the size
+  // does have gallery photos, so the product slot is always reserved.
+  const slides: (string | null)[] = [
+    stock.sizeImages?.[size] ?? null,
+    ...gallery,
+  ];
+
   const [galleryIdxSel, setGalleryIdxSel] = useState(0);
-  const galleryIdx = Math.min(galleryIdxSel, Math.max(gallery.length - 1, 0));
+  const galleryIdx = Math.min(galleryIdxSel, slides.length - 1);
 
   // Whether the next track move should glide. Thumbnail clicks slide; switching
   // type/format resets to the first slide instantly (the whole set swaps, so a
   // glide across unrelated images looks wrong).
   const [animateSlide, setAnimateSlide] = useState(true);
-
-  // The slides rendered in the sliding frame. When a size has no photos we
-  // still show a single fallback slide (its per-size product shot, then the
-  // stock's generic product image).
-  const slides =
-    gallery.length > 0 ? gallery : [stock.sizeImages?.[size] ?? stock.image];
 
   // Portrait product shots fill the frame's height and sit on its bottom edge.
   // Landscape shots leave vertical slack, so we vertically center them instead
@@ -271,13 +345,22 @@ export default function FilmStockConfigurator({
   }
 
   // Switching TYPE swaps the stock but keeps the raw selections — the
-  // derivations above absorb anything the new stock doesn't offer.
+  // derivations above absorb anything the new stock doesn't offer. The URL
+  // follows automatically via the sync effect above.
   function selectType(next: string) {
     if (STOCKS[next]) {
       setSlug(next);
       setGalleryIdxSel(0);
       setAnimateSlide(false);
     }
+  }
+
+  // Switching SHEET SIZE swaps the strip (each sheet size has its own photo
+  // folder), so it resets the same way a format switch does.
+  function selectSheetSize(next: string) {
+    setSheetSizeSel(next);
+    setGalleryIdxSel(0);
+    setAnimateSlide(false);
   }
 
   const breakdown = buildBreakdown(stock, size, output, exp, sheetSize);
@@ -302,48 +385,56 @@ export default function FilmStockConfigurator({
               data-instant={!animateSlide || undefined}
               style={{ transform: `translateX(-${galleryIdx * 100}%)` }}
             >
-              {slides.map((src) => (
-                <div key={src} className={styles.slide}>
-                  <Image
-                    src={withBasePath(src)}
-                    alt=""
-                    fill
-                    sizes="(max-width: 900px) 100vw, 46vw"
-                    data-landscape={landscape[src] || undefined}
-                    onLoad={(e) => {
-                      const img = e.currentTarget;
-                      const isLandscape = img.naturalWidth > img.naturalHeight;
-                      setLandscape((m) =>
-                        m[src] === isLandscape ? m : { ...m, [src]: isLandscape }
-                      );
-                    }}
-                  />
-                </div>
-              ))}
+              {slides.map((src) =>
+                src ? (
+                  <div key={src} className={styles.slide}>
+                    <Image
+                      src={withBasePath(src)}
+                      alt=""
+                      fill
+                      sizes="(max-width: 900px) 100vw, 46vw"
+                      data-landscape={landscape[src] || undefined}
+                      onLoad={(e) => {
+                        const img = e.currentTarget;
+                        const isLandscape = img.naturalWidth > img.naturalHeight;
+                        setLandscape((m) =>
+                          m[src] === isLandscape ? m : { ...m, [src]: isLandscape }
+                        );
+                      }}
+                    />
+                  </div>
+                ) : (
+                  <div key="product-placeholder" className={styles.slide}>
+                    <div className={styles.productFill} />
+                  </div>
+                )
+              )}
             </div>
           </div>
 
-          {/* Apple Photos-style thumbs: uniform square tiles, each photo
-              scaled to fit inside at its own ratio (plain <img> so it keeps
-              natural proportions — the selection border in the CSS wraps the
-              photo itself, not the square). */}
-          {gallery.length > 1 && (
+          {/* Uniform square thumbs, each photo filling its tile edge-to-edge
+              (cover crop); the selection border traces the square. */}
+          {slides.length > 1 && (
             <div className={styles.thumbs} role="group" aria-label="Product photos">
-              {gallery.map((src, i) => (
+              {slides.map((src, i) => (
                 <button
-                  key={src}
+                  key={src ?? "product-placeholder"}
                   type="button"
                   className={styles.thumb}
                   data-active={i === galleryIdx || undefined}
                   aria-pressed={i === galleryIdx}
-                  aria-label={`Photo ${i + 1} of ${gallery.length}`}
+                  aria-label={`Photo ${i + 1} of ${slides.length}`}
                   onClick={() => {
                     setAnimateSlide(true);
                     setGalleryIdxSel(i);
                   }}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={withBasePath(src)} alt="" loading="lazy" decoding="async" />
+                  {src ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={withBasePath(src)} alt="" loading="lazy" decoding="async" />
+                  ) : (
+                    <span className={styles.productFill} aria-hidden="true" />
+                  )}
                 </button>
               ))}
             </div>
@@ -353,7 +444,16 @@ export default function FilmStockConfigurator({
         {/* Right column: title + blurb, option rows, estimate, price, notice */}
         <div className={styles.body}>
           <header className={styles.header}>
-            <h1 className={styles.title}>{stock.name}</h1>
+            {/* Type + format combo, dash-separated (placeholder separator for
+                now). Format uses its display label (DISPOSABLE, not the full
+                data value) and tracks the selection live. SHEET appends its
+                sheet size directly — "SHEET 4X5", no extra separator. */}
+            <h1 className={styles.title}>
+              {stock.name} -{" "}
+              {size === "SHEET" && sheetSize
+                ? `${size} ${sheetSize}`
+                : SIZE_LABELS[size] ?? size}
+            </h1>
             <p className={styles.blurb}>{stock.blurb}</p>
           </header>
 
@@ -405,7 +505,7 @@ export default function FilmStockConfigurator({
                 <Pills
                   values={sheetSizeOptions}
                   selected={sheetSize}
-                  onSelect={setSheetSizeSel}
+                  onSelect={selectSheetSize}
                 />
               </div>
             )}

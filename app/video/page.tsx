@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import VideoHeroReel from "./VideoHeroReel";
-import VideoCategoriesGrid from "./VideoCategoriesGrid";
+import VideoProductsGrid from "./VideoProductsGrid";
 import VideoProcessSteps from "./VideoProcessSteps";
 import styles from "./page.module.css";
+
+export const metadata: Metadata = {
+  title: "Video & Audio Transfer",
+  description:
+    "VHS, camcorder tapes, audio cassettes, discs, and 8mm/Super 8/16mm film reels digitized to clean, shareable files in Salt Lake City.",
+};
 
 export default function VideoPage() {
   return (
@@ -25,7 +32,7 @@ export default function VideoPage() {
           </div>
         </section>
 
-        <VideoCategoriesGrid />
+        <VideoProductsGrid />
 
         <VideoProcessSteps />
       </main>

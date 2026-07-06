@@ -36,11 +36,17 @@
   /* Horizontal page padding — reduced on small screens below */
   --page-pad: 60px;
 
+  /* Vertical clearance under the fixed nav (60px bar + breathing room).
+     Every page's top padding AND every full-bleed hero's negative top margin
+     use this same token — they must cancel exactly or a gap opens above the
+     hero. The nav is 60px at every breakpoint, so this never changes. */
+  --nav-clearance: 80.5px;
+
   /* ---------- Layout grid ----------
      Site-wide column grid: 16 columns on desktop, 8 on tablet (≤900px),
      4 on mobile (≤700px), with 24px gutters. Layout containers use:
        display: grid;
-       grid-template-columns: repeat(var(--grid-cols), 1fr);
+       grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
        gap: var(--grid-gap);
      Nested grids with the same gap align exactly with the parent's column
      lines (an n-column span subdivided into n equal 1fr tracks reproduces

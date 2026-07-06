@@ -9,13 +9,13 @@
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 80.5px var(--page-pad) 80px;
+  padding: var(--nav-clearance) var(--page-pad) 80px;
 }
 
 /* Site column grid; photo + thumbs on columns 1–8, configurator on 9–16. */
 .layout {
   display: grid;
-  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   gap: var(--grid-gap);
   align-items: start;
 }
@@ -69,6 +69,15 @@
   object-position: center bottom;
 }
 
+/* Temporary product-shot block — solid bw-600 filling its frame, shown in the
+   product slot (first slide + first thumb) for sizes whose product photography
+   doesn't exist yet. Works in both .slide and .thumb (both position:relative). */
+.productFill {
+  position: absolute;
+  inset: 0;
+  background: var(--bw-600);
+}
+
 /* Landscape shots have vertical slack under `contain`; center them in the
    frame instead of bottom-anchoring (which strands them against the edge). */
 .image img[data-landscape] {
@@ -83,11 +92,10 @@
 }
 
 /* ---------- Thumbnail strip ----------
-   Apple Photos-style tiles: every thumb is a *square*, one site-column wide,
-   so the boxes read as uniform while each photo keeps its own shape inside
-   (scaled to fit, never cropped). Transparent tiles; the 2px selection
-   outline sits on the fitted photo itself — hugging its real edges — not on
-   the square container. Centered as a group under the photo. */
+   Uniform 1:1 square tiles, one site-column wide. The photo FILLS the square
+   edge-to-edge (cover — center-cropped). The selected state draws a 2px black
+   stroke on the INSIDE of the container, painted on top of the photo, so the
+   square never grows and the image never moves. */
 .thumbs {
   display: flex;
   justify-content: center;
@@ -102,32 +110,31 @@
   cursor: pointer;
   width: calc((100% - 7 * var(--grid-gap)) / 8);
   aspect-ratio: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: relative;
+  /* The square IS the boundary. The tile width is fractional (a 16th of the
+     content width), and a photo bitmap rasterized into a fractional box can
+     bleed a device pixel past its CSS box — without this clip it pokes out
+     past any stroke drawn at the edge. Clipping cuts the photo and the
+     selection stroke at the same rectangle, so they can never disagree. */
+  overflow: hidden;
 }
 
-/* The img sizes itself to fit the square at its natural ratio, so a border
-   here wraps exactly the visible photo. The transparent border is always
-   present to avoid any size jump on selection (border-box sizing). */
+/* Photo fills the whole square (cover, never letterboxed). */
 .thumb img {
-  display: block;
-  max-width: 100%;
-  max-height: 100%;
-  width: auto;
-  height: auto;
-  border: 2px solid transparent;
-  transition: border-color 0.15s ease;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
-.thumb[data-active] img {
-  border-color: var(--black);
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .thumb:not([data-active]):hover img {
-    border-color: var(--bw-200);
-  }
+/* Selected: 2px stroke on the inside of the square, painted over the photo. */
+.thumb[data-active]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--black);
+  pointer-events: none;
 }
 
 /* 24px rhythm between every section. Pinned to the right half explicitly —
@@ -240,15 +247,26 @@
   z-index: 2;
 }
 
-.info:hover .infoBtn,
+/* Hover reveal is scoped to real pointers (site convention) so touch users
+   don't get a stuck tooltip; keyboard focus reveals it everywhere. */
 .infoBtn:focus-visible {
   opacity: 1;
 }
 
-.info:hover .tooltip,
 .infoBtn:focus-visible ~ .tooltip {
   opacity: 1;
   pointer-events: auto;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .info:hover .infoBtn {
+    opacity: 1;
+  }
+
+  .info:hover .tooltip {
+    opacity: 1;
+    pointer-events: auto;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -379,7 +397,6 @@
 
 @media (max-width: 700px) {
   .page {
-    padding-top: 100px;
     padding-bottom: 60px;
   }
 

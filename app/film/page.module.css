@@ -1,7 +1,7 @@
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 80.5px var(--page-pad) 40px;
+  padding: var(--nav-clearance) var(--page-pad) 40px;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -14,9 +14,9 @@
    laid out on the site column grid. Mirrors Figma node 1760:690. */
 .hero {
   position: relative;
-  /* Full-bleed: cancel the page's top padding (80.5px) and side padding so
+  /* Full-bleed: cancel the page's top padding (--nav-clearance) and side padding so
      the photo runs edge-to-edge and starts at the very top of the viewport. */
-  margin: -80.5px calc(-1 * var(--page-pad)) 0;
+  margin: calc(-1 * var(--nav-clearance)) calc(-1 * var(--page-pad)) 0;
   min-height: 100svh;
   display: flex;
   flex-direction: column;
@@ -24,7 +24,7 @@
   /* Clear the fixed nav up top. Bottom space leaves ~13% of the hero below
      the text, matching the Figma composition (the wordmark's ink bottom lands
      at ~79% of the hero height rather than jammed against the edge). */
-  padding: 80.5px var(--page-pad) 13svh;
+  padding: var(--nav-clearance) var(--page-pad) 13svh;
   overflow: hidden;
   isolation: isolate;
 }
@@ -101,7 +101,7 @@
   font-size: calc(100vw * 200 / 1440);
   line-height: 0.85;
   letter-spacing: 0.02em;
-  color: #fff;
+  color: var(--paper-white);
   white-space: nowrap;
   /* Modern: trims line box to cap height in supporting browsers. */
   text-box: trim-both cap alphabetic;
@@ -192,7 +192,6 @@
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
   .page {
-    padding-top: 120px;
     padding-bottom: 80px;
     gap: 40px;
   }
@@ -203,7 +202,6 @@
    dedicated small-screen treatments will be added in a later pass. */
 @media (max-width: 700px) {
   .page {
-    padding-top: 100px;
     padding-bottom: 60px;
     gap: 32px;
   }

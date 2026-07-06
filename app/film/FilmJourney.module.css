@@ -73,30 +73,48 @@
   grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   column-gap: var(--grid-gap);
   align-items: start;
-  /* Type sits at the top of the photo, clear of the fixed nav (60px tall,
-     solid by the time this section is in view — 80.5px matches the
-     clearance used on the other pages). */
-  padding: 80.5px var(--page-pad) 100px;
+  /* Type sits at the top of the photo, clear of the fixed nav (60px tall, solid
+     by the time this section is in view). 100px = 60px nav + a 40px gap below
+     it, tuned for this section (a little more air than the site-wide
+     --nav-clearance). Keep in sync with .steps top. */
+  padding: 100px var(--page-pad) 100px;
 }
 
 /* ---------- Left: persistent numbered step nav ----------
-   A zero-height sticky wrapper pinned at the top of the section, so it doesn't
-   take layout space but stays fixed in the viewport across all four panels. The
-   nav is absolutely positioned inside it, on top of the photos. */
+   An absolutely-positioned rail spanning the whole section (zero layout
+   footprint), with the nav itself sticky inside it. Sticky clamps the nav
+   within the rail, so it pins in the viewport across all four panels but its
+   bottom edge can never pass the section's end — at the last panel it slides
+   up with the footer instead of bleeding over it. pointer-events off on the
+   full-section rail so it doesn't block the accordion; re-enabled on .steps. */
 .navOverlay {
-  position: sticky;
-  top: 0;
-  height: 0;
+  position: absolute;
+  inset: 0;
+  padding-inline: var(--page-pad);
   z-index: 5;
+  pointer-events: none;
 }
 
 .steps {
-  position: absolute;
-  top: 80.5px;
-  left: var(--page-pad);
+  position: sticky;
+  /* Matches .grid padding-top: 60px nav + 40px gap. */
+  top: 100px;
+  /* Extend the sticky box to the bottom of the viewport so its clamp against
+     the rail's end engages the moment the footer first appears — from then on
+     the nav scrolls up 1:1 with the last panel's in-flow content, staying
+     aligned with the Delivery heading instead of lingering pinned. */
+  height: calc(100dvh - 100px);
   display: flex;
   flex-direction: column;
   gap: 32px;
+  width: max-content;
+  /* The box now spans the viewport height — keep it click-through and
+     re-enable hits on the buttons themselves. */
+  pointer-events: none;
+}
+
+.steps .stepBtn {
+  pointer-events: auto;
 }
 
 .stepBtn {
@@ -299,10 +317,14 @@
 
   .steps {
     top: 64px;
-    right: var(--page-pad);
+    height: calc(100dvh - 64px);
     flex-direction: row;
     flex-wrap: wrap;
+    /* Keep wrapped lines packed at the top of the tall sticky box. */
+    align-content: flex-start;
     gap: 16px 20px;
+    /* Row layout spans the rail (minus its page padding) so labels can wrap. */
+    width: auto;
   }
 
   .heading {

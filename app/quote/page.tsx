@@ -7,8 +7,11 @@ import Nav from "../components/Nav";
 import QuoteForm from "./QuoteForm";
 import styles from "./page.module.css";
 
+// Leaf title only — the root layout's title template appends the brand.
 export const metadata = {
-  title: "Get a Quote — Nichols Photo Lab",
+  title: "Get a Quote",
+  description:
+    "Tell us about your film, print, or transfer order and we'll confirm pricing and turnaround.",
 };
 
 export default function QuotePage() {

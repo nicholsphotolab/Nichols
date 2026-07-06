@@ -34,7 +34,11 @@ export default function NavBar({
     }
 
     let raf = 0;
-    let scrolled = false;
+    // Starts null ("unknown") so the initial update() always writes the real
+    // state. Starting at false would skip the first write when the page loads
+    // unscrolled — leaving a stale data-nav-scrolled="true" on <html> after
+    // navigating here from a solid-nav page (black text over the dark hero).
+    let scrolled: boolean | null = null;
 
     const update = () => {
       raf = 0;

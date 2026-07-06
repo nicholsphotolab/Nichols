@@ -16,6 +16,14 @@
 // at the stock's gallery root is a shared product shot shown first for every
 // size. Stocks/sizes without a folder fall back to their product shots from
 // filmStocksData.
+//
+// The Sheet folder nests one level deeper — a subfolder per sheet size:
+//   public/FILM/gallery/bw/Sheet/4x5/
+//   public/FILM/gallery/bw/Sheet/5x7/
+//   public/FILM/gallery/bw/Sheet/8x10/
+// Each maps to a SHEET SIZE pill value, and the carousel shows only the
+// selected sheet size's photos (plus any loose images directly in Sheet/,
+// which show for every sheet size).
 
 import fs from "node:fs";
 import path from "node:path";
@@ -70,24 +78,62 @@ function galleryFor(slug: string, stock: FilmStock): StockGallery {
     if (!entry.isDirectory()) continue;
     const size = sizeForFolder(entry.name, stock);
     if (!size) continue;
-    const imgs = imagesIn(path.join(root, entry.name)).map(
+    const sizeDir = path.join(root, entry.name);
+    const imgs = imagesIn(sizeDir).map(
       (f) => `${base}/${encodeURIComponent(entry.name)}/${encodeURIComponent(f)}`
     );
     if (imgs.length > 0) bySize[size] = imgs;
+
+    // The SHEET folder nests one level deeper: a subfolder per sheet size
+    // (Sheet/4x5, Sheet/5x7, Sheet/8x10), matched case-insensitively against
+    // the stock's sheetSizes and keyed "SHEET/4X5" etc. The configurator shows
+    // only the selected sheet size's photos, so switching 4x5 → 8x10 swaps the
+    // strip — same behaviour as switching format. Loose images directly in
+    // Sheet/ stay under plain "SHEET" and show for every sheet size.
+    if (size !== "SHEET") continue;
+    let sheetEntries: fs.Dirent[] = [];
+    try {
+      sheetEntries = fs.readdirSync(sizeDir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const sub of sheetEntries) {
+      if (!sub.isDirectory()) continue;
+      const sheetSize = (stock.sheetSizes ?? []).find(
+        (s) => s === sub.name.toUpperCase()
+      );
+      if (!sheetSize) continue;
+      const sheetImgs = imagesIn(path.join(sizeDir, sub.name)).map(
+        (f) =>
+          `${base}/${encodeURIComponent(entry.name)}/${encodeURIComponent(sub.name)}/${encodeURIComponent(f)}`
+      );
+      if (sheetImgs.length > 0) bySize[`${size}/${sheetSize}`] = sheetImgs;
+    }
   }
 
-  // Fallback: if a size has no folder but the stock defines a per-size product
-  // shot in filmStocksData, surface that so the size still shows an image.
-  for (const [size, src] of Object.entries(stock.sizeImages ?? {})) {
-    if (!bySize[size] && src) bySize[size] = [src];
-  }
-
+  // No sizeImages fallback here — the configurator always leads the lineup
+  // with the size's product shot from filmStocksData (or the temporary
+  // placeholder block), so surfacing it in bySize would duplicate it.
   return { product, bySize };
 }
 
 // Tell Next.js which slugs to statically generate at build time.
 export function generateStaticParams() {
   return Object.keys(STOCKS).map((stock) => ({ stock }));
+}
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ stock: string }>;
+}) {
+  const { stock } = await params;
+  const data = STOCKS[stock];
+  if (!data) return {};
+  return {
+    title: `${data.name} Film Developing`,
+    description: data.blurb,
+  };
 }
 
 export default async function FilmStockPage({

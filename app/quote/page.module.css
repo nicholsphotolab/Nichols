@@ -4,7 +4,7 @@
 .page {
   background: var(--paper-white);
   color: var(--black);
-  padding: 80.5px var(--page-pad) 80px;
+  padding: var(--nav-clearance) var(--page-pad) 80px;
   display: flex;
   flex-direction: column;
   gap: 48px;
@@ -137,7 +137,6 @@
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
   .page {
-    padding-top: 120px;
     padding-bottom: 60px;
   }
 }
@@ -150,7 +149,6 @@
 
 @media (max-width: 700px) {
   .page {
-    padding-top: 100px;
     padding-bottom: 48px;
     gap: 32px;
   }

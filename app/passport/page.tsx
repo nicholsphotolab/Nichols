@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Nav from "../components/Nav";
 import PassportPackages from "./PassportPackages";
 import { withBasePath } from "../lib/basePath";
 import styles from "./page.module.css";
+
+export const metadata: Metadata = {
+  title: "Passport Photos",
+  description:
+    "Walk-in passport photos in Salt Lake City — US and international sizes, shot and printed in-house while you wait. Monday–Friday, 9AM–4PM.",
+};
 
 export default function PassportPage() {
   return (

@@ -31,7 +31,15 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  title: "Nichols Photo Lab",
+  // Production domain — used to resolve absolute URLs in the sitemap and any
+  // future OpenGraph tags. The GitHub Pages preview deploy ignores this.
+  metadataBase: new URL("https://nicholsphotolab.com"),
+  // Pages set their own leaf title (e.g. "Film Developing"); the template
+  // appends the brand. The home page uses the default.
+  title: {
+    default: "Nichols Photo Lab",
+    template: "%s — Nichols Photo Lab",
+  },
   description:
     "Salt Lake City film lab. Develop, scan, and print. Prints, video transfer, and passport photos.",
   icons: {

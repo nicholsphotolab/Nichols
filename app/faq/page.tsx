@@ -5,8 +5,9 @@ import { FAQ_SECTIONS } from "./faqData";
 import { withBasePath } from "../lib/basePath";
 import styles from "./page.module.css";
 
+// Leaf title only — the root layout's title template appends the brand.
 export const metadata = {
-  title: "FAQ — Nichols Photo Lab",
+  title: "FAQ",
   description:
     "Answers to common questions about film processing, prints, passport photos, and general store info.",
 };

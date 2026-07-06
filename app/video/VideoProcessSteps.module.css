@@ -10,7 +10,7 @@
 /* Site column grid: step list spans 4 columns, item detail spans 12 */
 .layout {
   display: grid;
-  grid-template-columns: repeat(var(--grid-cols), 1fr);
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   gap: var(--grid-gap);
   align-items: start;
 }
@@ -76,7 +76,7 @@
    Name spans 5, description spans 7. */
 .itemRow {
   display: grid;
-  grid-template-columns: repeat(12, 1fr);
+  grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: var(--grid-gap);
   padding: 20px 0;
 }
@@ -139,7 +139,7 @@
   }
 
   .itemRow {
-    grid-template-columns: repeat(8, 1fr);
+    grid-template-columns: repeat(8, minmax(0, 1fr));
   }
 
   .itemName,
@@ -176,7 +176,7 @@
 
   /* 4-col mobile: name and description stack, each full-row */
   .itemRow {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 6px;
     padding: 14px 0;
   }

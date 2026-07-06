@@ -1,10 +1,17 @@
 import fs from "node:fs";
 import path from "node:path";
+import type { Metadata } from "next";
 import Nav from "../components/Nav";
 import FilmHero, { type HeroSlide } from "./FilmHero";
 import FilmStocksGrid from "./FilmStocksGrid";
 import FilmJourney from "./FilmJourney";
 import styles from "./page.module.css";
+
+export const metadata: Metadata = {
+  title: "Film Developing",
+  description:
+    "C-41, black & white, and E-6 film developing in Salt Lake City — 35mm, 120, 110, disposables, and sheet film, developed and scanned in-house.",
+};
 
 // Auto-build the hero slides from the image files in public/FILM/. Each file is
 // named "Stock_Process_Format" (underscore-delimited) — e.g.

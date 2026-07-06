@@ -7,7 +7,7 @@ export default function Home() {
     <>
       <Hero />
       <ServicesIndex />
-      <Nav />
+      <Nav solid />
     </>
   );
 }

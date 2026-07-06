@@ -14,6 +14,20 @@ export function generateStaticParams() {
   return CATEGORIES.map((c) => ({ category: c.slug }));
 }
 
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ category: string }>;
+}) {
+  const { category } = await params;
+  const data = CATEGORIES_BY_SLUG[category];
+  if (!data) return {};
+  return {
+    title: `${data.name} Transfer`,
+    description: data.description,
+  };
+}
+
 export default async function VideoCategoryPage({
   params,
 }: {
@@ -27,8 +41,10 @@ export default async function VideoCategoryPage({
 
   return (
     <>
-      <Nav activeHref="/video" />
-      <VideoTransferConfigurator category={data} />
+      {/* Solid white bar from the top — this page has no dark hero photo for the
+          transparent scrim to sit over (matches the film calculator). */}
+      <Nav activeHref="/video" solid />
+      <VideoTransferConfigurator initialSlug={data.slug} />
     </>
   );
 }
