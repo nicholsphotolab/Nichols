@@ -1,21 +1,25 @@
 // VideoProductsGrid.tsx
 // The "Video & Audio Transfer" products section — the video counterpart to the
 // film page's FilmStocksGrid. A header row with the title + ← / → paging arrows,
-// and a row of product cards below it (one per format/size). Each card is 4 grid
-// columns wide with a single gutter between them, so 4 cards fill the 16-column
+// and a row of product cards below it (one per format/size). Each card is 3 grid
+// columns wide with a single gutter between them, so 4 cards fill the 12-column
 // row on desktop. The arrows page the row one card at a time and grey out at
 // each end. The card hover state reveals a 42px ↗ arrow and a 2px underline.
 //
 // Cards are flattened from both categories in videoTransferData. Tape/disc
 // formats keep their plain name (VHS, MINI DV…); reel sizes render as
-// "REEL 3 IN." etc. Each card links to its category's estimator — mirroring the
-// film grid, where several cards can point at the same stock page.
+// "REEL 3 IN." etc. Each card deep-links to its exact category + format
+// combination — mirroring the film grid: the path picks the estimator and
+// ?format= preselects the FORMAT/SIZE pill (the configurator restores it on
+// mount). Each category's first option is the configurator default, so that
+// card keeps the clean path, matching the defaults-omitted URL convention.
 
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { CATEGORIES } from "./videoTransferData";
+import { slugifyOption } from "../lib/urlState";
 import styles from "./VideoProductsGrid.module.css";
 
 type Card = { title: string; priceLine: string; href: string };
@@ -25,7 +29,9 @@ const CARDS: Card[] = CATEGORIES.flatMap((c) =>
     title:
       c.slug === "reels" ? `REEL ${o.name.replace(/IN$/i, "")} IN.` : o.name,
     priceLine: `Starting at $${o.price.toFixed(2)}`,
-    href: `/video/${c.slug}`,
+    href:
+      `/video/${c.slug}` +
+      (o.name === c.options[0].name ? "" : `?format=${slugifyOption(o.name)}`),
   }))
 );
 

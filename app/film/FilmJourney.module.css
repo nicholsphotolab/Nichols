@@ -90,7 +90,9 @@
 .navOverlay {
   position: absolute;
   inset: 0;
-  padding-inline: var(--page-pad);
+  /* Top padding matches .grid padding-top so the nav's natural (un-pinned)
+     position lines up with the step heading — same 100px offset it pins at. */
+  padding: 100px var(--page-pad) 0;
   z-index: 5;
   pointer-events: none;
 }
@@ -156,7 +158,7 @@
 /* ---------- Right: active step content ---------- */
 /* Plain in-flow column — it scrolls natively past the pinned photo. */
 .content {
-  grid-column: 9 / 17;
+  grid-column: 7 / 13;
   display: flex;
   flex-direction: column;
   gap: 20px;
@@ -303,7 +305,7 @@
 }
 
 /* ---------- Responsive ---------- */
-/* 8-col tablet: step nav becomes a horizontal row pinned at the top, content
+/* Tablet: step nav becomes a horizontal row pinned at the top, content
    spans full width below it. */
 @media (max-width: 900px) {
   .grid {
@@ -313,6 +315,11 @@
 
   .content {
     grid-column: 1 / -1;
+  }
+
+  .navOverlay {
+    /* Match the row nav's 64px pin position (see .steps top below). */
+    padding-top: 64px;
   }
 
   .steps {
@@ -333,14 +340,14 @@
 }
 
 @media (max-width: 700px) {
-  .grid {
-    /* Keep the top room for the pinned nav row; tighten the bottom. */
-    padding: 120px var(--page-pad) 48px;
+  /* No step nav on mobile — the headings on each panel carry the sequence. */
+  .navOverlay {
+    display: none;
   }
 
-  .stepBtn {
-    font-size: 14px;
-    gap: 6px;
+  .grid {
+    /* No nav row to clear anymore — just clear the fixed site nav. */
+    padding: 100px var(--page-pad) 48px;
   }
 
   .heading {

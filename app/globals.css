@@ -43,8 +43,8 @@
   --nav-clearance: 80.5px;
 
   /* ---------- Layout grid ----------
-     Site-wide column grid: 16 columns on desktop, 8 on tablet (≤900px),
-     4 on mobile (≤700px), with 24px gutters. Layout containers use:
+     Site-wide column grid: 12 columns at every breakpoint, with 24px
+     gutters. Layout containers use:
        display: grid;
        grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
        gap: var(--grid-gap);
@@ -53,15 +53,15 @@
      the parent columns). For a non-grid element that must match an
      n-column span:
        width: calc(100% * n / cols - var(--grid-gap) * (cols - n) / cols); */
-  --grid-cols: 16;
+  --grid-cols: 12;
   --grid-gap: 24px;
 
   /* ---------- Hero title scale ----------
      One size for every page's hero wordmark (FILM, VIDEO, FAQ, QUOTE…),
-     derived from FILM's ink filling an 8-column span:
-     8-col span = (content width) / 2 − (grid gap) / 2, divided by 2.1221 —
+     derived from FILM's ink filling a 6-column span (half the grid):
+     6-col span = (content width) / 2 − (grid gap) / 2, divided by 2.1221 —
      the measured ink width of "FILM" in InterVariable (wght 700, opsz 32)
-     at -0.02em tracking. Other titles run wider or narrower than 8 columns;
+     at -0.02em tracking. Other titles run wider or narrower than 6 columns;
      their heights all match. */
   --hero-type-size: clamp(40px,
       calc(((100vw - 2 * var(--page-pad)) / 2 - var(--grid-gap) / 2) / 2.1221),
@@ -75,16 +75,9 @@
   --image-ratio-wide: 20.3075 / 15.1929;
 }
 
-@media (max-width: 900px) {
-  :root {
-    --grid-cols: 8;
-  }
-}
-
 @media (max-width: 700px) {
   :root {
     --page-pad: 20px;
-    --grid-cols: 4;
   }
 }
 
@@ -92,7 +85,7 @@
    Drop-in container on the site column grid. minmax(0, 1fr) (rather than
    plain 1fr) keeps wide content — long words, media, pre blocks — from
    blowing out column widths. Place children with grid-column
-   (e.g. grid-column: 1 / 9 or span 8) and redefine spans per breakpoint
+   (e.g. grid-column: 1 / 7 or span 6) and redefine spans per breakpoint
    where needed. Toggle the column overlay with the G key to check
    alignment (GridOverlay component, mounted in the root layout). */
 .grid {

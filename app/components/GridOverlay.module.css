@@ -17,17 +17,3 @@
 .overlay span {
   background: rgba(255, 92, 92, 0.18);
 }
-
-/* Fewer columns below the site breakpoints — hide the extra tiles or
-   they'd wrap onto a second row. */
-@media (max-width: 900px) {
-  .overlay span:nth-child(n + 9) {
-    display: none;
-  }
-}
-
-@media (max-width: 700px) {
-  .overlay span:nth-child(n + 5) {
-    display: none;
-  }
-}

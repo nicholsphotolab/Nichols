@@ -40,8 +40,8 @@
   display: flex;
   flex-direction: column;
   gap: 36px;
-  /* 11 of 16 site-grid columns, same measure as the FAQ sections */
-  width: calc(100% * 11 / 16 - var(--grid-gap) * 5 / 16);
+  /* 8 of 12 site-grid columns, same measure as the FAQ sections */
+  width: calc(100% * 8 / 12 - var(--grid-gap) * 4 / 12);
   max-width: 720px;
 }
 

@@ -15,9 +15,9 @@
   align-items: start;
 }
 
-/* 16-col desktop: 4 cards × 4 columns */
+/* Desktop: 4 cards × 3 columns */
 .card {
-  grid-column: span 4;
+  grid-column: span 3;
   min-width: 0;
 }
 
@@ -52,7 +52,11 @@
   overflow: hidden;
 }
 
-.image img {
+.image img,
+.image video {
+  /* next/image fill makes the img absolute; match it for the video preview. */
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -66,24 +70,25 @@
 /* Hover: the hovered card's image zooms slightly; every other card's image
    drops to black & white. Matches the film stocks grid. */
 @media (hover: hover) and (pointer: fine) {
-  .grid:has(.card:hover) .card:not(:hover) .image img {
+  .grid:has(.card:hover) .card:not(:hover) .image :is(img, video) {
     filter: saturate(0);
   }
-  .card:hover .image img {
+  .card:hover .image :is(img, video) {
     transform: scale(1.1);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .image img {
+  .image img,
+  .image video {
     transition: none;
   }
 }
 
-/* 8-col tablet: still one row — 4 cards × 2 columns */
+/* Tablet: still one row — 4 cards × 3 columns */
 @media (max-width: 900px) {
   .card {
-    grid-column: span 2;
+    grid-column: span 3;
   }
 
   .section {
@@ -91,7 +96,7 @@
   }
 }
 
-/* 4-col mobile: a single airy column — each card centered at a 3-column
+/* Mobile: a single airy column — each card centered at a 9-column
    measure with its label hanging off the image's left edge, big gaps
    between cards (Adcker-style index). */
 @media (max-width: 700px) {
@@ -102,8 +107,8 @@
   .card {
     grid-column: 1 / -1;
     justify-self: center;
-    /* 3 of 4 columns: 100% × 3/4 − gap × 1/4 */
-    width: calc(100% * 3 / 4 - var(--grid-gap) / 4);
+    /* 9 of 12 columns: 100% × 9/12 − gap × 3/12 */
+    width: calc(100% * 9 / 12 - var(--grid-gap) * 3 / 12);
     min-width: 220px;
   }
 

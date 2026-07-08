@@ -26,7 +26,7 @@
   width: 100%;
 }
 
-/* Two cards: 7 columns each, with a 2-column gap between (7 + 2 + 7 = 16). */
+/* Two cards: 5 columns each, with a 2-column gap between (5 + 2 + 5 = 12). */
 .card {
   display: flex;
   flex-direction: column;
@@ -34,11 +34,11 @@
 }
 
 .card:nth-child(1) {
-  grid-column: 1 / span 7;
+  grid-column: 1 / span 5;
 }
 
 .card:nth-child(2) {
-  grid-column: 10 / span 7;
+  grid-column: 8 / span 5;
 }
 
 /* The clickable area: image + title/price + arrow. */
@@ -148,17 +148,17 @@
 }
 
 /* ---------- Responsive ---------- */
-/* 8-col tablet: two cards, 4 columns each (4 + 4 = 8, gutter between). */
+/* Tablet: two cards, 6 columns each (6 + 6 = 12, gutter between). */
 @media (max-width: 900px) {
   .card:nth-child(1) {
-    grid-column: 1 / span 4;
+    grid-column: 1 / span 6;
   }
   .card:nth-child(2) {
-    grid-column: 5 / span 4;
+    grid-column: 7 / span 6;
   }
 }
 
-/* 4-col mobile: stack the cards full width. */
+/* Mobile: stack the cards full width. */
 @media (max-width: 700px) {
   .cards {
     row-gap: 48px;

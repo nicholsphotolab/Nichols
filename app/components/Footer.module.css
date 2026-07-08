@@ -57,7 +57,7 @@
 }
 
 /* ---------- Columns ----------
-   Four columns on the site grid (4 columns each on the 16-col desktop grid).
+   Four columns on the site grid (3 columns each on the 12-col desktop grid).
    Stacks vertically below 900px. */
 .cols {
   display: grid;
@@ -71,7 +71,7 @@
 .nav,
 .hoursBlock,
 .contact {
-  grid-column: span 4;
+  grid-column: span 3;
 }
 
 /* ---------- Unified type treatment ----------
@@ -179,19 +179,19 @@
     display: none;
   }
 
-  /* One row on the 4-col mobile grid: ©2026 (1 col) | hours (1 col) |
-     address + phone (2 cols). Undoes the tablet full-width stack. */
+  /* One row on the 12-col mobile grid: ©2026 (3 cols) | hours (3 cols) |
+     address + phone (6 cols). Undoes the tablet full-width stack. */
   .copyright {
     order: 0;
-    grid-column: span 1;
+    grid-column: span 3;
   }
 
   .hoursBlock {
-    grid-column: span 1;
+    grid-column: span 3;
   }
 
   .contact {
-    grid-column: span 2;
+    grid-column: span 6;
   }
 
   /* Mobile tracks are narrow — scale the unified type down and keep each

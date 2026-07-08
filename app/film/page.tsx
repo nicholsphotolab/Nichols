@@ -13,17 +13,22 @@ export const metadata: Metadata = {
     "C-41, black & white, and E-6 film developing in Salt Lake City — 35mm, 120, 110, disposables, and sheet film, developed and scanned in-house.",
 };
 
-// Auto-build the hero slides from the image files in public/FILM/. Each file is
-// named "Stock_Process_Format" (underscore-delimited) — e.g.
+// Auto-build the hero slides from the image files in a public/ folder. Each
+// file is named "Stock_Process_Format" (underscore-delimited) — e.g.
 // "Portra 400_C-41_120.webp" → caption "Portra 400" / "C-41 • 120". A trailing
 // "-N" before the extension (used to keep multiple shots of one stock unique,
 // e.g. "..._DISPOSABLE-2.webp") is ignored when building the caption. Each image
 // is one slide; drop more files in and they become slides, no code change
 // needed. Subdirectories (e.g. FILM/HighRes) are ignored.
+//
+// Two sets are built: public/FILM/ for tablet/desktop and public/FILM/mobile/
+// for the ≤700px breakpoint (mobile wants different crops/photos). If the
+// mobile folder is empty or missing, mobile falls back to the desktop set.
 const IMAGE_RE = /\.(jpe?g|png|webp)$/i;
 
-function getHeroSlides(): HeroSlide[] {
-  const filmDir = path.join(process.cwd(), "public", "FILM");
+function getHeroSlides(...segments: string[]): HeroSlide[] {
+  const filmDir = path.join(process.cwd(), "public", ...segments);
+  const urlBase = `/${segments.join("/")}`;
   let files: string[];
   try {
     files = fs.readdirSync(filmDir).sort();
@@ -44,7 +49,7 @@ function getHeroSlides(): HeroSlide[] {
       .filter(Boolean);
 
     slides.push({
-      src: `/FILM/${encodeURIComponent(file)}`,
+      src: `${urlBase}/${encodeURIComponent(file)}`,
       meta: [stock, rest.join(" • ")],
     });
   }
@@ -53,14 +58,15 @@ function getHeroSlides(): HeroSlide[] {
 }
 
 export default function FilmPage() {
-  const heroSlides = getHeroSlides();
+  const heroSlides = getHeroSlides("FILM");
+  const mobileHeroSlides = getHeroSlides("FILM", "mobile");
 
   return (
     <>
       <Nav activeHref="/film" />
 
       <main className={styles.page}>
-        <FilmHero slides={heroSlides} />
+        <FilmHero slides={heroSlides} mobileSlides={mobileHeroSlides} />
 
         <FilmStocksGrid />
 

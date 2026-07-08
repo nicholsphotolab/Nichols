@@ -7,7 +7,7 @@
   padding: 80px 0;
 }
 
-/* Site column grid: step list spans 4 columns, item detail spans 12 */
+/* Site column grid: step list spans 3 columns, item detail spans 9 */
 .layout {
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
@@ -17,7 +17,7 @@
 
 /* ---------- Step list (left column) ---------- */
 .stepList {
-  grid-column: span 4;
+  grid-column: span 3;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -61,7 +61,7 @@
 
 /* ---------- Item list (right column) ---------- */
 .itemList {
-  grid-column: span 12;
+  grid-column: span 9;
   display: flex;
   flex-direction: column;
 }
@@ -71,9 +71,9 @@
   flex-direction: column;
 }
 
-/* Name + description on the site grid: the item list spans 12 page columns,
-   so 12 equal tracks with the same gap reproduce the page columns exactly.
-   Name spans 5, description spans 7. */
+/* Name + description split 5:7 across 12 equal tracks with the site gutter.
+   (The item list now spans 9 of the 12 page columns, so these tracks no
+   longer sit on page column lines — the 5:7 proportion is what's kept.) */
 .itemRow {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
@@ -121,8 +121,8 @@
 }
 
 /* ---------- Responsive ---------- */
-/* 8-col tablet: steps stack above the items, both full-row;
-   name/description re-split as 4 + 4 of 8 */
+/* Tablet: steps stack above the items, both full-row;
+   name/description re-split as 6 + 6 of 12 */
 @media (max-width: 900px) {
   .layout {
     row-gap: 32px;
@@ -139,12 +139,12 @@
   }
 
   .itemRow {
-    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
   }
 
   .itemName,
   .itemDescription {
-    grid-column: span 4;
+    grid-column: span 6;
   }
 }
 
@@ -174,9 +174,9 @@
     line-height: 1.5;
   }
 
-  /* 4-col mobile: name and description stack, each full-row */
+  /* Mobile: name and description stack, each full-row */
   .itemRow {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(12, minmax(0, 1fr));
     gap: 6px;
     padding: 14px 0;
   }

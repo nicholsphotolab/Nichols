@@ -10,7 +10,7 @@
 /* ---------- Hero: full-bleed reel + VIDEO wordmark over a dark scrim ----------
    Same pattern as the film/passport pages (Figma node 1775:1334): the hero
    breaks out of the page padding to span the full viewport, under the fixed
-   global nav. The looping reel (VideoHeroReel) is the background layer; title
+   global nav. The digitized clips (VideoHero) are the background layer; title
    and description are pinned bottom-left on the site column grid. */
 .hero {
   position: relative;
@@ -27,6 +27,48 @@
   isolation: isolate;
 }
 
+/* Stacked hero clips — same choreography as the film hero's slides: all share
+   the same box, parked off-screen to the right until it's their turn. On
+   change, the active clip slides out to the left (heroSlidePrev) while the
+   next slides in from the right (heroSlideActive), both easing in/out
+   together. Clips that are neither active nor the one just retired snap back
+   to their parked position with no transition, so the snap never shows on
+   screen. Duration matches SLIDE_MS (1600ms) in VideoHero.tsx. */
+.heroSlide {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: var(--bw-200);
+  z-index: 0;
+  transform: translateX(100%);
+  transition: none;
+}
+
+.heroSlideActive {
+  transform: translateX(0);
+  transition: transform 1600ms var(--ease-carousel);
+  z-index: 2; /* incoming clip rides over the outgoing one */
+}
+
+.heroSlidePrev {
+  transform: translateX(-100%);
+  transition: transform 1600ms var(--ease-carousel);
+  z-index: 1;
+}
+
+/* Reduced motion: clips never autoplay (posters show instead) and the dots
+   swap instantly — drop the transition so positions never tween. */
+@media (prefers-reduced-motion: reduce) {
+  .heroSlide,
+  .heroSlideActive,
+  .heroSlidePrev {
+    transition: none;
+  }
+}
+
 /* Bottom-weighted gradient for legibility. Same character as the film/passport
    heroes, but a touch stronger: the reel footage runs dark and varies frame to
    frame, so the photo pages' lighter scrim reads as invisible here. This keeps
@@ -34,7 +76,7 @@
 .heroScrim {
   position: absolute;
   inset: 0;
-  z-index: 1;
+  z-index: 3;
   background: linear-gradient(
     to top,
     rgba(1, 1, 1, 0.7) 0%,
@@ -45,14 +87,14 @@
 
 .heroContent {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   column-gap: var(--grid-gap);
 }
 
 .title {
-  grid-column: 1 / 9;
+  grid-column: 1 / 7;
   grid-row: 1;
   margin: 0;
   /* V's left side bearing (InterVariable, wght 700 / opsz 32) — pull the ink
@@ -73,7 +115,7 @@
 .heroDescription {
   /* Wider span than the other heroes so this longer copy still lands on
      exactly two lines; text-wrap: balance evens the two lines. */
-  grid-column: 1 / 15;
+  grid-column: 1 / 12;
   grid-row: 2;
   margin: 0;
   margin-top: clamp(14px, 1.8vw, 28px);
@@ -93,7 +135,7 @@
    bottom-aligned with the description (matches the film/passport heroes).
    14px at 1440, scaling with the hero. */
 .heroMeta {
-  grid-column: 15 / 17;
+  grid-column: 11 / 13;
   grid-row: 2;
   align-self: end;
   margin: 0;
@@ -105,6 +147,61 @@
   white-space: nowrap;
   text-align: right;
   text-box: trim-both cap alphabetic;
+}
+
+/* Clip indicator dots — same construction as the film hero's: one dot per
+   clip in a tight row under the description, 10px between dots, first dot
+   flush with the content's left edge. The active clip's dot is full white;
+   the rest sit at 50% opacity. Each dot is a button that jumps to its clip.
+   The button box is oversized for the tap target: 18px wide so adjacent hit
+   areas tile exactly edge to edge (8px dot + 5px each side = the 10px visual
+   gap, no overlap), 24px tall with negative vertical margins so the row keeps
+   its 8px height. The row shifts left 5px to cancel the first button's
+   padding. */
+.heroIndicators {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: flex;
+  margin-top: clamp(14px, 1.8vw, 28px);
+  margin-left: -5px;
+}
+
+.heroIndicatorDot {
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 24px;
+  margin: -8px 0;
+  padding: 0;
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.heroIndicatorDot::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--paper-white);
+  opacity: 0.5;
+  transition: opacity 300ms var(--ease-out);
+}
+
+.heroIndicatorDotActive::before,
+.heroIndicatorDot:focus-visible::before {
+  opacity: 1;
+}
+
+@media (hover: hover) {
+  .heroIndicatorDot:hover::before {
+    opacity: 1;
+  }
+}
+
+.heroIndicatorDot:focus-visible {
+  outline: 1px solid var(--paper-white);
+  outline-offset: 2px;
 }
 
 /* ---------- Divider ---------- */

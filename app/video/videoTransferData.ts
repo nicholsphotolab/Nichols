@@ -19,11 +19,22 @@ export const OUTPUTS: VideoOutput[] = [
   { name: "DVD/CD", price: 6 },
 ];
 
+// A gallery entry for the configurator's left column: a silent web-encoded
+// clip of digitized footage (under public/VIDEO/, masters in /masters/VIDEO/)
+// plus its poster frame, which doubles as the thumbnail.
+export type VideoMediaItem = {
+  video: string;
+  poster: string;
+};
+
 export type VideoOption = {
   name: string;
   price: number;
   /** Short description used by the process steps section. */
   description?: string;
+  /** Sample clips shown in the configurator gallery after the reserved
+      product-shot slot when this format is selected. */
+  media?: VideoMediaItem[];
 };
 
 export type VideoCategory = {
@@ -66,6 +77,7 @@ export const CATEGORIES: VideoCategory[] = [
         name: "HI8",
         price: 18,
         description: "Hi8 and Video8 camcorder tapes digitized to modern files.",
+        media: [{ video: "/VIDEO/Hi8.mp4", poster: "/VIDEO/Hi8-Poster.jpg" }],
       },
       {
         name: "MINI DV",

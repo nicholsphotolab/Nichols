@@ -1,6 +1,6 @@
 // GridOverlay.tsx
 // Toggleable debug overlay that draws the site column grid over the page —
-// 16 columns desktop, 8 tablet, 4 mobile, sharing the exact tokens layouts
+// 12 columns at every breakpoint, sharing the exact tokens layouts
 // use (--grid-cols, --grid-gap, --page-pad) so it always reflects reality.
 // Press G to toggle; the state persists in localStorage across reloads.
 // Mounted once in app/layout.tsx. Renders nothing until toggled on.
@@ -49,9 +49,8 @@ export default function GridOverlay() {
 
   return (
     <div className={styles.overlay} aria-hidden="true">
-      {/* 16 tiles cover the widest grid; the extras are hidden per
-          breakpoint in the CSS so they don't wrap to a second row. */}
-      {Array.from({ length: 16 }, (_, i) => (
+      {/* One tile per column — the grid is 12 columns at every breakpoint. */}
+      {Array.from({ length: 12 }, (_, i) => (
         <span key={i} />
       ))}
     </div>

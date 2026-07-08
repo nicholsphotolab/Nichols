@@ -1,8 +1,8 @@
 /* FilmStocksGrid.module.css
    "Film Development & Scans" section (Figma node 1960:880): a header row with
-   the title + ← / → paging arrows, and a row of product cards. Each card is 4
+   the title + ← / → paging arrows, and a row of product cards. Each card is 3
    grid columns wide with a single gutter between them, so 4 cards fill the
-   16-column row. The arrows page the row (one card per click) and grey out at
+   12-column row. The arrows page the row (one card per click) and grey out at
    each end. The card hover state reveals a 42px ↗ arrow and a 2px underline. */
 
 .wrapper {
@@ -66,8 +66,8 @@
     (100% - (var(--grid-cols) - 1) * var(--grid-gap)) / var(--grid-cols)
   );
   display: flex;
-  /* Single gutter between cards (no empty column), so 4 four-column cards fill
-     the 16-column row exactly. */
+  /* Single gutter between cards (no empty column), so 4 three-column cards
+     fill the 12-column row exactly. */
   gap: var(--grid-gap);
   overflow-x: auto;
   overflow-y: hidden;
@@ -84,7 +84,8 @@
 
 /* ---------- Card ---------- */
 .card {
-  flex: 0 0 calc(4 * var(--col-unit) + 3 * var(--grid-gap));
+  /* 3 of 12 columns (quarter row); tablet/mobile widths override below. */
+  flex: 0 0 calc(3 * var(--col-unit) + 2 * var(--grid-gap));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -206,9 +207,59 @@
   }
 }
 
+/* Tablet: two cards per row (6 of 12 columns each). */
+@media (max-width: 900px) {
+  .card {
+    flex-basis: calc(6 * var(--col-unit) + 5 * var(--grid-gap));
+  }
+}
+
+/* Mobile (Figma node 2370:2315): no carousel — arrows hidden, all cards in a
+   two-column vertical grid with a 16px gutter. Titles stack their two parts
+   ("C-41" / "35MM"), the ↗ arrow and rule are always visible (no hover on
+   touch), and the rule thins to a 1px divider. */
 @media (max-width: 700px) {
+  .arrows {
+    display: none;
+  }
+
+  .track {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 16px;
+    overflow: visible;
+  }
+
+  .card {
+    gap: 4px;
+  }
+
   .cardName {
     white-space: normal;
     font-size: 20px;
+  }
+
+  .cardNamePart {
+    display: block;
+  }
+
+  .cardNameSep {
+    display: none;
+  }
+
+  .cardPrice {
+    font-size: 14px;
+  }
+
+  .cardArrow {
+    font-size: 24px;
+    margin-top: -0.15em;
+    opacity: 1;
+    transform: none;
+  }
+
+  .cardRule {
+    height: 1px;
+    opacity: 1;
   }
 }

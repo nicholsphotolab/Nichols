@@ -1,10 +1,15 @@
 // FilmStocksGrid.tsx
 // The "Film Development & Scans" products section (Figma node 1960:880). A
 // header row with the title and ← / → paging arrows (top-right), and a row of
-// product cards below it. Each card is 4 grid columns wide with a single gutter
-// between them, so 4 cards fill the 16-column row on desktop. The arrows page
+// product cards below it. Each card is 3 grid columns wide with a single gutter
+// between them, so 4 cards fill the 12-column row on desktop. The arrows page
 // the row one card at a time and grey out (disabled) at each end. No free
 // scroll — the arrows drive a programmatic scroll.
+//
+// Mobile (≤700px, Figma node 2370:2315): no carousel — the arrows are hidden
+// and all cards flow in a two-column vertical grid. Card titles stack their
+// process/format parts on two lines there ("C-41" / "35MM"), which is why the
+// title is rendered in parts with the "•" as a separate hideable span.
 
 "use client";
 
@@ -14,15 +19,19 @@ import Image from "next/image";
 import { withBasePath } from "../lib/basePath";
 import styles from "./FilmStocksGrid.module.css";
 
+// Each card deep-links to its exact stock + format combination: the path
+// picks the stock and ?format= preselects the FORMAT pill (the configurator
+// restores it on mount). 35MM is the configurator default, so those cards
+// keep the clean path — matching the defaults-omitted URL convention.
 const STOCKS = [
   { title: "C‑41 • 35MM", priceLine: "Starting at $6.50", image: "/C-41_35mm.webp", href: "/film/c-41" },
   { title: "B&W • 35MM", priceLine: "Starting at $8.50", image: "/B%26W_35mm.webp", href: "/film/bw" },
   { title: "E‑6 • 35MM", priceLine: "Starting at $8.50", image: "/E-6_35mm.webp", href: "/film/e-6" },
-  { title: "C‑41 • DISPOSABLE", priceLine: "Starting at $6.50", image: null, href: "/film/c-41" },
-  { title: "B&W • DISPOSABLE", priceLine: "Starting at $8.50", image: null, href: "/film/bw" },
-  { title: "C‑41 • 120", priceLine: "Starting at $6.50", image: "/C-41-120.webp", href: "/film/c-41" },
-  { title: "B&W • 120", priceLine: "Starting at $8.50", image: null, href: "/film/bw" },
-  { title: "E‑6 • 120", priceLine: "Starting at $8.50", image: null, href: "/film/e-6" },
+  { title: "C‑41 • DISPOSABLE", priceLine: "Starting at $6.50", image: null, href: "/film/c-41?format=disposable-camera" },
+  { title: "B&W • DISPOSABLE", priceLine: "Starting at $8.50", image: null, href: "/film/bw?format=disposable-camera" },
+  { title: "C‑41 • 120", priceLine: "Starting at $6.50", image: "/C-41-120.webp", href: "/film/c-41?format=120" },
+  { title: "B&W • 120", priceLine: "Starting at $8.50", image: null, href: "/film/bw?format=120" },
+  { title: "E‑6 • 120", priceLine: "Starting at $8.50", image: null, href: "/film/e-6?format=120" },
 ];
 
 export default function FilmStocksGrid() {
@@ -97,7 +106,7 @@ export default function FilmStocksGrid() {
                   alt=""
                   fill
                   className={styles.cardImg}
-                  sizes="(max-width: 700px) 90vw, (max-width: 900px) 45vw, 25vw"
+                  sizes="(max-width: 900px) 45vw, 25vw"
                 />
               ) : (
                 <div className={styles.cardImageFill} />
@@ -105,7 +114,14 @@ export default function FilmStocksGrid() {
             </div>
             <div className={styles.cardMeta}>
               <div className={styles.cardText}>
-                <h3 className={styles.cardName}>{s.title}</h3>
+                <h3 className={styles.cardName}>
+                  {s.title.split(" • ").map((part, i) => (
+                    <span key={part} className={styles.cardNamePart}>
+                      {i > 0 && <span className={styles.cardNameSep}> • </span>}
+                      {part}
+                    </span>
+                  ))}
+                </h3>
                 <p className={styles.cardPrice}>{s.priceLine}</p>
               </div>
               <span className={styles.cardArrow} aria-hidden="true">↗</span>

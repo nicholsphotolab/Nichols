@@ -1,9 +1,17 @@
 // VideoTransferConfigurator.tsx
 // Interactive price estimator for video & audio transfers, built to mirror the
 // film stock configurator (app/film/FilmStockConfigurator.tsx): a two-column
-// layout with a product-image placeholder on the left and, on the right, a
-// title + blurb, hairline-separated option rows, an itemized ESTIMATED TOTAL,
-// and the headline price.
+// layout with a media gallery on the left and, on the right, a title + blurb,
+// hairline-separated option rows, an itemized ESTIMATED TOTAL, and the
+// headline price.
+//
+// The gallery works exactly like the film configurator's photo strip: the
+// lineup always leads with the format's PRODUCT SHOT slot (a solid bw-600
+// block while that photography doesn't exist yet), followed by silent sample
+// clips of digitized footage (videoTransferData `media`). The active slide's
+// clip autoplays muted and loops like a moving photograph — no controls, no
+// chrome — and the poster frames double as the thumbnails below. Users with
+// prefers-reduced-motion get poster frames only.
 //
 // The CATEGORY row switches between Tapes & Discs and Film Reels in place —
 // swapping the format/size options and pricing — exactly like the film TYPE row
@@ -12,13 +20,14 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Pills } from "../components/ConfiguratorControls";
 import {
   CATEGORIES,
   CATEGORIES_BY_SLUG,
   OUTPUTS,
   type VideoCategory,
+  type VideoMediaItem,
 } from "./videoTransferData";
 import { withBasePath } from "../lib/basePath";
 import { buildQuery, matchOption, slugifyOption } from "../lib/urlState";
@@ -143,6 +152,47 @@ export default function VideoTransferConfigurator({
     ? optionSel
     : category.options[0].name;
 
+  // The lineup always leads with the format's PRODUCT SHOT, then the sample
+  // clips. `null` marks the temporary solid bw-600 block shown while a format
+  // has no product photography yet — deliberately shown even when the format
+  // has sample clips, so the product slot is always reserved (the film
+  // configurator's convention). Memoized so the play/pause effect below only
+  // re-runs when the visible set actually swaps.
+  const slides = useMemo<(VideoMediaItem | null)[]>(
+    () => [
+      null,
+      ...(category.options.find((o) => o.name === option)?.media ?? []),
+    ],
+    [category, option]
+  );
+
+  // Gallery position, film-configurator style: the raw index is clamped so a
+  // switch to a shorter strip can't overshoot. Thumbnail clicks glide the
+  // track; switching type/format resets to the first slide instantly (the
+  // whole set swaps, so a glide across unrelated clips looks wrong).
+  const [galleryIdxSel, setGalleryIdxSel] = useState(0);
+  const galleryIdx = Math.min(galleryIdxSel, slides.length - 1);
+  const [animateSlide, setAnimateSlide] = useState(true);
+  const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
+
+  // Only the visible slide's clip plays; the rest sit paused on their poster.
+  // Reduced-motion users get posters only — nothing autoplays.
+  useEffect(() => {
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    slides.forEach((m, i) => {
+      if (!m) return;
+      const video = videoRefs.current[m.video];
+      if (!video) return;
+      if (i === galleryIdx && !reduce) {
+        video.play().catch(() => {
+          // Autoplay can be blocked (e.g. low-power mode); the poster shows instead.
+        });
+      } else {
+        video.pause();
+      }
+    });
+  }, [slides, galleryIdx]);
+
   // Mirror the visible selection into the URL: path = category, query = the
   // customization with defaults omitted. replaceState rewrites the current
   // history entry — Back always exits, it never un-clicks selections.
@@ -162,9 +212,20 @@ export default function VideoTransferConfigurator({
 
   // Switching TYPE swaps the category but keeps the raw selection — the
   // derivation above absorbs anything the new category doesn't offer. The URL
-  // follows automatically via the sync effect above.
+  // follows automatically via the sync effect above. Any change to the visible
+  // strip restarts it from the first slide, without gliding.
   function selectCategory(next: string) {
-    if (CATEGORIES_BY_SLUG[next]) setSlug(next);
+    if (CATEGORIES_BY_SLUG[next]) {
+      setSlug(next);
+      setGalleryIdxSel(0);
+      setAnimateSlide(false);
+    }
+  }
+
+  function selectOption(next: string) {
+    setOptionSel(next);
+    setGalleryIdxSel(0);
+    setAnimateSlide(false);
   }
 
   // "SIZE" for reels, "Format" for tapes & discs — drives the row label + tooltip.
@@ -176,17 +237,91 @@ export default function VideoTransferConfigurator({
   return (
     <main className={styles.page}>
       <div className={styles.layout}>
-        {/* Left column: product-image placeholder (no per-category photos yet),
-            striped like the video category cards. Stretches to the right
-            column's height so the layout never shifts. */}
+        {/* Left column: main frame + thumbnail strip, identical construction
+            to the film configurator's. The column stretches to the right
+            column's height so the thumbs bottom-align with the price block;
+            the media fits (contain) in the remaining space. */}
         <div className={styles.imageCol}>
-          <div className={styles.image} aria-hidden="true" />
+          <div className={styles.image} aria-hidden="true">
+            {/* Horizontal track: all slides sit side by side and the track
+                slides by one frame width per gallery index. */}
+            <div
+              className={styles.track}
+              data-instant={!animateSlide || undefined}
+              style={{ transform: `translateX(-${galleryIdx * 100}%)` }}
+            >
+              {slides.map((m) =>
+                m ? (
+                  <div key={m.video} className={styles.slide}>
+                    <video
+                      ref={(el) => {
+                        videoRefs.current[m.video] = el;
+                      }}
+                      src={withBasePath(m.video)}
+                      poster={withBasePath(m.poster)}
+                      muted
+                      loop
+                      playsInline
+                      preload="metadata"
+                      tabIndex={-1}
+                    />
+                  </div>
+                ) : (
+                  <div key="product-placeholder" className={styles.slide}>
+                    <div className={styles.productFill} />
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          {/* Uniform square thumbs, each poster frame filling its tile
+              edge-to-edge (cover crop); the selection border traces the
+              square. */}
+          {slides.length > 1 && (
+            <div
+              className={styles.thumbs}
+              role="group"
+              aria-label="Sample clips"
+            >
+              {slides.map((m, i) => (
+                <button
+                  key={m?.video ?? "product-placeholder"}
+                  type="button"
+                  className={styles.thumb}
+                  data-active={i === galleryIdx || undefined}
+                  aria-pressed={i === galleryIdx}
+                  aria-label={`Sample ${i + 1} of ${slides.length}`}
+                  onClick={() => {
+                    setAnimateSlide(true);
+                    setGalleryIdxSel(i);
+                  }}
+                >
+                  {m ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={withBasePath(m.poster)}
+                      alt=""
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className={styles.productFill} aria-hidden="true" />
+                  )}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Right column: title + blurb, option rows, estimate, price */}
         <div className={styles.body}>
           <header className={styles.header}>
-            <h1 className={styles.title}>{category.name}</h1>
+            {/* Type + format combo, dash-separated — tracks the selection
+                live, exactly like the film configurator's title. */}
+            <h1 className={styles.title}>
+              {category.name} - {option}
+            </h1>
             <p className={styles.blurb}>{category.description}</p>
           </header>
 
@@ -208,7 +343,7 @@ export default function VideoTransferConfigurator({
               <Pills
                 values={category.options.map((o) => o.name)}
                 selected={option}
-                onSelect={setOptionSel}
+                onSelect={selectOption}
               />
             </div>
 

@@ -24,7 +24,7 @@
    thumbnail strip at its bottom lines up with the price block and the
    layout never shifts as photos of different ratios swap in. */
 .imageCol {
-  grid-column: 1 / 9;
+  grid-column: 1 / 7;
   align-self: stretch;
   display: flex;
   flex-direction: column;
@@ -140,7 +140,7 @@
 /* 24px rhythm between every section. Pinned to the right half explicitly —
    with the image on 2/8, auto-placement would otherwise start this at 8. */
 .body {
-  grid-column: 9 / 17;
+  grid-column: 7 / 13;
   display: flex;
   flex-direction: column;
   gap: 24px;
@@ -304,9 +304,9 @@
   gap: 12px;
 }
 
-/* Subdivides each line into 8 equal tracks with the site gutter. Because .body
-   spans 8 of the 16 site columns, these tracks line up exactly with the site
-   grid: the label spans 3 columns, the amount takes the rest (left-aligned). */
+/* Subdivides each line into 8 equal tracks with the site gutter, keeping the
+   original 3:5 label/amount proportions. (.body now spans 6 of the 12 site
+   columns, so these tracks no longer sit on site column lines.) */
 .lineItem {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
@@ -368,7 +368,7 @@
 }
 
 /* ---------- Responsive ---------- */
-/* 8-col tablet and below: image stacks above the configurator. */
+/* Tablet and below: image stacks above the configurator. */
 @media (max-width: 900px) {
   .layout {
     row-gap: 32px;
@@ -387,8 +387,7 @@
     height: min(56vh, 480px);
   }
 
-  /* Wider tap targets: size thumbs to the 8-col tablet grid (2 columns each
-     at ≤900px would be huge, so quarter-width keeps four across). */
+  /* Wider tap targets: quarter-width keeps four thumbs across on tablet. */
   .thumb {
     width: calc((100% - 3 * var(--grid-gap)) / 4);
     max-width: 96px;

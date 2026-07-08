@@ -57,7 +57,7 @@
 .title {
   /* Cell is just the left anchor; the long wordmark runs past it (nowrap) and
      stays within the content area at every width since both scale with vw. */
-  grid-column: 1 / 9;
+  grid-column: 1 / 7;
   grid-row: 1;
   margin: 0;
   /* Inter Bold's leading glyph carries a 0.0543em left side bearing — pull the
@@ -76,8 +76,8 @@
 }
 
 .heroDescription {
-  /* Wider than film's (cols 1–11) to fit the longer passport copy. */
-  grid-column: 1 / 12;
+  /* Wider than film's (cols 1–8) to fit the longer passport copy. */
+  grid-column: 1 / 9;
   grid-row: 2;
   margin: 0;
   margin-top: clamp(14px, 1.8vw, 28px);
@@ -97,7 +97,7 @@
    and bottom-aligned with the description (matches the film hero). 14px at
    1440, scaling with the hero. */
 .heroMeta {
-  grid-column: 15 / 17;
+  grid-column: 11 / 13;
   grid-row: 2;
   align-self: end;
   margin: 0;

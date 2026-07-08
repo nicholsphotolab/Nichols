@@ -1,8 +1,8 @@
 /* VideoProductsGrid.module.css
    "Video & Audio Transfer" section — the video counterpart to FilmStocksGrid.
    A header row with the title + ← / → paging arrows, and a row of product
-   cards. Each card is 4 grid columns wide with a single gutter between them, so
-   4 cards fill the 16-column row. The arrows page the row (one card per click)
+   cards. Each card is 3 grid columns wide with a single gutter between them, so
+   4 cards fill the 12-column row. The arrows page the row (one card per click)
    and grey out at each end. The card hover state reveals a 42px ↗ arrow and a
    2px underline. Mirrors the film grid; the card image is a striped placeholder
    until real per-format imagery exists. */
@@ -68,8 +68,8 @@
     (100% - (var(--grid-cols) - 1) * var(--grid-gap)) / var(--grid-cols)
   );
   display: flex;
-  /* Single gutter between cards (no empty column), so 4 four-column cards fill
-     the 16-column row exactly. */
+  /* Single gutter between cards (no empty column), so 4 three-column cards
+     fill the 12-column row exactly. */
   gap: var(--grid-gap);
   overflow-x: auto;
   overflow-y: hidden;
@@ -86,7 +86,8 @@
 
 /* ---------- Card ---------- */
 .card {
-  flex: 0 0 calc(4 * var(--col-unit) + 3 * var(--grid-gap));
+  /* 3 of 12 columns (quarter row); tablet/mobile widths override below. */
+  flex: 0 0 calc(3 * var(--col-unit) + 2 * var(--grid-gap));
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -209,7 +210,19 @@
   }
 }
 
+/* Tablet: two cards per row (6 of 12 columns each). */
+@media (max-width: 900px) {
+  .card {
+    flex-basis: calc(6 * var(--col-unit) + 5 * var(--grid-gap));
+  }
+}
+
 @media (max-width: 700px) {
+  /* Mobile: one full-width card per row. */
+  .card {
+    flex-basis: 100%;
+  }
+
   .cardName {
     white-space: normal;
     font-size: 20px;
