@@ -66,9 +66,14 @@ export const STOCKS: Record<string, FilmStock> = {
       "The standard process for almost any color film. Warm tones, great skin colors, and forgiving enough that even a point-and-shoot turns out.",
     basePrice: 6.5,
     image: "/C-41.webp",
-    // Product shots by size — only 35mm exists so far. Sizes without one show
-    // the temporary bw-600 block in the product slot until theirs is shot.
-    sizeImages: { "35MM": "/C-41_35mm.webp" },
+    // Product shots by size. Sizes without one show the temporary bw-600
+    // block in the product slot until theirs is shot. SHEET shots can be
+    // keyed per sheet size ("SHEET/4X5") with "SHEET" as the fallback.
+    sizeImages: {
+      "35MM": "/C-41_35mm.webp",
+      "DISPOSABLE CAMERA": "/C-41_Disposable.webp",
+      "120": "/C-41_120.webp",
+    },
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,
     sheetSizeRates: SHEET_RATES,
@@ -85,7 +90,10 @@ export const STOCKS: Record<string, FilmStock> = {
       "Developed in dedicated black & white chemistry for true neutral tones and deep blacks. Timeless, grain-forward, and beautifully simple.",
     basePrice: 8.5,
     image: "/B&W.webp",
-    sizeImages: { "35MM": "/B&W_35mm.webp" },
+    sizeImages: {
+      "35MM": "/B&W_35mm.webp",
+      "SHEET/4X5": "/B&W_Sheet_4x5.webp",
+    },
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,
     sheetSizeRates: SHEET_RATES,
@@ -102,7 +110,10 @@ export const STOCKS: Record<string, FilmStock> = {
       "Color slide film developed as positives you can hold up to the light. Punchy saturation and fine grain — the connoisseur's choice.",
     basePrice: 8.5,
     image: "/E-6.webp",
-    sizeImages: { "35MM": "/E-6_35mm.webp" },
+    sizeImages: {
+      "35MM": "/E-6_35mm.webp",
+      "120": "/E-6_120.webp",
+    },
     // E-6 doesn't come in 110 format.
     sizes: ["35MM", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,

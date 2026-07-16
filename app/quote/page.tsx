@@ -20,7 +20,7 @@ export default function QuotePage() {
       <Nav />
 
       <main className={styles.page}>
-        <h1 className={styles.title}>QUOTE</h1>
+        <h1 className={styles.title}>Quote</h1>
 
         <p className={styles.intro}>
           Tell us a little about your order and we&rsquo;ll confirm pricing

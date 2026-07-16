@@ -62,8 +62,10 @@
 }
 
 /* Sample clips are landscape 4:3 captures in a portrait-ish frame — fit them
-   whole (contain, never cropped), centered in the slack. */
-.slide video {
+   whole (contain, never cropped), centered in the slack. The product shot
+   (next/image fill) gets the same treatment. */
+.slide video,
+.slide img {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -152,6 +154,9 @@
   font-size: clamp(40px, 5vw, 64px);
   line-height: normal;
   letter-spacing: 0.02em;
+  /* Titles come from mixed-case data values ("Hi8") for screen readers;
+     the display stays all-caps. */
+  text-transform: uppercase;
   color: var(--black);
 }
 

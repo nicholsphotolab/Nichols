@@ -101,6 +101,7 @@
   font-size: calc(100vw * 200 / 1440);
   line-height: 0.85;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
   color: var(--paper-white);
   white-space: nowrap;
   /* Modern: trims line box to cap height in supporting browsers. */

@@ -8,8 +8,8 @@
 //
 // Mobile (≤700px, Figma node 2370:2315): no carousel — the arrows are hidden
 // and all cards flow in a two-column vertical grid. Card titles stack their
-// process/format parts on two lines there ("C-41" / "35MM"), which is why the
-// title is rendered in parts with the "•" as a separate hideable span.
+// process/format parts on two lines there ("C-41" / "35mm"), which is why the
+// title is rendered in parts with the " - " as a separate hideable span.
 
 "use client";
 
@@ -23,15 +23,19 @@ import styles from "./FilmStocksGrid.module.css";
 // picks the stock and ?format= preselects the FORMAT pill (the configurator
 // restores it on mount). 35MM is the configurator default, so those cards
 // keep the clean path — matching the defaults-omitted URL convention.
+// Titles are written in mixed case for screen readers (all-caps text can be
+// read letter by letter); the CSS uppercases them for display. Product codes
+// that really are letter sequences (C‑41, B&W, E‑6) stay literal.
 const STOCKS = [
-  { title: "C‑41 • 35MM", priceLine: "Starting at $6.50", image: "/C-41_35mm.webp", href: "/film/c-41" },
-  { title: "B&W • 35MM", priceLine: "Starting at $8.50", image: "/B%26W_35mm.webp", href: "/film/bw" },
-  { title: "E‑6 • 35MM", priceLine: "Starting at $8.50", image: "/E-6_35mm.webp", href: "/film/e-6" },
-  { title: "C‑41 • DISPOSABLE", priceLine: "Starting at $6.50", image: null, href: "/film/c-41?format=disposable-camera" },
-  { title: "B&W • DISPOSABLE", priceLine: "Starting at $8.50", image: null, href: "/film/bw?format=disposable-camera" },
-  { title: "C‑41 • 120", priceLine: "Starting at $6.50", image: "/C-41-120.webp", href: "/film/c-41?format=120" },
-  { title: "B&W • 120", priceLine: "Starting at $8.50", image: null, href: "/film/bw?format=120" },
-  { title: "E‑6 • 120", priceLine: "Starting at $8.50", image: null, href: "/film/e-6?format=120" },
+  { title: "C‑41 - 35mm", priceLine: "Starting at $6.50", image: "/C-41_35mm.webp", href: "/film/c-41" },
+  { title: "B&W - 35mm", priceLine: "Starting at $8.50", image: "/B%26W_35mm.webp", href: "/film/bw" },
+  { title: "E‑6 - 35mm", priceLine: "Starting at $8.50", image: "/E-6_35mm.webp", href: "/film/e-6" },
+  { title: "C‑41 - Disposable", priceLine: "Starting at $6.50", image: "/C-41_Disposable.webp", href: "/film/c-41?format=disposable-camera" },
+  { title: "B&W - Disposable", priceLine: "Starting at $8.50", image: null, href: "/film/bw?format=disposable-camera" },
+  { title: "C‑41 - 120", priceLine: "Starting at $6.50", image: "/C-41_120.webp", href: "/film/c-41?format=120" },
+  { title: "B&W - 120", priceLine: "Starting at $8.50", image: null, href: "/film/bw?format=120" },
+  { title: "E‑6 - 120", priceLine: "Starting at $8.50", image: "/E-6_120.webp", href: "/film/e-6?format=120" },
+  { title: "B&W - Sheet 4x5", priceLine: "Starting at $8.50", image: "/B%26W_Sheet_4x5.webp", href: "/film/e-6?format=120" },
 ];
 
 export default function FilmStocksGrid() {
@@ -73,7 +77,7 @@ export default function FilmStocksGrid() {
   return (
     <section className={styles.wrapper} aria-label="Film development & scans">
       <div className={styles.header}>
-        <h2 className={styles.heading}>FILM DEVELOPMENT &amp; SCANS</h2>
+        <h2 className={styles.heading}>Film Development &amp; Scans</h2>
         <div className={styles.arrows}>
           <button
             type="button"
@@ -115,10 +119,13 @@ export default function FilmStocksGrid() {
             <div className={styles.cardMeta}>
               <div className={styles.cardText}>
                 <h3 className={styles.cardName}>
-                  {s.title.split(" • ").map((part, i) => (
-                    <span key={part} className={styles.cardNamePart}>
-                      {i > 0 && <span className={styles.cardNameSep}> • </span>}
-                      {part}
+                  {/* Separator sits between (not inside) the nowrap parts so a
+                      long title can wrap at it instead of overflowing the card;
+                      mobile hides it and stacks the parts. */}
+                  {s.title.split(" - ").map((part, i) => (
+                    <span key={part}>
+                      {i > 0 && <span className={styles.cardNameSep}> - </span>}
+                      <span className={styles.cardNamePart}>{part}</span>
                     </span>
                   ))}
                 </h3>

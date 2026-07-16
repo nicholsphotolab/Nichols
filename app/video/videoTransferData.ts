@@ -32,6 +32,10 @@ export type VideoOption = {
   price: number;
   /** Short description used by the process steps section. */
   description?: string;
+  /** PRODUCT SHOT shown in the configurator gallery's reserved first slot.
+      Formats without one show the temporary bw-600 placeholder block. Paths
+      are case-sensitive on deploy — match public/VIDEO/ filenames exactly. */
+  image?: string;
   /** Sample clips shown in the configurator gallery after the reserved
       product-shot slot when this format is selected. */
   media?: VideoMediaItem[];
@@ -67,16 +71,19 @@ export const CATEGORIES: VideoCategory[] = [
         price: 18,
         description:
           "Standard VHS tapes captured to clean, shareable digital files.",
+        image: "/VIDEO/VHS.webp",
       },
       {
         name: "VHS-C",
         price: 18,
         description: "Compact VHS-C camcorder tapes transferred to digital.",
+        image: "/VIDEO/VHS-C.webp",
       },
       {
-        name: "HI8",
+        name: "Hi8",
         price: 18,
         description: "Hi8 and Video8 camcorder tapes digitized to modern files.",
+        image: "/VIDEO/Hi8.webp",
         media: [{ video: "/VIDEO/Hi8.mp4", poster: "/VIDEO/Hi8-Poster.jpg" }],
       },
       {
@@ -84,17 +91,20 @@ export const CATEGORIES: VideoCategory[] = [
         price: 18,
         description:
           "MiniDV camcorder tapes captured frame-accurate to digital.",
+        image: "/VIDEO/MiniDV.webp",
       },
       {
         name: "CASSETTE",
         price: 18,
         description: "Audio cassette tapes converted to clean digital audio.",
+        image: "/VIDEO/Cassette.webp",
       },
       {
         name: "DVD",
         price: 18,
         description:
           "DVDs and discs converted into modern, shareable digital files.",
+        image: "/VIDEO/DVD.webp",
       },
     ],
   },
@@ -109,7 +119,7 @@ export const CATEGORIES: VideoCategory[] = [
     // TODO: confirm 5IN and 7IN prices — endpoints ($15 / $40) are set,
     // the middle two are placeholders.
     options: [
-      { name: "3IN", price: 15 },
+      { name: "3IN", price: 15, image: "/VIDEO/Reel-3in.webp" },
       { name: "5IN", price: 22 },
       { name: "7IN", price: 30 },
       { name: "9IN", price: 40 },

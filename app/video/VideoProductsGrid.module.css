@@ -88,6 +88,9 @@
 .card {
   /* 3 of 12 columns (quarter row); tablet/mobile widths override below. */
   flex: 0 0 calc(3 * var(--col-unit) + 2 * var(--grid-gap));
+  /* Stop a long card title from forcing the card wider than its flex-basis
+     (which would scale its image box taller and misalign the row). */
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -99,6 +102,13 @@
   width: 100%;
   aspect-ratio: var(--image-ratio);
   background: var(--paper-white);
+}
+
+/* Product shot shown "as is" — contained at full card width, centered,
+   never cropped or zoomed. Matches the film grid's .cardImg. */
+.cardImg {
+  object-fit: contain;
+  object-position: center;
 }
 
 /* Striped placeholder in place of a product photo — matches the /video
@@ -138,8 +148,11 @@
   font-size: 24px;
   line-height: normal;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
   color: var(--black);
-  white-space: nowrap;
+  /* Wrap rather than force the card wider than its flex-basis (which would
+     scale its image box taller and knock the row out of alignment). */
+  white-space: normal;
   /* Trim the line box to the cap so the arrow (also trimmed) aligns to the
      title's cap/x-height when the meta row is top-aligned. */
   text-box: trim-both cap alphabetic;

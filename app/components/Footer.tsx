@@ -40,11 +40,11 @@ export default function Footer() {
           <div className={styles.hoursGroup}>
             <span>Open:</span>
             <span>Monday-Friday</span>
-            <span>9AM-5PM</span>
+            <span>9am-5pm</span>
           </div>
           <div className={styles.hoursGroup}>
             <span>Passport Hours:</span>
-            <span>9AM-4PM</span>
+            <span>9am-4pm</span>
           </div>
         </div>
 

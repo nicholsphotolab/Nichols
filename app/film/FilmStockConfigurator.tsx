@@ -31,6 +31,8 @@ export type FilmStock = {
   image: string; // path relative to /public
   // Per-size PRODUCT SHOT, always the first slide in the gallery lineup.
   // Sizes without one show the temporary bw-600 placeholder block instead.
+  // SHEET shots can be keyed per sheet size ("SHEET/4X5"); the plain "SHEET"
+  // key acts as the fallback for sheet sizes without their own shot.
   sizeImages?: Partial<Record<string, string>>;
   sizes: string[];
   // Sheet dimensions (4X5, 5X7, 8X10) shown in a secondary row in place of
@@ -317,10 +319,15 @@ export default function FilmStockConfigurator({
   // photos. `null` marks the temporary solid bw-600 block shown while a size
   // has no product photography yet — deliberately shown even when the size
   // does have gallery photos, so the product slot is always reserved.
-  const slides: (string | null)[] = [
-    stock.sizeImages?.[size] ?? null,
-    ...gallery,
-  ];
+  // SHEET prefers the selected sheet size's own shot ("SHEET/4X5") before
+  // falling back to the generic "SHEET" one.
+  const productShot =
+    (size === "SHEET" && sheetSize
+      ? stock.sizeImages?.[`${size}/${sheetSize}`]
+      : undefined) ??
+    stock.sizeImages?.[size] ??
+    null;
+  const slides: (string | null)[] = [productShot, ...gallery];
 
   const [galleryIdxSel, setGalleryIdxSel] = useState(0);
   const galleryIdx = Math.min(galleryIdxSel, slides.length - 1);

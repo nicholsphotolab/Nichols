@@ -6,34 +6,39 @@
 // row on desktop. The arrows page the row one card at a time and grey out at
 // each end. The card hover state reveals a 42px ↗ arrow and a 2px underline.
 //
-// Cards are flattened from both categories in videoTransferData. Tape/disc
-// formats keep their plain name (VHS, MINI DV…); reel sizes render as
-// "REEL 3 IN." etc. Each card deep-links to its exact category + format
-// combination — mirroring the film grid: the path picks the estimator and
-// ?format= preselects the FORMAT/SIZE pill (the configurator restores it on
-// mount). Each category's first option is the configurator default, so that
-// card keeps the clean path, matching the defaults-omitted URL convention.
-
 "use client";
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { CATEGORIES } from "./videoTransferData";
-import { slugifyOption } from "../lib/urlState";
+import Image from "next/image";
+import { withBasePath } from "../lib/basePath";
 import styles from "./VideoProductsGrid.module.css";
 
-type Card = { title: string; priceLine: string; href: string };
-
-const CARDS: Card[] = CATEGORIES.flatMap((c) =>
-  c.options.map((o) => ({
-    title:
-      c.slug === "reels" ? `REEL ${o.name.replace(/IN$/i, "")} IN.` : o.name,
-    priceLine: `Starting at $${o.price.toFixed(2)}`,
-    href:
-      `/video/${c.slug}` +
-      (o.name === c.options[0].name ? "" : `?format=${slugifyOption(o.name)}`),
-  }))
-);
+// Each card deep-links to its exact category + format combination: the path
+// picks the estimator and ?format= preselects the FORMAT/SIZE pill (the
+// configurator restores it on mount). Tapes & Discs and reel size 3IN are
+// each category's configurator default, so those cards keep the clean path —
+// matching the defaults-omitted URL convention. Prices are mirrored here from
+// videoTransferData.ts (also used by the configurator); update both if a
+// price changes. Paths are case-sensitive on deploy — they must match the
+// filenames in public/VIDEO/ exactly. Formats without a shot yet use a null
+// image, which falls back to the striped placeholder.
+// Titles are written in mixed case for screen readers (all-caps text can be
+// read letter by letter); the CSS uppercases them for display. Format names
+// that really are letter sequences (VHS, VHS-C, Hi8, DVD) and the MiniDV
+// product name stay literal.
+const CARDS = [
+  { title: "VHS", priceLine: "Starting at $18.00", image: "/VIDEO/VHS.webp", href: "/video/tapes-discs" },
+  { title: "VHS-C", priceLine: "Starting at $18.00", image: "/VIDEO/VHS-C.webp", href: "/video/tapes-discs?format=vhs-c" },
+  { title: "Hi8", priceLine: "Starting at $18.00", image: "/VIDEO/Hi8.webp", href: "/video/tapes-discs?format=hi8" },
+  { title: "Mini DV", priceLine: "Starting at $18.00", image: "/VIDEO/MiniDV.webp", href: "/video/tapes-discs?format=mini-dv" },
+  { title: "Cassette", priceLine: "Starting at $18.00", image: "/VIDEO/Cassette.webp", href: "/video/tapes-discs?format=cassette" },
+  { title: "DVD", priceLine: "Starting at $18.00", image: "/VIDEO/DVD.webp", href: "/video/tapes-discs?format=dvd" },
+  { title: "Reel 3 in.", priceLine: "Starting at $15.00", image: "/VIDEO/Reel-3in.webp", href: "/video/reels" },
+  { title: "Reel 5 in.", priceLine: "Starting at $22.00", image: null, href: "/video/reels?format=5in" },
+  { title: "Reel 7 in.", priceLine: "Starting at $30.00", image: null, href: "/video/reels?format=7in" },
+  { title: "Reel 9 in.", priceLine: "Starting at $40.00", image: null, href: "/video/reels?format=9in" },
+];
 
 export default function VideoProductsGrid() {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -74,7 +79,7 @@ export default function VideoProductsGrid() {
   return (
     <section className={styles.wrapper} aria-label="Video & audio transfer">
       <div className={styles.header}>
-        <h2 className={styles.heading}>VIDEO &amp; AUDIO TRANSFER</h2>
+        <h2 className={styles.heading}>Video &amp; Audio Transfer</h2>
         <div className={styles.arrows}>
           <button
             type="button"
@@ -101,7 +106,17 @@ export default function VideoProductsGrid() {
         {CARDS.map((c) => (
           <Link key={c.title} href={c.href} className={styles.card}>
             <div className={styles.cardImage} aria-hidden="true">
-              <div className={styles.cardImageFill} />
+              {c.image ? (
+                <Image
+                  src={withBasePath(c.image)}
+                  alt=""
+                  fill
+                  className={styles.cardImg}
+                  sizes="(max-width: 900px) 45vw, 25vw"
+                />
+              ) : (
+                <div className={styles.cardImageFill} />
+              )}
             </div>
             <div className={styles.cardMeta}>
               <div className={styles.cardText}>

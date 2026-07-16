@@ -11,13 +11,13 @@ type Package = {
 
 const PACKAGES: Package[] = [
   {
-    name: "US PASSPORTS",
+    name: "US Passports",
     price: "Starting at $6.50",
     description:
       "Official 2×2 in. passport photo that meets U.S. State Department specifications. Includes two printed photos plus a digital copy emailed to you for online applications. Taken and printed in-house while you wait.",
   },
   {
-    name: "INTERNATIONAL PASSPORTS",
+    name: "International Passports",
     price: "$32.00",
     description:
       "Passport photo sized to your destination's exact requirements. Canada, Australia, China, and most other countries. Includes printed photos plus a digital copy emailed to you. Taken and printed in-house while you wait.",
@@ -68,7 +68,7 @@ function PackageCard({ pkg }: { pkg: Package }) {
 export default function PassportPackages() {
   return (
     <section className={styles.packages} aria-label="Passport packages">
-      <h2 className={styles.packagesHeading}>PASSPORT PACKAGES</h2>
+      <h2 className={styles.packagesHeading}>Passport Packages</h2>
       <div className={styles.cards}>
         {PACKAGES.map((p) => (
           <PackageCard key={p.name} pkg={p} />

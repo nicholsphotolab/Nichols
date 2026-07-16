@@ -29,16 +29,16 @@ export default function PassportPage() {
           <div className={styles.heroScrim} aria-hidden="true" />
 
           <div className={styles.heroContent}>
-            <h1 className={styles.title}>PASSPORT</h1>
+            <h1 className={styles.title}>Passport</h1>
             <p className={styles.heroDescription}>
               From US passports to Canada, Australia and beyond, we shoot and
               print to each country&rsquo;s exact specs, so your application
               clears the first time.
             </p>
             <p className={styles.heroMeta}>
-              ILFORD HP5
+              Ilford HP5
               <br />
-              B&amp;W • 24EXP
+              B&amp;W • 24exp
             </p>
           </div>
         </section>

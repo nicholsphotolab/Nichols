@@ -21,6 +21,7 @@
   font-size: var(--hero-type-size);
   line-height: 0.78;
   letter-spacing: -0.02em;
+  text-transform: uppercase;
   color: var(--black);
   white-space: nowrap;
   text-box: trim-both cap alphabetic;

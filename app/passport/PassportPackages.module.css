@@ -15,6 +15,7 @@
   font-size: 24px;
   line-height: normal;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
   color: var(--black);
 }
 
@@ -81,6 +82,7 @@
   font-size: 24px;
   line-height: 1;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
   color: var(--black);
 }
 

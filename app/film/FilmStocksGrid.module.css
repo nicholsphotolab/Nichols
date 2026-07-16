@@ -84,8 +84,12 @@
 
 /* ---------- Card ---------- */
 .card {
-  /* 3 of 12 columns (quarter row); tablet/mobile widths override below. */
+  /* 3 of 12 columns (quarter row); tablet/mobile widths override below.
+     min-width: 0 stops a long card title from forcing the card wider than
+     its flex-basis (which would also scale its image box taller and knock
+     the row out of alignment) — long titles wrap instead. */
   flex: 0 0 calc(3 * var(--col-unit) + 2 * var(--grid-gap));
+  min-width: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
@@ -135,11 +139,20 @@
   font-size: 24px;
   line-height: normal;
   letter-spacing: 0.02em;
+  text-transform: uppercase;
   color: var(--black);
-  white-space: nowrap;
+  /* Titles wrap when they don't fit the card (each part stays whole via
+     .cardNamePart's nowrap) rather than forcing the card wider. */
+  white-space: normal;
   /* Trim the line box to the cap so the arrow (also trimmed) aligns to the
      title's cap/x-height when the meta row is top-aligned. */
   text-box: trim-both cap alphabetic;
+}
+
+/* Keep each title part ("C-41", "Disposable") on one line so wrapping only
+   ever happens at the separator, never mid-word. */
+.cardNamePart {
+  white-space: nowrap;
 }
 
 .cardPrice {

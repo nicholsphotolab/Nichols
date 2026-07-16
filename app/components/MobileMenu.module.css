@@ -30,8 +30,13 @@
     letter-spacing: 0.02em;
     text-transform: uppercase;
     color: var(--paper-white);
-    mix-blend-mode: difference;
     cursor: pointer;
+    transition: color 220ms var(--ease-out);
+  }
+
+  /* Once the solid white bar snaps in, recolor to dark so it stays readable. */
+  :global(html[data-nav-scrolled="true"]) .toggle {
+    color: var(--black);
   }
 
   .panel {

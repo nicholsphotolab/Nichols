@@ -152,7 +152,7 @@ function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
       <div className={styles.heroScrim} aria-hidden="true" />
 
       <div className={styles.heroContent}>
-        <h1 className={styles.title}>FILM</h1>
+        <h1 className={styles.title}>Film</h1>
         <p className={styles.heroDescription}>
           We carefully develop your film the way it deserves, so every frame
           comes back as rich as the moment you shot it.

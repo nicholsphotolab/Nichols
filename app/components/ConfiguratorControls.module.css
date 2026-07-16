@@ -59,6 +59,9 @@
   font-size: 24px;
   line-height: 1;
   letter-spacing: 0.02em;
+  /* Option values may be stored mixed-case ("Hi8") for screen readers;
+     pills always display all-caps. */
+  text-transform: uppercase;
   color: var(--black);
   cursor: pointer;
   transition:

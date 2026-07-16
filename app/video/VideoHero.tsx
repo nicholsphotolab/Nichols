@@ -32,12 +32,12 @@ const CLIPS: HeroClip[] = [
   {
     src: "/VIDEO/Video-Reel.mp4",
     poster: "/VIDEO/Video-Reel-Poster.jpg",
-    label: "8MM REEL",
+    label: "8mm Reel",
   },
   {
     src: "/VIDEO/Hi8.mp4",
     poster: "/VIDEO/Hi8-Poster.jpg",
-    label: "HI8 TAPE",
+    label: "Hi8 Tape",
   },
 ];
 
@@ -147,7 +147,7 @@ export default function VideoHero() {
       <div className={styles.heroScrim} aria-hidden="true" />
 
       <div className={styles.heroContent}>
-        <h1 className={styles.title}>VIDEO</h1>
+        <h1 className={styles.title}>Video</h1>
         <p className={styles.heroDescription}>
           Old memories deserve to be preserved. We transfer film reels, tapes,
           and other video formats into clean digital files, in&#8209;house, so
