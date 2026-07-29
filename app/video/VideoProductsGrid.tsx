@@ -35,9 +35,9 @@ const CARDS = [
   { title: "Cassette", priceLine: "Starting at $18.00", image: "/VIDEO/Cassette.webp", href: "/video/tapes-discs?format=cassette" },
   { title: "DVD", priceLine: "Starting at $18.00", image: "/VIDEO/DVD.webp", href: "/video/tapes-discs?format=dvd" },
   { title: "Reel 3 in.", priceLine: "Starting at $15.00", image: "/VIDEO/Reel-3in.webp", href: "/video/reels" },
-  { title: "Reel 5 in.", priceLine: "Starting at $22.00", image: null, href: "/video/reels?format=5in" },
-  { title: "Reel 7 in.", priceLine: "Starting at $30.00", image: null, href: "/video/reels?format=7in" },
-  { title: "Reel 9 in.", priceLine: "Starting at $40.00", image: null, href: "/video/reels?format=9in" },
+  { title: "Reel 5 in.", priceLine: "Starting at $22.00", image: "/VIDEO/Reel-5in.webp", href: "/video/reels?format=5in" },
+  { title: "Reel 7 in.", priceLine: "Starting at $30.00", image: "/VIDEO/Reel-7in.webp", href: "/video/reels?format=7in" },
+  { title: "Reel 9 in.", priceLine: "Starting at $40.00", image: "/VIDEO/Reel-9in.webp", href: "/video/reels?format=9in" },
 ];
 
 export default function VideoProductsGrid() {
