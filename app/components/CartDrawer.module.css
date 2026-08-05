@@ -1,0 +1,646 @@
+/* CartDrawer.module.css
+   Right-hand slide-out holding the current order, built to the Figma "Your
+   order" frames. Structure is a fixed two-part panel: a heading + scrolling
+   line list up top, and the red CREATE ORDER FORM button pinned to the bottom
+   edge — so however many rolls are in the order, the button stays reachable.
+
+   Every measurement here comes off the design at its 1512px artboard, where
+   the panel's inner content is exactly a four-column span: 60px padding,
+   445px of content, 24px between the product shot and the text column, 10px
+   between the rows of that column, 2px rules.
+
+   Visual language is the configurator's: paper-white, black 2px rules,
+   uppercase throughout, tabular figures on every price. */
+
+/* ---------- Scrim ----------
+   Kept mounted so opening and closing both animate; visibility (not display)
+   is what takes it out of the tab order and off the hit-testing surface once
+   the fade finishes. */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(1, 1, 1, 0.55);
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    opacity 320ms var(--ease-out),
+    visibility 0s linear 320ms;
+}
+
+.scrim[data-open] {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 320ms var(--ease-out);
+}
+
+/* ---------- Panel ----------
+   The panel occupies columns 9–12 and nothing else: its left edge lands on
+   the start of column 9, and it runs from there to the screen edge, covering
+   the page's right margin the way a right-anchored drawer has to. So the
+   width is the four-column span (from the n-column formula in globals.css)
+   plus ONE page padding — the right-hand one. It never crosses the gutter
+   into column 8.
+
+   The design's 60px inset is kept on both sides, which means the content
+   inside sits a padding-width in from the column-9 line rather than on it.
+   With a 60px inset and a 24px gutter you can put either the panel edge or
+   the content edge on the grid, not both; the panel edge is the one you can
+   see, so it gets the line.
+
+   The 400px floor only bites below a ~1190px viewport, where four columns
+   stop leaving enough room between the paddings for a product shot and a
+   line of type. Below that the width is fixed and grid alignment lapses
+   until the 700px breakpoint takes the panel full-bleed. */
+.panel {
+  --cart-cols: 4;
+  --cart-span: calc((100vw - 2 * var(--page-pad)) * var(--cart-cols) / var(--grid-cols) - var(--grid-gap) * (var(--grid-cols) - var(--cart-cols)) / var(--grid-cols));
+
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 21;
+  width: min(max(calc(var(--cart-span) + var(--page-pad)), 400px), 100vw);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  background: var(--paper-white);
+  color: var(--black);
+  transform: translateX(100%);
+  visibility: hidden;
+  transition:
+    transform 420ms var(--ease-out),
+    visibility 0s linear 420ms;
+}
+
+.panel[data-open] {
+  transform: translateX(0);
+  visibility: visible;
+  transition: transform 420ms var(--ease-out);
+}
+
+.panel:focus-visible {
+  outline: none;
+}
+
+/* Heading and list move as one block against the pinned footer. Each of the
+   two blocks carries its own padding in the design rather than inheriting it
+   from the panel, which is what lets the list scroll the full height between
+   them. */
+.top {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+/* ---------- Heading ---------- */
+.head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 30px var(--page-pad) 0;
+}
+
+.heading {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.close {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+/* ---------- Scrolling list ---------- */
+/* The 60px inset lives on the scroller itself, not on a wrapper around it.
+   A scrollbar is laid out at the scroll container's border edge, so wrapping
+   the padding around .body would park the bar 60px in — directly over the
+   EDIT / REMOVE column, which sits flush to that edge. Here the bar rides the
+   panel's own edge instead, clear of every control. */
+.body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-inline: var(--page-pad);
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  /* The design only ever shows one roll. Matching the panel's own vertical
+     padding is what keeps a second roll from crowding the first one's
+     stepper — there is no rule between line items. */
+  gap: 30px;
+}
+
+/* Product shot | everything else, in the design's 142.564 : 278.436 ratio.
+   fr shares (rather than a fixed px width) hold that proportion at any panel
+   width; the 24px gap is taken out before they divide. */
+.item {
+  display: grid;
+  grid-template-columns: 142.564fr 278.436fr;
+  column-gap: 24px;
+  /* Top-aligned, as the expanded frames draw it — so opening a choice list
+     grows the column downward instead of sliding the product shot. */
+  align-items: start;
+}
+
+/* Portrait 3:4 — the shape every product shot is mastered at (1500×2000),
+   so `cover` never actually crops one. The grey tile is the resting state
+   for formats with no photography yet (110 in C-41, most sheet sizes). */
+.shot {
+  position: relative;
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--bw-200);
+}
+
+.shot img {
+  object-fit: cover;
+}
+
+.itemBody {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Title and price sit tight against each other — no gap in the design. */
+.itemHead {
+  display: flex;
+  flex-direction: column;
+}
+
+.itemTitle {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.itemPrice {
+  margin: 0;
+  font-size: 16px;
+  line-height: normal;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The rules are zero-height lines in Figma with their 2px stroke drawn
+   upward, so the visible gap above one is 8px and below it 10px. The
+   negative margin reproduces that: the border still paints, but the element
+   contributes nothing to the 10px flex gaps on either side of it. */
+.rule {
+  flex: none;
+  width: 100%;
+  height: 0;
+  border: 0;
+  border-top: 2px solid var(--black);
+  margin: -2px 0 0;
+}
+
+/* ---------- Output / Exposure rows ---------- */
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.fieldHead {
+  display: flex;
+  flex-direction: column;
+}
+
+.fieldLabel {
+  font-size: 12px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--bw-600);
+}
+
+/* Baseline-ish alignment between the 16px value and the 12px Edit link:
+   the design bottom-aligns the two text boxes rather than sharing a
+   baseline, which sits the link slightly high against the value. */
+.fieldLine {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.fieldValue {
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.fieldToggle {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  flex: none;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+/* ---------- Expanded choice list ---------- */
+.choices {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.choice {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
+  text-align: left;
+}
+
+.swatch {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  background: var(--bw-200);
+  transition: background-color 160ms var(--ease-out);
+}
+
+.choice[aria-checked="true"] .swatch {
+  background: var(--darkroom-red);
+}
+
+/* ---------- Quantity + remove ---------- */
+.qtyRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+}
+
+.stepBtn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  color: var(--black);
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 120ms ease-out;
+}
+
+.stepBtn:active {
+  transform: scale(0.92);
+}
+
+/* No disabled state. At quantity 1 the down-control becomes the line's remove
+   (× rather than −) instead of greying out, so it is never inert. The glyph
+   swap is what signals the change of meaning; it deliberately stays black
+   rather than turning red, since red reads as "primary" or "selected"
+   everywhere else here — active pills, the cart link — and would be a false
+   alarm on a delete. */
+
+/* Sized to a single digit, as drawn; wider counts push the + right rather
+   than reserving space that is almost never used. */
+.stepValue {
+  min-width: 12px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.remove {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  flex: none;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+/* ---------- Estimate + checkout ----------
+   Carries its own padding rather than sitting in the panel's, so the list
+   above can scroll right up to it. No rule between the two: the design
+   separates them with the 30px of padding alone. */
+.foot {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 30px var(--page-pad);
+}
+
+/* Amount and its caveat sit tight together — no gap in the design. */
+.estimateText {
+  display: flex;
+  flex-direction: column;
+}
+
+.estimate {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Black, not the darkroom red the old cart used for this — the design sets
+   it in the same ink as everything else and lets the size carry the demotion. */
+.estimateNote {
+  margin: 0;
+  font-size: 12px;
+  line-height: normal;
+  color: var(--black);
+}
+
+.checkout {
+  appearance: none;
+  flex: none;
+  width: 100%;
+  padding: 16px 24px;
+  border: 0;
+  background: var(--darkroom-red);
+  color: var(--paper-white);
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 20px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transition:
+    opacity 160ms var(--ease-out),
+    transform 120ms ease-out;
+}
+
+.checkout:active {
+  transform: scale(0.99);
+}
+
+/* ---------- Empty state ----------
+   Not in the design, which only draws the cart with a roll in it. Set in the
+   same type as the rest of the panel so it doesn't read as another surface. */
+.empty {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 15px 0;
+}
+
+.emptyTitle {
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.emptyText {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+  color: var(--bw-600);
+}
+
+/* ---------- Resume prompt ----------
+   Also undesigned — shown only when a draft older than three days is waiting. */
+.resume {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 30px;
+  padding: 16px;
+  border: 2px solid var(--black);
+}
+
+.resumeText {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.4;
+}
+
+.resumeActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.resumeBtn,
+.resumeBtnGhost {
+  appearance: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 9px 14px;
+  border: 2px solid var(--black);
+  transition:
+    background-color 160ms var(--ease-out),
+    color 160ms var(--ease-out),
+    transform 120ms ease-out;
+}
+
+.resumeBtn {
+  background: var(--darkroom-red);
+  border-color: var(--darkroom-red);
+  color: var(--paper-white);
+}
+
+.resumeBtnGhost {
+  background: transparent;
+  color: var(--black);
+}
+
+.resumeBtn:active,
+.resumeBtnGhost:active {
+  transform: scale(0.97);
+}
+
+/* ---------- Touch targets ----------
+   The design draws these as bare glyphs and 12px links — a ~14×15px target on
+   a phone. The padding here grows the target and the matching negative margin
+   pulls the box back, so every drawn position (and the stepper's 40px gaps)
+   stays exactly where the design puts it. Growth is inward only: these sit on
+   the scrolling column's right edge, and expanding outward would push a
+   horizontal scrollbar into .body. */
+.stepBtn {
+  padding: 10px;
+  margin: -10px;
+}
+
+.close,
+.fieldToggle,
+.remove {
+  padding: 10px 0 10px 16px;
+  margin: -10px 0 -10px -16px;
+}
+
+/* ---------- Shared interaction states ----------
+   Text controls answer a hover with an underline rather than turning red:
+   in this panel red means *selected* (the choice swatches) or *primary* (the
+   order-form button), and a hover that borrowed it read as a state change.
+
+   The underline is always there, just transparent, so it can fade in and the
+   text never reflows on hover. On .choice the rule propagates into the flex
+   items, which underlines the label and leaves the swatch alone. */
+.close,
+.remove,
+.fieldToggle {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: transparent;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 160ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+
+  .close:hover,
+  .remove:hover,
+  .fieldToggle:hover {
+    text-decoration-color: currentColor;
+  }
+
+  /* A choice answers in its swatch instead: hovering tints the box toward the
+     red it would become if picked. Scoped to unselected rows — lightening the
+     one already chosen would read as un-choosing it — and the false-attribute
+     selector also outranks the checked rule, so the two can't fight. */
+  .choice[aria-checked="false"]:hover .swatch {
+    background: var(--darkroom-red-light);
+  }
+
+  /* Glyphs and the filled button dim instead — an underline under a "+" or
+     across a solid red bar reads as a mistake rather than an affordance. */
+  .stepBtn:hover,
+  .checkout:hover {
+    opacity: 0.75;
+  }
+}
+
+.close:focus-visible,
+.remove:focus-visible,
+.fieldToggle:focus-visible,
+.choice:focus-visible,
+.stepBtn:focus-visible,
+.checkout:focus-visible,
+.resumeBtn:focus-visible,
+.resumeBtnGhost:focus-visible {
+  outline: 2px solid var(--darkroom-red);
+  outline-offset: 2px;
+}
+
+/* Visible-to-screen-readers-only text — gives "Edit" a subject when it's
+   read out of context, without changing what's drawn. */
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 700px) {
+
+  /* Full-bleed on a phone, where four columns would leave nothing to read. */
+  .panel {
+    width: 100vw;
+  }
+
+  .heading,
+  .itemTitle {
+    font-size: 20px;
+  }
+
+  .stepper {
+    gap: 32px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+  .scrim,
+  .scrim[data-open],
+  .panel,
+  .panel[data-open],
+  .checkout,
+  .stepBtn,
+  .swatch,
+  .remove,
+  .close,
+  .fieldToggle,
+  .resumeBtn,
+  .resumeBtnGhost {
+    transition: none;
+  }
+}

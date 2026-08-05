@@ -1,0 +1,270 @@
+/* AddedToOrder.module.css
+   The ADDED TO ORDER confirmation toast (Figma node 2512:1725): 333×64 hugging
+   its content, 24px padding, product shot + label on the left and the cart link
+   on the right. Paper white, no stroke and no shadow — it reads as the page
+   itself carrying a line of type at the bottom, not as a panel over it.
+
+   Split across two elements on purpose:
+
+     .anchor  fixed position, the entrance, and the exit
+     .band    the surface itself, and the nudge that acknowledges a repeat add
+
+   Keeping them apart is what makes repeat adds safe. The anchor is centred with
+   translateX(-50%), and the nudge animates translateY — on one element those
+   would overwrite each other. It also keeps the exit on a *transition* rather
+   than a competing animation, so an add landing mid-fade reverses smoothly back
+   to full opacity instead of restarting the entrance from off-screen.
+
+   AddedToOrder.tsx owns the timing (3s, or 2s after the pointer leaves); its
+   FADE_MS must match the opacity transition below. */
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+/* The spoken half. Out of flow, so it adds no height — the anchor is fixed, so
+   this wrapper occupies nothing either way. */
+.note {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Pinned to the bottom of the viewport, centred — it's a notification that the
+   item landed in the cart, so it has to be visible wherever the customer has
+   scrolled to, not parked under a button they may have scrolled past.
+
+   z-index 15 puts it over the nav (9, lifting to 10 with the mobile menu open)
+   but under the cart drawer (scrim 20, panel 21) — opening the cart covers the
+   toast, which is right: the drawer answers the question the toast raises. */
+.anchor {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  z-index: 15;
+  max-width: calc(100% - 2 * var(--page-pad));
+  transform: translateX(-50%);
+  opacity: 1;
+  /* The exit. Interruptible by design: clearing data-leaving transitions back
+     to 1 from wherever it got to. */
+  transition: opacity 260ms var(--ease-soft);
+  /* `backwards` and not `both` — the entrance must not hold its end state, or
+     the filled opacity would outrank the transition above and the toast could
+     never fade. It ends exactly on the base values, so dropping the fill is
+     invisible. */
+  animation: riseIn 300ms var(--ease-out) backwards;
+}
+
+.anchor[data-leaving] {
+  opacity: 0;
+}
+
+/* Rises from clear of the bottom edge — the toast's own height plus its offset
+   puts its start position fully off-screen. Centring lives in the transform, so
+   both keyframes carry the translateX through. */
+@keyframes riseIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, calc(100% + 24px));
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+/* min-width holds the designed 333px at rest — which is what puts ~18px between
+   the two groups — while wider content pushes them apart rather than
+   overflowing. */
+.band {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 24px;
+  width: fit-content;
+  min-width: min(333px, 100%);
+  max-width: 100%;
+  background: var(--paper-white);
+}
+
+/* The repeat-add acknowledgement: a short lift and settle, deliberately shorter
+   and smaller than the entrance so it reads as "again", not "new". Two
+   identical keyframe sets under different names because a browser only restarts
+   an animation when its *name* changes — the component alternates a/b, and
+   re-setting one name would replay nothing on the second add. */
+.band[data-nudge="a"] {
+  animation: nudgeA 180ms var(--ease-out);
+}
+
+.band[data-nudge="b"] {
+  animation: nudgeB 180ms var(--ease-out);
+}
+
+@keyframes nudgeA {
+  0% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes nudgeB {
+  0% {
+    transform: translateY(0);
+  }
+  35% {
+    transform: translateY(-6px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.product {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.thumb {
+  position: relative;
+  flex: none;
+  display: block;
+  width: 32px;
+  height: 32px;
+  overflow: hidden;
+}
+
+.thumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Stand-in for formats without product photography yet — matches the
+   configurator gallery's placeholder block. */
+.thumbFill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: var(--bw-600);
+}
+
+.label {
+  font-weight: 700;
+  font-size: 14px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
+  white-space: nowrap;
+}
+
+/* Reads as the design's underlined red text; it's a button because the cart is
+   a drawer, not a route. */
+.link {
+  appearance: none;
+  flex: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 14px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--darkroom-red);
+  text-decoration: underline;
+  text-underline-position: from-font;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .link:hover {
+    opacity: 0.7;
+  }
+}
+
+/* No travel at all — the toast arrives and leaves on opacity, and a repeat add
+   is carried by the live region re-announcing rather than by a nudge. Timing is
+   unaffected; only the movement goes. The keyframes name no transform, so the
+   base one (centred on desktop, none on mobile) holds throughout and this works
+   at every width. */
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+
+  .anchor {
+    animation: fadeIn 300ms var(--ease-out) backwards;
+  }
+
+  .band[data-nudge="a"],
+  .band[data-nudge="b"] {
+    animation: none;
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+}
+
+/* The toast spans the viewport on mobile rather than hugging — 333px is most of
+   a small screen anyway, and edge-to-edge (inside the page padding) keeps the
+   cart link off the bezel. Centring by transform is dropped for plain insets,
+   so the entrance keyframes lose their translateX here. */
+@media (max-width: 700px) {
+  .anchor {
+    left: var(--page-pad);
+    right: var(--page-pad);
+    bottom: 16px;
+    max-width: none;
+    transform: none;
+    animation: riseInFlush 300ms var(--ease-out) backwards;
+  }
+
+  .band {
+    width: auto;
+    min-width: 0;
+    padding: 20px 16px;
+    gap: 16px;
+  }
+
+  @keyframes riseInFlush {
+    from {
+      opacity: 0;
+      transform: translateY(calc(100% + 16px));
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .anchor {
+      animation: fadeIn 300ms var(--ease-out) backwards;
+    }
+  }
+}

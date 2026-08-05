@@ -359,6 +359,85 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* ---------- Add to order ----------
+   Sits under the headline price. The confirmation line is always in the DOM
+   (it's a live region) and simply empty at rest, so the button never shifts
+   when a message appears.
+
+   Subdivided into 6 tracks, NOT the 8 that .lineItem uses. .body spans exactly
+   6 site columns and this grid repeats the site gutter, so 6 tracks come out
+   exactly one site column wide and land on the real column lines — `span 3` on
+   the button is then 3 site columns, full stop. (.lineItem's 8 tracks are a
+   3:5 proportion inherited from the 16-column grid and sit off the column
+   lines, so a span there measures ~0.75 of a column.) */
+.addBlock {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  row-gap: 8px;
+  align-items: start;
+}
+
+.addBtn {
+  grid-column: span 3;
+  appearance: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 14px 24px;
+  background: var(--darkroom-red);
+  border: 2px solid var(--darkroom-red);
+  color: var(--paper-white);
+  transition:
+    filter 160ms var(--ease-out),
+    transform 120ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .addBtn:hover {
+    filter: brightness(1.08);
+  }
+}
+
+.addBtn:active {
+  transform: scale(0.97);
+}
+
+.addedNote {
+  grid-column: 1 / -1;
+  margin: 0;
+  min-height: 1.4em;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  color: var(--bw-600);
+}
+
+/* Shortcut into the cart drawer, inline in the confirmation. The cart button
+   in the nav does the same job, but the customer's attention is down here. */
+.viewOrder {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: inherit;
+  letter-spacing: inherit;
+  color: var(--darkroom-red);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .addBtn {
+    transition: none;
+  }
+}
+
 /* ---------- Notice ---------- */
 .noticeText {
   margin: 0;
@@ -392,6 +471,19 @@
     width: calc((100% - 3 * var(--grid-gap)) / 4);
     max-width: 96px;
   }
+
+  /* .body spans all 12 site columns here, so the 6-track subdivision above
+     stops being one-column-per-track (each becomes two) and a 3-track button
+     would be half the viewport — under ~200px on a phone, which wraps the
+     label onto two lines. The gutter is a fixed 24px at every width, so at
+     375px the twelve columns are only ~6px each and the gutters eat the row;
+     column spans just aren't a usable unit down here. Size to content. */
+  .addBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
 }
 
 @media (max-width: 700px) {
@@ -405,5 +497,10 @@
 
   .price {
     font-size: clamp(40px, 14vw, 56px);
+  }
+
+  .addBtn {
+    font-size: 18px;
+    padding: 12px 18px;
   }
 }

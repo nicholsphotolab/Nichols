@@ -23,6 +23,20 @@ export default function MobileMenu({ activeHref }: { activeHref?: string }) {
     };
   }, [open]);
 
+  // Flag the open panel globally, the same way NavBar flags the scrolled bar.
+  // The controls that stay on top of the panel — the brand mark, the cart
+  // button, and this trigger — are all fixed elements outside it, and they're
+  // coloured paper-white for a dark hero. Over the panel's paper-white they'd
+  // be invisible, so each keys off this attribute to switch to black, exactly
+  // as they already do for html[data-nav-scrolled].
+  useEffect(() => {
+    if (!open) return;
+    document.documentElement.dataset.menuOpen = "true";
+    return () => {
+      delete document.documentElement.dataset.menuOpen;
+    };
+  }, [open]);
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => {

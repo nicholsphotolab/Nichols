@@ -56,7 +56,7 @@
   background: transparent;
   border: 2px solid var(--black);
   padding: 10px 20px;
-  font-size: 24px;
+  font-size: 20px;
   line-height: 1;
   letter-spacing: 0.02em;
   /* Option values may be stored mixed-case ("Hi8") for screen readers;
@@ -76,8 +76,8 @@
 }
 
 .pill[data-active] {
-  background: var(--darkroom-red);
-  border-color: var(--darkroom-red);
+  background: var(--black);
+  border-color: var(--black);
   color: var(--paper-white);
 }
 
@@ -136,7 +136,7 @@
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
 
-  .pill,
+  /* Pills are already 20px at every width; only the box tightens here. */
   .rowLabel {
     font-size: 20px;
   }

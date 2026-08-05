@@ -33,6 +33,11 @@ import {
 } from "./videoTransferData";
 import { withBasePath } from "../lib/basePath";
 import { buildQuery, matchOption, slugifyOption } from "../lib/urlState";
+import { useOrder } from "../components/OrderProvider";
+import AddedToOrder from "../components/AddedToOrder";
+import MoreProducts from "../components/MoreProducts";
+import type { NewOrderLine } from "../lib/orderDraft";
+import { formatUSD, summarizeLine } from "../lib/orderPricing";
 import styles from "./VideoTransferConfigurator.module.css";
 
 // CATEGORY pills, in display order. Values are slugs; labels come from the data.
@@ -82,10 +87,6 @@ function RowLabel({ label }: { label: string }) {
   );
 }
 
-function formatUSD(n: number) {
-  return `$${n.toFixed(2)}`;
-}
-
 type LineItem = { name: string; sub?: string; amount: number };
 
 // Builds the itemized estimate: the per-item transfer price for the selected
@@ -126,6 +127,27 @@ export default function VideoTransferConfigurator({
   // back — the same pure-render pattern the film configurator uses.
   const [optionSel, setOptionSel] = useState<string>(category.options[0].name);
   const [output, setOutput] = useState<string>(RECOMMENDED_OUTPUT.name);
+
+  // ---------- Running order ----------
+  // Same cart the film configurator writes to: it lives in OrderProvider,
+  // mounted in the root layout, so one order can hold rolls and transfers
+  // together. This component only appends; the drawer does the rest.
+  const { addLine, count, openCart } = useOrder();
+
+  // Transient confirmation after an add — the cart is up in the nav, so the
+  // button needs to say something happened where the customer is looking.
+  const [addedNote, setAddedNote] = useState<string | null>(null);
+
+  // Product shot of whatever the note is about, held separately so the
+  // confirmation band keeps showing what was added even after the customer
+  // starts configuring the next item.
+  const [addedShot, setAddedShot] = useState<string | null>(null);
+
+  // No timer here: AddedToOrder owns the toast's whole visible lifecycle, since
+  // dismissal has to answer to the pointer (it holds while hovered) and only
+  // the toast knows where the pointer is. The note is left set, and a new one —
+  // always a new string, since it carries the running item count — is what
+  // raises the next toast.
 
   // Restore customization from the URL once on mount (?format=…&output=…).
   // The page is statically pre-rendered with defaults, so the query is applied
@@ -233,6 +255,34 @@ export default function VideoTransferConfigurator({
     setOptionSel(next);
     setGalleryIdxSel(0);
     setAnimateSlide(false);
+  }
+
+  // Snapshot the current selection into the order, leaving the configurator
+  // as it is — the commonest next action is another tape of the same kind, so
+  // holding the selection makes that one more click. Mirrors the film
+  // configurator down to not popping the drawer open: a counter workflow is
+  // several items in a row, and a panel over the page after each would be in
+  // the way.
+  function addToOrder() {
+    const line: NewOrderLine = {
+      kind: "video",
+      slug,
+      option,
+      output,
+      qty: 1,
+    };
+    const stored = addLine(line);
+
+    const summary = summarizeLine(stored);
+    const next = count + 1;
+    setAddedNote(
+      `${summary?.text ?? "Item"} added — ${next} ${
+        next === 1 ? "item" : "items"
+      } in your order.`
+    );
+    setAddedShot(
+      category.options.find((o) => o.name === option)?.image ?? null
+    );
   }
 
   // "SIZE" for reels, "Format" for tapes & discs — drives the row label + tooltip.
@@ -417,8 +467,24 @@ export default function VideoTransferConfigurator({
           <p className={styles.price} aria-live="polite">
             {formatUSD(total)}
           </p>
+
+          <div className={styles.addBlock}>
+            <button type="button" className={styles.addBtn} onClick={addToOrder}>
+              Add to order
+            </button>
+            {/* The note is now spoken-only — AddedToOrder keeps it in an
+                always-mounted live region and raises the toast. */}
+            <AddedToOrder
+              note={addedNote}
+              image={addedShot}
+              onViewCart={openCart}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Cross-sell: leads with a service they aren't already looking at. */}
+      <MoreProducts family={slug} />
     </main>
   );
 }

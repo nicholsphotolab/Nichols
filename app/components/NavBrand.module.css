@@ -10,8 +10,10 @@
   transition: color 220ms var(--ease-out);
 }
 
-/* Recolor to dark once the solid white bar snaps in. */
-:global(html[data-nav-scrolled="true"]) .brand {
+/* Dark once the solid white bar snaps in, and likewise while the mobile menu
+   panel is open — both put paper-white behind the mark. */
+:global(html[data-nav-scrolled="true"]) .brand,
+:global(html[data-menu-open]) .brand {
   color: var(--black);
 }
 

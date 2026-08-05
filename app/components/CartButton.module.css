@@ -1,0 +1,83 @@
+/* CartButton.module.css
+   The nav-bar cart control. Sits at the far right of the bar on desktop; on
+   mobile the bar's links and CTA hide, so it holds the right edge on its own,
+   inset to clear the fixed MENU trigger (MobileMenu.module.css). */
+
+.cart {
+  flex: none;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0 0 0 20px;
+  cursor: pointer;
+  /* Both the glyph and the badge ride currentColor, so the scrolled/unscrolled
+     swap below is a single property change. */
+  color: var(--paper-white);
+  transition: color 220ms var(--ease-out);
+}
+
+/* Dark once the solid white bar snaps in, and likewise while the mobile menu
+   panel is open — both put paper-white behind the button. Same mechanism as
+   the nav links, the brand mark, and the MENU trigger. */
+:global(html[data-nav-scrolled="true"]) .cart,
+:global(html[data-menu-open]) .cart {
+  color: var(--black);
+}
+
+.icon {
+  display: block;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cart:hover {
+    color: var(--darkroom-red);
+  }
+}
+
+.cart:focus-visible {
+  outline: 2px solid var(--darkroom-red);
+  outline-offset: 4px;
+}
+
+/* Count badge, pinned to the glyph's top-right corner. Always the brand red on
+   paper-white, in both nav states — a badge that inverted with the bar would
+   read as a different control rather than the same one on a new background. */
+.badge {
+  position: absolute;
+  top: -5px;
+  right: -7px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 9px;
+  background: var(--darkroom-red);
+  color: var(--paper-white);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 17px;
+  letter-spacing: 0.02em;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  pointer-events: none;
+}
+
+/* The bar hides its links and CTA at 900px, so the cart becomes the only
+   visible flex child and has to push itself right. The right margin clears the
+   fixed MENU/CLOSE trigger, which sits at right: 20px and is as wide as
+   "CLOSE" at 16px.
+
+   Staying above the open mobile menu panel is handled in Nav.module.css by
+   lifting the whole bar — not here. `.bar` is a fixed, z-indexed element, so it
+   forms a stacking context this button cannot escape: giving the button its own
+   z-index (or even position: fixed, which escapes the containing block but not
+   the stacking context) leaves it painted under the panel regardless. */
+@media (max-width: 900px) {
+  .cart {
+    margin-left: auto;
+    margin-right: 76px;
+  }
+}

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { NAV_ITEMS, ORDER_URL } from "../lib/site";
+import CartButton from "./CartButton";
 import MobileMenu from "./MobileMenu";
 import NavBar from "./NavBar";
 import styles from "./Nav.module.css";
@@ -39,6 +40,11 @@ export default function Nav({
           order prints{" "}
           <span className={styles.ctaArrow} aria-hidden="true">↗</span>
         </Link>
+
+        {/* Rightmost item in the bar, and the only one that survives the 900px
+            breakpoint — the links and the CTA move into the hamburger menu,
+            but the order stays one tap away. */}
+        <CartButton />
       </NavBar>
 
       <MobileMenu activeHref={activeHref} />

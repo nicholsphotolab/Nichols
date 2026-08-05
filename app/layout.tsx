@@ -5,15 +5,20 @@
 // build time — unlike a plain CSS @font-face url(), which always resolves
 // against the domain root and breaks on the GitHub Pages /Nichols/ subpath.
 // Mounts global components that persist across all routes:
+//   - OrderProvider: holds the in-progress film order (the nav cart reads it,
+//     the film configurator writes to it) and its localStorage draft
 //   - BrandLogoSwitch: renders the hero logo on / and the nav logo everywhere else
+//   - CartDrawer: the slide-out order panel opened from the nav cart button
 //   - Footer: site-wide footer with logo scroll-reveal animation
 
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import BrandLogoSwitch from "./components/BrandLogoSwitch";
+import CartDrawer from "./components/CartDrawer";
 import Footer from "./components/Footer";
 import GridOverlay from "./components/GridOverlay";
+import OrderProvider from "./components/OrderProvider";
 import { withBasePath } from "./lib/basePath";
 
 const interVariable = localFont({
@@ -60,10 +65,16 @@ export default function RootLayout({
   return (
     <html lang="en" className={interVariable.variable}>
       <body>
-        {/* Switches between the hero logo (home) and nav logo (all other pages) */}
-        <BrandLogoSwitch />
-        {children}
-        <Footer />
+        {/* Wraps everything so the nav's cart button and the film configurator
+            share one order. `children` stays a server-rendered subtree — it's
+            passed through as a prop, not imported by the client provider. */}
+        <OrderProvider>
+          {/* Switches between the hero logo (home) and nav logo (all other pages) */}
+          <BrandLogoSwitch />
+          {children}
+          <Footer />
+          <CartDrawer />
+        </OrderProvider>
         {/* Press G to toggle the column-grid debug overlay — dev builds only */}
         {process.env.NODE_ENV !== "production" && <GridOverlay />}
       </body>

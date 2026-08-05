@@ -9,15 +9,34 @@
 // the product image on the left and, on the right, a title + blurb, hairline-
 // separated option rows (TYPE / SIZE / OUTPUT / EXPOSURE), an itemized
 // ESTIMATED TOTAL, the headline price, and a closing notice.
+//
+// Below all that sits the running order: "Add to order" snapshots the current
+// selection as a line item and resets the option rows for the next roll, so one
+// visit can cover several rolls of different types. The list, its total, and the
+// printable order form live in OrderList/OrderForm; this component owns the line
+// state and is the single place that writes it to localStorage.
 
 "use client";
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Pills } from "../components/ConfiguratorControls";
+import AddedToOrder from "../components/AddedToOrder";
+import MoreProducts from "../components/MoreProducts";
 import { STOCKS } from "./filmStocksData";
 import { withBasePath } from "../lib/basePath";
 import { buildQuery, matchOption, slugifyOption } from "../lib/urlState";
+import { useOrder } from "../components/OrderProvider";
+import type { NewOrderLine } from "../lib/orderDraft";
+import { summarizeLine } from "../lib/orderPricing";
+import {
+  buildBreakdown,
+  defaultsFor,
+  formatUSD,
+  OUTPUT_LABELS,
+  OUTPUT_ORDER,
+  SIZE_LABELS,
+} from "./filmPricing";
 import styles from "./FilmStockConfigurator.module.css";
 
 // Shape of a single film stock's pricing and option data.
@@ -70,23 +89,10 @@ export type StockGallery = {
 // TYPE pills, in Figma order. Values are slugs; labels come from the stock data.
 const TYPE_ORDER: FilmStock["slug"][] = ["c-41", "bw", "e-6"];
 
-// Shorten the data value for display without changing the selection value.
-const SIZE_LABELS: Record<string, string> = { "DISPOSABLE CAMERA": "DISPOSABLE" };
-
-// OUTPUT pills: render order + labels matching the Figma.
-const OUTPUT_ORDER = ["SCANS", "PRINTS/SCANS", "NONE"];
-const OUTPUT_LABELS: Record<string, string> = {
-  SCANS: "SCANS ONLY",
-  "PRINTS/SCANS": "PRINTS + SCANS",
-  NONE: "DEVELOP ONLY",
-};
-// How the scan surcharge reads in the itemized breakdown.
-const SCAN_LINE_LABEL: Record<string, string> = {
-  SCANS: "Standard Scans",
-  "PRINTS/SCANS": "Prints + Scans",
-};
-
-type LineItem = { name: string; sub?: string; amount: number };
+// Display labels (SIZE_LABELS / OUTPUT_ORDER / OUTPUT_LABELS) and the pricing
+// maths (buildBreakdown / defaultsFor / formatUSD) live in filmPricing.ts —
+// the order list and the printable order form price already-added rolls with
+// the same functions.
 
 // Short plain-language explanation shown in the tooltip beside each row label.
 const ROW_INFO: Record<string, string> = {
@@ -122,77 +128,6 @@ function RowLabel({ label }: { label: string }) {
   );
 }
 
-function formatUSD(n: number) {
-  return `$${n.toFixed(2)}`;
-}
-
-// Builds the itemized estimate from the current selection. Development is always
-// charged; a scans line is added when an output that includes scanning is paired
-// with a resolvable exposure count (explicit or the silent default).
-function buildBreakdown(
-  stock: FilmStock,
-  size: string,
-  output: string | null,
-  exp: string | null,
-  sheetSize: string | null
-): LineItem[] {
-  // Sheet film develops per sheet at a rate set by stock + sheet size, so it
-  // replaces the roll basePrice line entirely.
-  if (size === "SHEET") {
-    const devRate =
-      (sheetSize ? stock.sheetDevRates?.[sheetSize] : undefined) ??
-      stock.basePrice;
-    const items: LineItem[] = [
-      {
-        name: `${sheetSize ? `${sheetSize.toLowerCase()} ` : ""}${stock.name} Development`,
-        sub: "per sheet",
-        amount: devRate,
-      },
-    ];
-    if (output && output !== "NONE" && sheetSize) {
-      const rate = stock.sheetSizeRates?.[sheetSize]?.[output];
-      if (rate) {
-        items.push({
-          name: `${sheetSize.toLowerCase()} ${SCAN_LINE_LABEL[output] ?? "Scans"}`,
-          sub: "per sheet",
-          amount: rate,
-        });
-      }
-    }
-    return items;
-  }
-
-  const items: LineItem[] = [
-    { name: `${stock.name} Development`, amount: stock.basePrice },
-  ];
-
-  const resolvedExp = exp ?? stock.defaultExposures?.[size] ?? null;
-  if (output && output !== "NONE" && resolvedExp) {
-    const rate = stock.perExposureRate[size]?.[output];
-    const count = parseInt(resolvedExp, 10);
-    if (rate && !Number.isNaN(count)) {
-      const sizeLabel = (SIZE_LABELS[size] ?? size).toLowerCase();
-      items.push({
-        name: `${sizeLabel} ${SCAN_LINE_LABEL[output] ?? "Scans"}`,
-        sub: `${formatUSD(rate)} × ${resolvedExp}EXP`,
-        amount: rate * count,
-      });
-    }
-  }
-
-  return items;
-}
-
-// Default selection for a stock: 35MM / SCANS / 36 exposures when available,
-// which reproduces the Figma's resting state. Falls back gracefully per stock.
-function defaultsFor(stock: FilmStock) {
-  const size = stock.sizes.includes("35MM") ? "35MM" : stock.sizes[0] ?? "";
-  const output = stock.outputs.includes("SCANS") ? "SCANS" : stock.outputs[0] ?? null;
-  const exps = output ? stock.exposures[size]?.[output] ?? [] : [];
-  const exp = exps.includes("36") ? "36" : exps[0] ?? null;
-  return { size, output, exp };
-}
-
 export default function FilmStockConfigurator({
   initialSlug,
   galleries,
@@ -217,6 +152,27 @@ export default function FilmStockConfigurator({
   const [output, setOutput] = useState<string | null>(init.output);
   const [expSel, setExpSel] = useState<string | null>(init.exp);
   const [sheetSizeSel, setSheetSizeSel] = useState<string | null>(null);
+
+  // ---------- Running order ----------
+  // The order itself lives in OrderProvider (mounted in the root layout) so the
+  // nav's cart button can read it from any page. This component only appends to
+  // it; the cart drawer handles viewing, removing, and printing.
+  const { addLine, count, openCart } = useOrder();
+
+  // Transient confirmation after an add — the cart is up in the nav, so the
+  // button needs to say something happened where the customer is looking.
+  const [addedNote, setAddedNote] = useState<string | null>(null);
+
+  // Product shot of whatever the note is about, held separately so the
+  // confirmation band keeps showing what was added even after the customer
+  // starts configuring the next roll.
+  const [addedShot, setAddedShot] = useState<string | null>(null);
+
+  // No timer here: AddedToOrder owns the toast's whole visible lifecycle, since
+  // dismissal has to answer to the pointer (it holds while hovered) and only
+  // the toast knows where the pointer is. The note is left set, and a new one —
+  // always a new string, since it carries the running item count — is what
+  // raises the next toast.
 
   // Restore customization from the URL once on mount (?format=…&output=…&
   // exp=…&sheet=…). The page is statically pre-rendered with defaults, so the
@@ -368,6 +324,42 @@ export default function FilmStockConfigurator({
     setSheetSizeSel(next);
     setGalleryIdxSel(0);
     setAnimateSlide(false);
+  }
+
+  // Snapshot the current selection into the order and leave the configurator
+  // exactly as it is. Nothing here resets: the commonest next action is another
+  // roll of what was just added (two 36-exposure C-41s scanned the same way is
+  // one order, not two configurations), so holding the selection makes that a
+  // single click. Anything else is the same pill taps the customer already made
+  // once. An automatic snap back to 35MM/SCANS/36 also reads as the page having
+  // reloaded and lost their work, which is worse than a stale-looking panel.
+  //
+  // The cart drawer deliberately does NOT pop open here — a counter workflow is
+  // several rolls in a row, and a panel covering the configurator after each
+  // one would be in the way. The nav badge and the note below carry the
+  // feedback instead.
+  function addToOrder() {
+    // Always one roll: a second identical roll is another click of this button,
+    // and the cart's stepper is where a quantity gets raised after the fact.
+    const line: NewOrderLine = {
+      kind: "film",
+      slug,
+      size,
+      output,
+      exp,
+      sheetSize,
+      qty: 1,
+    };
+    const stored = addLine(line);
+
+    const summary = summarizeLine(stored);
+    const next = count + 1;
+    setAddedNote(
+      `${summary?.text ?? "Roll"} added — ${next} ${
+        next === 1 ? "item" : "items"
+      } in your order.`
+    );
+    setAddedShot(productShot);
   }
 
   const breakdown = buildBreakdown(stock, size, output, exp, sheetSize);
@@ -547,8 +539,28 @@ export default function FilmStockConfigurator({
           <p className={styles.price} aria-live="polite">
             {formatUSD(total)}
           </p>
+
+          <div className={styles.addBlock}>
+            <button
+              type="button"
+              className={styles.addBtn}
+              onClick={addToOrder}
+            >
+              Add to order
+            </button>
+            {/* The note is now spoken-only — AddedToOrder keeps it in an
+                always-mounted live region and draws the designed band. */}
+            <AddedToOrder
+              note={addedNote}
+              image={addedShot}
+              onViewCart={openCart}
+            />
+          </div>
         </div>
       </div>
+
+      {/* Cross-sell: leads with a service they aren't already looking at. */}
+      <MoreProducts family={slug} />
     </main>
   );
 }

@@ -13,6 +13,9 @@
   /* off-white page background */
   --darkroom-red: #ff0100;
   /* primary accent — buttons, hover states */
+  --darkroom-red-light: #fc7d7a;
+  /* darkroom-red mixed 50/50 with paper-white — for hovers that preview a red
+     selection without reading as already selected (the cart's choice swatches) */
   --black: #010101;
   /* near-black for all body text */
   --bw-200: #d6d3cc;
@@ -180,5 +183,48 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .reveal-arrow {
     transition: none;
+  }
+}
+
+/* ---------- Printable order sheet ----------
+   The film order form (app/film/OrderForm.tsx) renders through a portal as a
+   direct child of <body>, tagged [data-print-root], and stamps
+   data-order-sheet="open" on <body> for as long as it's mounted.
+
+   These rules live here rather than in the component's CSS module because what
+   has to be hidden — the nav, the hero/nav logo, the footer — is rendered by
+   the root layout, outside any one component's reach, with hashed module class
+   names a module can't target anyway.
+
+   Everything is scoped to body[data-order-sheet="open"], so a page with no
+   sheet open prints exactly as it always did. The attribute (rather than :has())
+   keeps this working in older Safari, and doubles as the scroll lock while the
+   dialog is up. */
+body[data-order-sheet="open"] {
+  overflow: hidden;
+}
+
+@media print {
+
+  /* Only the sheet prints. Direct children of <body> cover every layout
+     region — the sheet itself is one of them, courtesy of the portal. */
+  body[data-order-sheet="open"]>*:not([data-print-root]) {
+    display: none !important;
+  }
+
+  /* The dialog's scroll container mustn't clip the sheet to one screenful. */
+  body[data-order-sheet="open"] {
+    overflow: visible;
+  }
+
+  /* Paper is white; the site's off-white would print as a grey wash on
+     printers that honour background colours. */
+  html,
+  body {
+    background: #fff;
+  }
+
+  @page {
+    margin: 0.5in;
   }
 }

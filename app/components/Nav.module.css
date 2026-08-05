@@ -146,4 +146,20 @@
   .links {
     display: none;
   }
+
+  /* With the menu panel open (z-index 9, and later in the DOM), the bar would
+     otherwise be painted underneath it, taking the cart button — the one
+     control here that survives this breakpoint — down with it. The button
+     can't lift itself out: this bar is fixed and z-indexed, so it forms a
+     stacking context its children are sealed inside, and neither a z-index nor
+     position: fixed on the button escapes it. Lift the whole bar instead. */
+  :global(html[data-menu-open]) .bar {
+    z-index: 10;
+  }
+
+  /* The hero scrim has nothing left to sit over once the panel is up, and
+     would just dirty the panel's top edge. */
+  :global(html[data-menu-open]) .bar::before {
+    opacity: 0;
+  }
 }

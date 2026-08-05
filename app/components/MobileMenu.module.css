@@ -1,9 +1,13 @@
 /* Mobile/tablet hamburger menu (≤900px, where the desktop links hide).
    The trigger reads MENU/CLOSE in the same type as the desktop links and
    sits in the same centered slot. The panel slides down from the top at
-   z-index 9 — under the brand mark, CTA, and trigger (all z-index 10+,
-   mix-blend-mode: difference), so they invert to black over the paper-
-   white panel automatically. */
+   z-index 9, under the brand mark, the cart button, and this trigger.
+
+   Those three are fixed elements outside the panel, coloured paper-white so
+   they read over a dark hero — which left them invisible against the panel's
+   paper-white. MobileMenu.tsx sets html[data-menu-open] while the panel is up
+   and each one switches to black off that, mirroring how they already respond
+   to html[data-nav-scrolled]. */
 
 .toggle {
   display: none;
@@ -34,8 +38,10 @@
     transition: color 220ms var(--ease-out);
   }
 
-  /* Once the solid white bar snaps in, recolor to dark so it stays readable. */
-  :global(html[data-nav-scrolled="true"]) .toggle {
+  /* Dark once the solid white bar snaps in, and likewise once this panel is
+     open — both put paper-white behind the trigger. */
+  :global(html[data-nav-scrolled="true"]) .toggle,
+  :global(html[data-menu-open]) .toggle {
     color: var(--black);
   }
 

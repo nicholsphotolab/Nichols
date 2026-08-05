@@ -179,32 +179,24 @@
     display: none;
   }
 
-  /* One row on the 12-col mobile grid: ©2026 (3 cols) | hours (3 cols) |
-     address + phone (6 cols). Undoes the tablet full-width stack. */
-  .copyright {
-    order: 0;
-    grid-column: span 3;
-  }
+  /* The columns stay stacked full-width here, carried down from the 900px
+     rule above.
 
-  .hoursBlock {
-    grid-column: span 3;
-  }
+     This block used to put them back into one row — ©2026 (3 cols) | hours
+     (3 cols) | address + phone (6 cols) — with nowrap type at 12px, the idea
+     being that lines would spill a little into the gutters. The site gutter is
+     a fixed 24px at every breakpoint, though, and eleven of them eat 264px of
+     a 375px screen's 335px content box, leaving tracks under 6px wide. A
+     3-column span is then ~66px against ~116px of nowrap text, so the hours
+     block overran the contact column and the two collided. A 3-col span only
+     clears that text around a 576px viewport, so the row broke on every phone,
+     not just the smallest — and at 357px the three blocks are wider than the
+     screen regardless of how they're divided. Stacking is the only fit.
 
-  .contact {
-    grid-column: span 6;
-  }
-
-  /* Mobile tracks are narrow — scale the unified type down and keep each
-     line unbroken so lines spill slightly into the gutters (as in the
-     design) instead of wrapping mid-phrase. */
-  .copyright,
-  .address,
-  .phone,
-  .hoursGroup span {
-    font-size: 12px;
-    white-space: nowrap;
-  }
-
+     Type stays at the footer's unified 16px rather than dropping to 12px: the
+     narrow tracks were the whole reason for shrinking it, and stacked full
+     width there is room to spare. This also means the footer reads the same at
+     375px as it does at 701px, with no abrupt shift across the breakpoint. */
   .hoursBlock,
   .contact {
     gap: 14px;

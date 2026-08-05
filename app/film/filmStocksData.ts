@@ -72,6 +72,7 @@ export const STOCKS: Record<string, FilmStock> = {
     sizeImages: {
       "35MM": "/C-41_35mm.webp",
       "DISPOSABLE CAMERA": "/C-41_Disposable.webp",
+      "110": "/C-41_110.webp",
       "120": "/C-41_120.webp",
     },
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
@@ -92,6 +93,7 @@ export const STOCKS: Record<string, FilmStock> = {
     image: "/B&W.webp",
     sizeImages: {
       "35MM": "/B&W_35mm.webp",
+      "110": "/B&W_110.webp",
       "SHEET/4X5": "/B&W_Sheet_4x5.webp",
     },
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
