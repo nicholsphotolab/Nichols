@@ -1,47 +1,11 @@
 /* ConfiguratorControls.module.css
-   Shared styles for the configurator option rows, pills, and quantity
-   stepper. Moved verbatim from FilmStockConfigurator.module.css so the film
-   and video configurators stay visually identical. */
+   Shared styles for the configurator pills. Moved verbatim from
+   FilmStockConfigurator.module.css so the film and video configurators stay
+   visually identical.
 
-.row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.rowLine {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.rowLabel {
-  font-size: 24px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--black);
-}
-
-.rowOptions {
-  display: flex;
-  align-items: center;
-}
-
-.rowExplain {
-  margin: 0;
-  font-size: 16px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--bw-400);
-}
-
-.rowDivider {
-  border: 0;
-  border-top: 1px solid var(--black);
-  margin: 12px 0 0;
-}
+   The row and quantity-stepper rules that used to live here went with the Row
+   and QtyStepper components: each configurator styles its own rows, and the
+   cart drawer its own stepper. */
 
 /* ---------- Pills ---------- */
 .pills {
@@ -50,7 +14,7 @@
   gap: 16px;
 }
 
-/* Outlined box buttons; the active one fills red with no border showing. */
+/* Outlined box buttons; the active one fills solid black, no border showing. */
 .pill {
   appearance: none;
   background: transparent;
@@ -81,73 +45,11 @@
   color: var(--paper-white);
 }
 
-/* ---------- Quantity ---------- */
-.qtyRow {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-  padding-top: 8px;
-  border-bottom: 2px solid var(--black);
-  padding-bottom: 12px;
-}
-
-.qtyBtn {
-  appearance: none;
-  background: transparent;
-  border: 0;
-  padding: 0;
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 48px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  color: var(--black);
-  cursor: pointer;
-  transition: opacity 0.15s ease, transform 120ms ease-out;
-}
-
-@media (hover: hover) and (pointer: fine) {
-  .qtyBtn:hover {
-    opacity: 0.7;
-  }
-}
-
-.qtyBtn:active {
-  transform: scale(0.92);
-}
-
-.qtyBtn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.qtyValue {
-  font-family: var(--font-sans);
-  font-weight: 700;
-  font-size: 48px;
-  line-height: 1;
-  letter-spacing: 0.02em;
-  /* Fixed width holds 3 digits — buttons never shift as qty grows */
-  width: 3ch;
-  text-align: center;
-  flex-shrink: 0;
-}
-
 /* ---------- Responsive ---------- */
 @media (max-width: 900px) {
-
   /* Pills are already 20px at every width; only the box tightens here. */
-  .rowLabel {
-    font-size: 20px;
-  }
-
   .pill {
     padding: 8px 16px;
-  }
-
-  .qtyBtn,
-  .qtyValue {
-    font-size: 36px;
   }
 }
 
@@ -159,9 +61,5 @@
   .pill {
     font-size: 16px;
     padding: 6px 12px;
-  }
-
-  .rowLine {
-    gap: 12px;
   }
 }

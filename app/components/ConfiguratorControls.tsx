@@ -1,36 +1,18 @@
 // ConfiguratorControls.tsx
-// Shared building blocks for the configurator pages (film stocks and video
-// transfers): labeled option rows, pill toggle groups, and the quantity
-// stepper. Extracted from FilmStockConfigurator so both configurators share
-// one implementation and visual treatment.
+// The pill toggle group shared by the configurator pages (film stocks and
+// video transfers). Extracted from FilmStockConfigurator so both configurators
+// share one implementation and visual treatment.
+//
+// This once also held a Row wrapper and a QtyStepper. Both were left behind by
+// later work — the configurators each grew their own RowLabel with a tooltip
+// (and their own .rowLabel styles), and the cart drawer has its own stepper —
+// so they were removed rather than kept as a second, unused implementation.
 
 "use client";
 
 import styles from "./ConfiguratorControls.module.css";
 
-// A labeled option row with a horizontal rule beneath it.
-export function Row({
-  label,
-  explanation,
-  children,
-}: {
-  label: string;
-  explanation?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className={styles.row}>
-      <div className={styles.rowLine}>
-        <span className={styles.rowLabel}>{label}</span>
-        <div className={styles.rowOptions}>{children}</div>
-      </div>
-      {explanation && <p className={styles.rowExplain}>{explanation}</p>}
-      <hr className={styles.rowDivider} />
-    </div>
-  );
-}
-
-// Renders a set of toggle buttons. Active pill gets the red background.
+// Renders a set of toggle buttons. The active pill fills solid black.
 // `format` optionally maps a value to its display label (e.g. to append
 // a price) without changing the selection value itself.
 export function Pills<T extends string>({
@@ -60,38 +42,6 @@ export function Pills<T extends string>({
           </button>
         );
       })}
-    </div>
-  );
-}
-
-// Quantity stepper — minimum 1, no maximum.
-export function QtyStepper({
-  qty,
-  onChange,
-}: {
-  qty: number;
-  onChange: (qty: number) => void;
-}) {
-  return (
-    <div className={styles.qtyRow}>
-      <button
-        className={styles.qtyBtn}
-        aria-label="Decrease quantity"
-        onClick={() => onChange(Math.max(1, qty - 1))}
-        disabled={qty <= 1}
-      >
-        −
-      </button>
-      <span className={styles.qtyValue} aria-live="polite">
-        {qty}
-      </span>
-      <button
-        className={styles.qtyBtn}
-        aria-label="Increase quantity"
-        onClick={() => onChange(qty + 1)}
-      >
-        +
-      </button>
     </div>
   );
 }
