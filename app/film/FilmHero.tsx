@@ -1,11 +1,11 @@
 // FilmHero.tsx
 // The film page hero (Figma node 1760:690), made to feel alive. The "FILM"
-// wordmark and its description stay fixed while the background image
-// auto-advances on a calm timer (~5s hold, ~1.6s slide), the outgoing photo
-// sliding off to the left as the next one enters from the right. The
-// bottom-right film-stock caption is paired to each image and does an instant
-// swap at the slide's midpoint (it doesn't animate itself), so it reads as
-// "this caption belongs to the image now arriving."
+// wordmark and its description stay fixed while the background photo advances
+// on a calm rhythm (~5s hold, ~1.6s slide) — and can be dragged across at any
+// point, because the photos sit in a scroll-snap container rather than being
+// stacked and transformed (see useHeroSlideshow). The bottom-right film-stock
+// caption is paired to each image and swaps as the slide passes its halfway
+// point, so it reads as "this caption belongs to the image now arriving."
 //
 // Slides are supplied by the server (page.tsx): a desktop set from
 // public/FILM/ and an optional mobile set from public/FILM/mobile/ (mobile
@@ -13,16 +13,18 @@
 // matchMedia check after mount — SSR always renders the desktop set, so
 // mobile may briefly show the first desktop slide before swapping — and
 // remounts the slideshow on a switch so indices/timers reset cleanly. The
-// indicator dots under the description double as controls: clicking one jumps
-// straight to that slide and restarts the hold timer so the auto-advance
-// doesn't fire right after a manual pick. Users who opt out of motion get
-// instant swaps (transitions are dropped in CSS) but can still click through.
+// segmented progress track under the description doubles as a control: each
+// segment jumps straight to its slide and restarts the hold timer so the
+// auto-advance doesn't fire right after a manual pick. Users who opt out of
+// motion get instant swaps (transitions are dropped in CSS) but can still
+// click through.
 
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Image from "next/image";
 import { withBasePath } from "../lib/basePath";
+import { useHeroSlideshow } from "../lib/useHeroSlideshow";
 import styles from "./page.module.css";
 
 // Hold + slide timings (calm pacing). The caption flips at the midpoint of
@@ -66,89 +68,56 @@ export default function FilmHero({
 }
 
 function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
-  // Two indices so the image and caption can change at different moments: the
-  // image slides immediately, the caption swaps half a slide later.
-  // `prevIndex` is the slide that's mid-exit (sliding out left) — the slide
-  // that was active just before the current one.
-  const [imageIndex, setImageIndex] = useState(0);
-  const [prevIndex, setPrevIndex] = useState<number | null>(null);
-  const [captionIndex, setCaptionIndex] = useState(0);
-  const captionTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  // Mirrors imageIndex so goTo and the interval tick can read the current
-  // slide without being re-created — state setters stay a plain sequence
-  // (no side effects inside updaters; see StrictMode note below).
-  const currentRef = useRef(0);
-  // Bumped on every manual jump to restart the hold timer, so auto-advance
-  // never fires moments after the user picks a slide.
+  const count = slides.length;
+
+  // Bumped whenever the customer takes hold of the hero — a drag, or a pick
+  // from the track — so the hold below restarts and an auto-advance never
+  // fires on top of them.
   const [holdCycle, setHoldCycle] = useState(0);
 
-  const goTo = useCallback((next: number) => {
-    if (next === currentRef.current) return;
-    const prev = currentRef.current;
-    currentRef.current = next;
-    setPrevIndex(prev);
-    setImageIndex(next);
-    // Flip the caption at the slide midpoint (immediately for reduced-motion
-    // users, whose slide swap is instant). Clear any pending flip first so
-    // timers never stack.
-    if (captionTimer.current) clearTimeout(captionTimer.current);
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setCaptionIndex(next);
-    } else {
-      captionTimer.current = setTimeout(() => setCaptionIndex(next), SLIDE_MS / 2);
-    }
-  }, []);
+  const { scrollerRef, indicatorRef, index, goTo, advance } = useHeroSlideshow({
+    count,
+    slideMs: SLIDE_MS,
+    onUserTakeover: () => setHoldCycle((c) => c + 1),
+  });
 
+  // The hold. Keyed on `index`, so every arrival — timed, dragged or picked —
+  // starts a fresh one rather than resuming somebody else's remainder. No
+  // auto-advance for reduced-motion users; they can still drag and pick.
   useEffect(() => {
-    // No auto-advance for reduced-motion users (they can still click the
-    // dots) or when there's nothing to cycle. Timer work happens here, not
-    // inside setState updaters — React may call updaters more than once,
-    // e.g. under StrictMode, which would double-schedule the caption timer.
-    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
-    if (reduce.matches || slides.length <= 1) return;
+    if (count <= 1) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const t = window.setTimeout(advance, HOLD_MS);
+    return () => window.clearTimeout(t);
+  }, [index, count, advance, holdCycle]);
 
-    const interval = setInterval(() => {
-      goTo((currentRef.current + 1) % slides.length);
-    }, HOLD_MS);
-
-    return () => clearInterval(interval);
-  }, [slides.length, goTo, holdCycle]);
-
-  // Unmount-only: the interval effect above re-runs on every manual jump
-  // (holdCycle), so clearing the caption timer there would cancel the very
-  // flip that jump just scheduled.
-  useEffect(() => {
-    return () => {
-      if (captionTimer.current) clearTimeout(captionTimer.current);
-    };
-  }, []);
-
-  const [metaTop, metaBottom] = slides[captionIndex]?.meta ?? ["", ""];
-  const count = slides.length;
+  // The caption follows the committed slide, which the scroller reports at the
+  // halfway point of the move — the same moment the old timer-based flip was
+  // aiming for, minus the timer.
+  const [metaTop, metaBottom] = slides[index]?.meta ?? ["", ""];
 
   return (
     <section className={styles.hero} aria-label="Film">
-      {slides.map((slide, i) => (
-        // Slide effect: the active photo sits at translateX(0); the one it's
-        // replacing slides out to the left; everything else is parked
-        // off-screen to the right, ready to slide in on its turn.
-        <Image
-          key={slide.src}
-          className={`${styles.heroSlide} ${
-            i === imageIndex
-              ? styles.heroSlideActive
-              : i === prevIndex
-                ? styles.heroSlidePrev
-                : ""
-          }`}
-          src={withBasePath(slide.src)}
-          alt=""
-          fill
-          priority={i === 0}
-          loading={i === 0 ? undefined : "eager"}
-          sizes="100vw"
-        />
-      ))}
+      {/* The photos live in a scroller so the hero can be dragged; the scrim
+          and the content above it are pointer-events: none, which lets a drag
+          started anywhere on the hero reach this. */}
+      <div className={styles.heroScroller} ref={scrollerRef} aria-hidden="true" tabIndex={-1}>
+        <div className={styles.heroTrack}>
+          {slides.map((slide, i) => (
+            <div key={slide.src} className={styles.heroSlide}>
+              <Image
+                className={styles.heroSlideImg}
+                src={withBasePath(slide.src)}
+                alt=""
+                fill
+                priority={i === 0}
+                loading={i === 0 ? undefined : "eager"}
+                sizes="100vw"
+              />
+            </div>
+          ))}
+        </div>
+      </div>
       <div className={styles.heroScrim} aria-hidden="true" />
 
       <div className={styles.heroContent}>
@@ -168,27 +137,44 @@ function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
             </>
           )}
         </p>
-
-        {count > 1 && (
-          <div className={styles.heroIndicators}>
-            {slides.map((slide, i) => (
-              <button
-                key={slide.src}
-                type="button"
-                className={`${styles.heroIndicatorDot} ${
-                  i === imageIndex ? styles.heroIndicatorDotActive : ""
-                }`}
-                aria-label={`Go to slide ${i + 1} of ${count}`}
-                aria-current={i === imageIndex}
-                onClick={() => {
-                  goTo(i);
-                  setHoldCycle((c) => c + 1);
-                }}
-              />
-            ))}
-          </div>
-        )}
       </div>
+
+      {count > 1 && (
+        // Pinned to the bottom edge of the photo, outside .heroContent — it is
+        // an indicator for the image, not a line in the text block, and it is
+        // also the one thing here that still takes clicks.
+        //
+        // The rule and the travelling mark are drawn by this container; the
+        // buttons inside are transparent targets over it. --slide-index is the
+        // first-paint position, after which useHeroSlideshow writes a
+        // fractional --slide-pos on every scroll frame and the stylesheet
+        // prefers that — which is what puts the mark under the finger during
+        // a drag rather than only at the end of one.
+        <div
+          className={styles.heroIndicators}
+          ref={indicatorRef}
+          style={
+            {
+              "--slide-count": count,
+              "--slide-index": index,
+            } as CSSProperties
+          }
+        >
+          {slides.map((slide, i) => (
+            <button
+              key={slide.src}
+              type="button"
+              className={styles.heroIndicatorSeg}
+              aria-label={`Go to slide ${i + 1} of ${count}`}
+              aria-current={i === index}
+              onClick={() => {
+                goTo(i);
+                setHoldCycle((c) => c + 1);
+              }}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 }

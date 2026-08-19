@@ -26,7 +26,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { Pills } from "../components/ConfiguratorControls";
 import { CONTACT } from "../lib/site";
@@ -269,7 +269,23 @@ export default function OrderForm({
                 <tr key={line.id}>
                   <td className={styles.tdNum}>{i + 1}</td>
                   <td>{summary.title}</td>
-                  <td>{summary.details || "—"}</td>
+                  {/* The extras ride under the options rather than in their own
+                      column: most rows have none, and a fifth column sized for
+                      them would squeeze the four that are on every row.
+
+                      One per line, each bolded — these change what the lab does
+                      to the roll ("Push +1"), so the counter has to be able to
+                      pick them out of the row at a glance rather than parse a
+                      run-on list. */}
+                  <td>
+                    {summary.details || "—"}
+                    {summary.custom.map((entry) => (
+                      <Fragment key={entry}>
+                        <br />
+                        <strong>{entry}</strong>
+                      </Fragment>
+                    ))}
+                  </td>
                   <td className={styles.tdNum}>{summary.qty}</td>
                   <td className={styles.tdPrice}>
                     {formatUSD(summary.lineTotal)}

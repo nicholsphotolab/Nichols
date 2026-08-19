@@ -31,7 +31,7 @@ const STOCKS = [
   { title: "B&W - 35mm", priceLine: "Starting at $8.50", image: "/B%26W_35mm.webp", href: "/film/bw" },
   { title: "E‑6 - 35mm", priceLine: "Starting at $8.50", image: "/E-6_35mm.webp", href: "/film/e-6" },
   { title: "C‑41 - Disposable", priceLine: "Starting at $6.50", image: "/C-41_Disposable.webp", href: "/film/c-41?format=disposable-camera" },
-  { title: "B&W - Disposable", priceLine: "Starting at $8.50", image: null, href: "/film/bw?format=disposable-camera" },
+  { title: "B&W - Disposable", priceLine: "Starting at $8.50", image: "/B&W_Disposable.webp", href: "/film/bw?format=disposable-camera" },
   { title: "C‑41 - 120", priceLine: "Starting at $6.50", image: "/C-41_120.webp", href: "/film/c-41?format=120" },
   { title: "B&W - 120", priceLine: "Starting at $8.50", image: null, href: "/film/bw?format=120" },
   { title: "E‑6 - 120", priceLine: "Starting at $8.50", image: "/E-6_120.webp", href: "/film/e-6?format=120" },

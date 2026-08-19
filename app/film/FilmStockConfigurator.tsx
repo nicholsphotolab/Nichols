@@ -18,23 +18,44 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import Image from "next/image";
-import { Pills } from "../components/ConfiguratorControls";
+import {
+  CaptionPills,
+  CheckRow,
+  FormatThumbs,
+  InfoModal,
+  Pills,
+  RowLabel,
+  Stepper,
+} from "../components/ConfiguratorControls";
 import AddedToOrder from "../components/AddedToOrder";
 import MoreProducts from "../components/MoreProducts";
 import { STOCKS } from "./filmStocksData";
 import { withBasePath } from "../lib/basePath";
+import { useSnapGallery } from "../lib/useSnapGallery";
 import { buildQuery, matchOption, slugifyOption } from "../lib/urlState";
 import { useOrder } from "../components/OrderProvider";
 import type { NewOrderLine } from "../lib/orderDraft";
 import { summarizeLine } from "../lib/orderPricing";
 import {
+  billedFrames,
   buildBreakdown,
+  clampPushPull,
   defaultsFor,
   formatUSD,
+  HALF_FRAME_CAPTIONS,
+  HALF_FRAME_LABELS,
+  HALF_FRAME_ORDER,
+  halfFrameAvailable,
   OUTPUT_LABELS,
   OUTPUT_ORDER,
+  outputHasScans,
+  PUSH_PULL_MAX,
+  PUSH_PULL_MIN,
+  pushPullShort,
+  SCAN_TYPE_LABELS,
+  SCAN_TYPE_ORDER,
   SIZE_LABELS,
 } from "./filmPricing";
 import styles from "./FilmStockConfigurator.module.css";
@@ -86,47 +107,14 @@ export type StockGallery = {
 };
 
 // ---------- Display maps ----------
-// TYPE pills, in Figma order. Values are slugs; labels come from the stock data.
-const TYPE_ORDER: FilmStock["slug"][] = ["c-41", "bw", "e-6"];
-
-// Display labels (SIZE_LABELS / OUTPUT_ORDER / OUTPUT_LABELS) and the pricing
-// maths (buildBreakdown / defaultsFor / formatUSD) live in filmPricing.ts —
-// the order list and the printable order form price already-added rolls with
-// the same functions.
-
-// Short plain-language explanation shown in the tooltip beside each row label.
-const ROW_INFO: Record<string, string> = {
-  Type: "C-41 is standard color film, B&W is black & white, and E-6 is color slide (reversal) film.",
-  Format: "The format you shot: 35mm, a disposable camera, 120, 110, or sheet film.",
-  Output: "What you get back — scans only, prints plus scans, or develop only.",
-  Exposure: "The number of frames on your roll, usually 24 or 36.",
-  "Sheet Size": "The sheet film dimensions you're developing: 4x5, 5x7, or 8x10.",
-};
-
-// Row label with an info icon that reveals a tooltip on hover or keyboard focus.
-function RowLabel({ label }: { label: string }) {
-  const info = ROW_INFO[label];
-  return (
-    <span className={styles.rowLabel}>
-      {label}
-      {info && (
-        <span className={styles.info}>
-          <button
-            type="button"
-            className={styles.infoBtn}
-            aria-label={`About ${label}`}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={withBasePath("/info.svg")} alt="" width={18} height={18} aria-hidden="true" />
-          </button>
-          <span role="tooltip" className={styles.tooltip}>
-            {info}
-          </span>
-        </span>
-      )}
-    </span>
-  );
-}
+// Display labels (SIZE_LABELS / OUTPUT_ORDER / OUTPUT_LABELS / SCAN_TYPE_*) and
+// the pricing maths (buildBreakdown / defaultsFor / formatUSD) live in
+// filmPricing.ts — the order list and the printable order form price
+// already-added rolls with the same functions.
+//
+// The TYPE row is gone: stock is now chosen from the category strip below the
+// configurator rather than switched in place. RowLabel, its explainer modal, and
+// the format thumbnails come from ConfiguratorControls, shared with video.
 
 export default function FilmStockConfigurator({
   initialSlug,
@@ -138,7 +126,9 @@ export default function FilmStockConfigurator({
   // since TYPE switches stocks client-side.
   galleries: Record<string, StockGallery>;
 }) {
-  const [slug, setSlug] = useState<string>(initialSlug);
+  // Fixed for the life of the page now that TYPE is gone — the stock is the
+  // route, and switching one means navigating to the other stock's page.
+  const slug = initialSlug;
   const stock = STOCKS[slug] ?? STOCKS[initialSlug];
 
   // State holds the *raw* selections as the user made them; anything the
@@ -152,6 +142,27 @@ export default function FilmStockConfigurator({
   const [output, setOutput] = useState<string | null>(init.output);
   const [expSel, setExpSel] = useState<string | null>(init.exp);
   const [sheetSizeSel, setSheetSizeSel] = useState<string | null>(null);
+  const [scanTypeSel, setScanTypeSel] = useState<string>("STANDARD");
+
+  // ---------- Optional extras ----------
+  // Both live behind the "Show More Options" disclosure, which starts closed:
+  // most rolls want neither, and two more rows on every film page taxes every
+  // customer to serve the few who push.
+  const [moreOpen, setMoreOpen] = useState(false);
+
+  // Stops of push (+) or pull (−), and whether the row is switched on at all.
+  // Kept apart so unchecking the box means "develop normally" without discarding
+  // the number — re-checking it returns the customer's own +2 rather than
+  // silently resetting, the same way a remembered 24 EXP comes back.
+  const [pushPullOn, setPushPullOn] = useState(false);
+  const [pushPullSel, setPushPullSel] = useState(0);
+
+  // Null means an ordinary full-frame roll, so this doubles as the checkbox
+  // state — there is no such thing as a half-frame roll with no scan preference.
+  const [halfFrameSel, setHalfFrameSel] = useState<string | null>(null);
+
+  // Which row's explainer is open, by row label. Null closes the modal.
+  const [infoRow, setInfoRow] = useState<string | null>(null);
 
   // ---------- Running order ----------
   // The order itself lives in OrderProvider (mounted in the root layout) so the
@@ -227,6 +238,17 @@ export default function FilmStockConfigurator({
         ? "4X5"
         : sheetSizeOptions[0] ?? null;
 
+  // Effective extras, derived the same way every other selection here is: the
+  // raw state is whatever the customer last touched, and anything the current
+  // combination doesn't offer resolves away at render rather than being written
+  // back. So moving a roll to 120 stops it being half-frame without destroying
+  // the choice, and moving it back to 35mm returns it.
+  const halfFrameOffered = halfFrameAvailable(size, output);
+  const halfFrame = halfFrameOffered ? halfFrameSel : null;
+  // Push/pull is offered on every format and output, so the only thing that can
+  // zero it is the customer switching the row off.
+  const pushPull = pushPullOn ? clampPushPull(pushPullSel) : 0;
+
   // Mirror the visible selection into the URL: path = stock, query = the
   // customization with defaults omitted, so uncustomized URLs stay clean and
   // a refresh (or shared link) restores exactly what's on screen.
@@ -293,6 +315,26 @@ export default function FilmStockConfigurator({
   // glide across unrelated images looks wrong).
   const [animateSlide, setAnimateSlide] = useState(true);
 
+  // Every way of reaching a slide goes through here: thumbs, progress segments,
+  // and — on phones — the scroller reporting where it landed. Clamped rather
+  // than wrapped: a gallery that loops from the last photo back to the first
+  // gives no sense of where its ends are, and the progress track under it is a
+  // statement about exactly that.
+  const goToSlide = (i: number) => {
+    if (i < 0 || i > slides.length - 1) return;
+    setAnimateSlide(true);
+    setGalleryIdxSel(i);
+  };
+
+  // Below 700px the photo box becomes a scroll-snap container and the drag is
+  // the browser's. This keeps that scroller and galleryIdx in agreement, and
+  // feeds the progress ink a fractional position while the finger is down.
+  const { scrollerRef, progressRef } = useSnapGallery({
+    index: galleryIdx,
+    animate: animateSlide,
+    onSettle: goToSlide,
+  });
+
   // Portrait product shots fill the frame's height and sit on its bottom edge.
   // Landscape shots leave vertical slack, so we vertically center them instead
   // of bottom-anchoring (which would strand them against the bottom). Detected
@@ -305,17 +347,6 @@ export default function FilmStockConfigurator({
     setSizeSel(next);
     setGalleryIdxSel(0);
     setAnimateSlide(false);
-  }
-
-  // Switching TYPE swaps the stock but keeps the raw selections — the
-  // derivations above absorb anything the new stock doesn't offer. The URL
-  // follows automatically via the sync effect above.
-  function selectType(next: string) {
-    if (STOCKS[next]) {
-      setSlug(next);
-      setGalleryIdxSel(0);
-      setAnimateSlide(false);
-    }
   }
 
   // Switching SHEET SIZE swaps the strip (each sheet size has its own photo
@@ -348,6 +379,13 @@ export default function FilmStockConfigurator({
       output,
       exp,
       sheetSize,
+      // Null unless something is being scanned, so a develop-only roll doesn't
+      // carry a resolution it was never charged for.
+      scanType: outputHasScans(output) ? scanTypeSel : null,
+      // Both already resolved against what this combination offers, so a roll
+      // can't be stored asking for a half-frame scan of a sheet of 4x5.
+      pushPull,
+      halfFrame,
       qty: 1,
     };
     const stored = addLine(line);
@@ -362,7 +400,17 @@ export default function FilmStockConfigurator({
     setAddedShot(productShot);
   }
 
-  const breakdown = buildBreakdown(stock, size, output, exp, sheetSize);
+  // Scan resolution only applies where something is being scanned.
+  const scansSelected = outputHasScans(output);
+  const breakdown = buildBreakdown(
+    stock,
+    size,
+    output,
+    exp,
+    sheetSize,
+    scansSelected ? scanTypeSel : null,
+    halfFrame
+  );
   const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
 
   // Outputs/sizes in Figma display order, filtered to what this stock offers.
@@ -376,13 +424,24 @@ export default function FilmStockConfigurator({
             price block; the photo fits (contain) in the remaining space,
             anchored to the bottom. */}
         <div className={styles.imageCol}>
-          <div className={styles.image} aria-hidden="true">
-            {/* Horizontal track: all slides sit side by side and the track
-                slides by one frame width per gallery index. */}
+          {/* On phones this is the scroll-snap container the customer drags;
+              above 700px it clips a transformed track and never scrolls.
+              tabIndex -1 keeps it out of the tab order — Chrome makes scroll
+              containers focusable on their own, and a focusable aria-hidden
+              element is a trap for anyone tabbing through. The segments below
+              are the keyboard route into the gallery. */}
+          <div className={styles.image} aria-hidden="true" tabIndex={-1} ref={scrollerRef}>
+            {/* Horizontal track: all slides sit side by side. Above the phone
+                breakpoint it slides by one frame width per gallery index; at
+                phone width the stylesheet drops the transform and the
+                scroller's own offset does that job instead — which is why the
+                position is handed over as a custom property rather than set
+                directly on `transform`, where a media query couldn't reach
+                past the inline style to switch it off. */}
             <div
               className={styles.track}
               data-instant={!animateSlide || undefined}
-              style={{ transform: `translateX(-${galleryIdx * 100}%)` }}
+              style={{ "--track-x": `-${galleryIdx * 100}%` } as CSSProperties}
             >
               {slides.map((src) =>
                 src ? (
@@ -412,7 +471,8 @@ export default function FilmStockConfigurator({
           </div>
 
           {/* Uniform square thumbs, each photo filling its tile edge-to-edge
-              (cover crop); the selection border traces the square. */}
+              (cover crop); the selection border traces the square. Hidden on
+              phones, where the progress track takes over. */}
           {slides.length > 1 && (
             <div className={styles.thumbs} role="group" aria-label="Product photos">
               {slides.map((src, i) => (
@@ -423,10 +483,7 @@ export default function FilmStockConfigurator({
                   data-active={i === galleryIdx || undefined}
                   aria-pressed={i === galleryIdx}
                   aria-label={`Photo ${i + 1} of ${slides.length}`}
-                  onClick={() => {
-                    setAnimateSlide(true);
-                    setGalleryIdxSel(i);
-                  }}
+                  onClick={() => goToSlide(i)}
                 >
                   {src ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -435,6 +492,50 @@ export default function FilmStockConfigurator({
                     <span className={styles.productFill} aria-hidden="true" />
                   )}
                 </button>
+              ))}
+            </div>
+          )}
+
+          {/* Phone-only: one hairline across the width of the photo, divided
+              into a segment per slide with the current one inked. Four square
+              thumbnails is a second gallery competing with the first on a
+              screen that has room for one; this says the same thing — how many
+              photos, which one you're on — in 2px.
+
+              Still buttons, not decoration. The segment is a hairline but its
+              target is the full height of this strip, so it stays tappable for
+              anyone who doesn't swipe, and it keeps the whole gallery reachable
+              from the keyboard at phone widths. The mark that travels along the
+              rule is drawn by the container, not by these — see the stylesheet. */}
+          {slides.length > 1 && (
+            <div
+              className={styles.progress}
+              role="group"
+              aria-label="Product photos"
+              data-instant={!animateSlide || undefined}
+              ref={progressRef}
+              // The only two numbers the stylesheet can't work out for itself.
+              // useSnapGallery writes a third, --slide-pos, straight to this
+              // node while a drag is in progress; the stylesheet prefers it
+              // when it's there, which is what lets the ink track the finger
+              // between slides instead of only landing on them.
+              style={
+                {
+                  "--slide-count": slides.length,
+                  "--slide-index": galleryIdx,
+                } as CSSProperties
+              }
+            >
+              {slides.map((src, i) => (
+                <button
+                  key={src ?? "product-placeholder"}
+                  type="button"
+                  className={styles.segment}
+                  data-active={i === galleryIdx || undefined}
+                  aria-pressed={i === galleryIdx}
+                  aria-label={`Photo ${i + 1} of ${slides.length}`}
+                  onClick={() => goToSlide(i)}
+                />
               ))}
             </div>
           )}
@@ -460,27 +561,18 @@ export default function FilmStockConfigurator({
 
           <div className={styles.rows}>
             <div className={styles.row}>
-              <RowLabel label="Type" />
-              <Pills
-                values={TYPE_ORDER}
-                selected={slug as FilmStock["slug"]}
-                onSelect={selectType}
-                format={(s) => STOCKS[s]?.name ?? s}
-              />
-            </div>
-
-            <div className={styles.row}>
-              <RowLabel label="Format" />
-              <Pills
+              <RowLabel label="Format" onExplain={setInfoRow} />
+              <FormatThumbs
                 values={stock.sizes}
                 selected={size}
                 onSelect={selectFormat}
-                format={(v) => SIZE_LABELS[v] ?? v}
+                image={(v) => stock.sizeImages?.[v]}
+                label={(v) => SIZE_LABELS[v] ?? v}
               />
             </div>
 
             <div className={styles.row}>
-              <RowLabel label="Output" />
+              <RowLabel label="Output" onExplain={setInfoRow} />
               <Pills
                 values={outputValues}
                 selected={output}
@@ -489,10 +581,24 @@ export default function FilmStockConfigurator({
               />
             </div>
 
+            {/* SCAN TYPE only where something is scanned — scans only or
+                prints + scans. Develop-only has no resolution to pick. */}
+            {scansSelected && (
+              <div className={styles.row}>
+                <RowLabel label="Scan Type" onExplain={setInfoRow} />
+                <Pills
+                  values={SCAN_TYPE_ORDER}
+                  selected={scanTypeSel}
+                  onSelect={setScanTypeSel}
+                  format={(v) => SCAN_TYPE_LABELS[v] ?? v}
+                />
+              </div>
+            )}
+
             {/* EXPOSURE row only when the size+output offers exposure counts */}
             {expOptions.length > 0 && (
               <div className={styles.row}>
-                <RowLabel label="Exposure" />
+                <RowLabel label="Exposure" onExplain={setInfoRow} />
                 <Pills values={expOptions} selected={exp} onSelect={setExpSel} />
               </div>
             )}
@@ -500,12 +606,90 @@ export default function FilmStockConfigurator({
             {/* SHEET format swaps EXPOSURE for a Sheet Size row (4x5/5x7/8x10) */}
             {sheetSizeOptions.length > 0 && (
               <div className={styles.row}>
-                <RowLabel label="Sheet Size" />
+                <RowLabel label="Sheet Size" onExplain={setInfoRow} />
                 <Pills
                   values={sheetSizeOptions}
                   selected={sheetSize}
                   onSelect={selectSheetSize}
                 />
+              </div>
+            )}
+
+          </div>
+
+          <hr className={styles.divider} />
+
+          {/* ---------- Optional extras ----------
+              Closed by default. Push/pull is offered on every format and every
+              output — it is a choice about the chemistry, so a develop-only
+              sheet of 4x5 can still ask for it. Half frame is 35mm only, and
+              only where something is being scanned, since the choice it offers
+              is between two ways of scanning. */}
+          <div className={styles.more}>
+            <button
+              type="button"
+              className={styles.moreToggle}
+              onClick={() => setMoreOpen((v) => !v)}
+              aria-expanded={moreOpen}
+              aria-controls="more-options"
+            >
+              {moreOpen ? "Show Less Options ↑" : "Show More Options ↓"}
+            </button>
+
+            {moreOpen && (
+              <div className={styles.moreRows} id="more-options">
+                {halfFrameOffered && (
+                  <CheckRow
+                    label="Half Frame Camera"
+                    checked={halfFrameSel !== null}
+                    // Individual scans on switch-on: it is what a half-frame
+                    // shooter is usually after, and it is the state drawn as
+                    // selected in the design.
+                    onChange={(on) => setHalfFrameSel(on ? "INDIVIDUAL" : null)}
+                  >
+                    <CaptionPills
+                      values={HALF_FRAME_ORDER}
+                      selected={halfFrameSel}
+                      onSelect={setHalfFrameSel}
+                      label={(v) => HALF_FRAME_LABELS[v] ?? v}
+                      // Captions quote the real number for the roll in front of
+                      // them — 72 on a 36, 48 on a 24 — rather than a fixed "up
+                      // to 72" that would be wrong on half the rolls sold.
+                      caption={(v) =>
+                        HALF_FRAME_CAPTIONS[v]?.(
+                          billedFrames(
+                            parseInt(exp ?? "36", 10),
+                            size,
+                            output,
+                            v
+                          )
+                        ) ?? ""
+                      }
+                      glyphCount={(v) => (v === "PAIRED" ? 2 : 1)}
+                    />
+                  </CheckRow>
+                )}
+
+                <CheckRow
+                  label="Pull / Push"
+                  checked={pushPullOn}
+                  onChange={setPushPullOn}
+                >
+                  <Stepper
+                    value={pushPullSel}
+                    min={PUSH_PULL_MIN}
+                    max={PUSH_PULL_MAX}
+                    // Functional update against the delta, so a fast double-tap
+                    // moves two stops rather than resolving both clicks against
+                    // the same starting value. clampPushPull owns the range.
+                    onStep={(d) => setPushPullSel((v) => clampPushPull(v + d))}
+                    label="Stops of push or pull"
+                    // Signed, so +1 and −1 can't be misread as the same
+                    // instruction at a glance. Shared with the cart's stepper,
+                    // which shows the same number for the same roll.
+                    format={pushPullShort}
+                  />
+                </CheckRow>
               </div>
             )}
           </div>
@@ -536,30 +720,42 @@ export default function FilmStockConfigurator({
 
           <hr className={styles.divider} />
 
-          <p className={styles.price} aria-live="polite">
-            {formatUSD(total)}
-          </p>
-
+          {/* The standalone headline price is gone — the total lives in the
+              button now, so there is one place to read the number rather than
+              two that have to agree. aria-live moves with it. */}
           <div className={styles.addBlock}>
             <button
               type="button"
               className={styles.addBtn}
               onClick={addToOrder}
             >
-              Add to order
+              Add to order -{" "}
+              <span className={styles.addPrice} aria-live="polite">
+                {formatUSD(total)}
+              </span>
             </button>
-            {/* The note is now spoken-only — AddedToOrder keeps it in an
-                always-mounted live region and draws the designed band. */}
-            <AddedToOrder
-              note={addedNote}
-              image={addedShot}
-              onViewCart={openCart}
-            />
           </div>
         </div>
       </div>
 
-      {/* Cross-sell: leads with a service they aren't already looking at. */}
+      {/* The note is now spoken-only — AddedToOrder keeps it in an
+          always-mounted live region and draws the designed band.
+
+          Outside .addBlock, which is sticky on phones. Sticky positioning
+          always opens a stacking context, and this component's band is a fixed
+          element at z-index 15 chosen to clear the nav (9) and duck under the
+          cart drawer (20/21) — sealed inside .addBlock those numbers would only
+          be compared against each other, and the toast would slide under the
+          nav. Nothing else moves with it: the band is fixed to the viewport and
+          the live region is visually hidden, so neither has a position in this
+          layout to lose. */}
+      <AddedToOrder note={addedNote} image={addedShot} onViewCart={openCart} />
+
+      {/* Explainer for whichever row's ↗ was clicked. Copy is still a TODO. */}
+      <InfoModal label={infoRow} onClose={() => setInfoRow(null)} />
+
+      {/* Cross-sell: leads with a service they aren't already looking at, and —
+          now that the TYPE row is gone — the way to reach the other stocks. */}
       <MoreProducts family={slug} />
     </main>
   );

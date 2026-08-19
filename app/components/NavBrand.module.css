@@ -28,3 +28,22 @@
     left: 20px;
   }
 }
+
+/* On a phone the desktop mark takes 136 of the 335px between the page's
+   padding — 41% of the bar spent on the logo, with the cart chip and the MENU
+   trigger dividing what's left and MENU landing exactly on the right edge with
+   nothing to spare. At 104px it reads the same and gives that row 32px back.
+   The ratio is held exactly (136:33 → 104:25.24) so the wordmark doesn't
+   distort.
+
+   The bar's height is deliberately untouched: --nav-clearance is a fixed 80.5px
+   that every page's top padding is built on, and .brandSlot sets the bar's
+   content height. So the slot stays 33px and the mark is re-centred inside it
+   instead — 13.5 + (33 − 25.24) / 2 ≈ 17.4px from the top. */
+@media (max-width: 700px) {
+  .brand {
+    top: 17.4px;
+    width: 104px;
+    height: 25.24px;
+  }
+}

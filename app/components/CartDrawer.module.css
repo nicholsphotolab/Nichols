@@ -155,12 +155,20 @@
   gap: 30px;
 }
 
-/* Product shot | everything else, in the design's 142.564 : 278.436 ratio.
-   fr shares (rather than a fixed px width) hold that proportion at any panel
-   width; the 24px gap is taken out before they divide. */
+/* Product shot | everything else.
+   The design's 142.564 : 278.436 fr split was sized against a body of four
+   option rows — roughly 190px of text beside a 190px-tall shot. Collapsed,
+   that body measures 98px on a plain roll and 117px on one carrying extras,
+   so the original shot hung 80px below its own text and became the tallest
+   thing in the panel.
+
+   80px is the width that makes a 3:4 shot ~107px tall: a few pixels under the
+   text on a roll with extras, a few over on one without. Fixed rather than fr
+   because it is matched to a text block whose height doesn't scale with the
+   panel. */
 .item {
   display: grid;
-  grid-template-columns: 142.564fr 278.436fr;
+  grid-template-columns: 80px minmax(0, 1fr);
   column-gap: 24px;
   /* Top-aligned, as the expanded frames draw it — so opening a choice list
      grows the column downward instead of sliding the product shot. */
@@ -188,26 +196,77 @@
   gap: 10px;
 }
 
-/* Title and price sit tight against each other — no gap in the design. */
+/* Title + price stacked on the left, Details opposite. Baseline alignment
+   resolves against the heading stack's FIRST line, so the toggle sits on the
+   title's baseline rather than dropping to the price's. */
 .itemHead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+/* Tight, no gap — the name and the number are one label for the thing and what
+   it costs, and space between them would float the price closer to the grey
+   summary underneath than to the product it belongs to. */
+.itemHeading {
+  min-width: 0;
   display: flex;
   flex-direction: column;
 }
 
+/* 18px rather than the design's 24: the title used to head a block of four
+   option rows and needed the weight to lead them. With those folded behind
+   Details it heads two lines of grey text, and at 24 it shouted over an item
+   that is now mostly whitespace. */
 .itemTitle {
   margin: 0;
-  font-size: 24px;
+  font-size: 18px;
   font-weight: 700;
   line-height: normal;
   letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
+/* A step down from the 18px title above it and a step up from the 12px grey
+   summary below, so the three read as one descending stack. Tabular figures,
+   like every price in the panel, so digits line up down a column of items. */
 .itemPrice {
   margin: 0;
   font-size: 16px;
   line-height: normal;
   font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Collapsed summary ----------
+   The option rows folded down to their values. Grey and small on purpose:
+   this is the line you read past on your way to the total, not one you act
+   on — the black title above it and the controls below it are the things
+   worth stopping at. */
+.summary {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Rides the end of the options line, in the same grey — it is one more value in
+   that ·-separated list, not an aside about it. Uppercased here rather than in
+   the data: the same strings print on the counter's order form in sentence
+   case, where a column of shouting would be worse to read. */
+.summaryFlag {
+  text-transform: uppercase;
+}
+
+/* 12px and bw-600, the same as .fieldLabel — the collapsed summary and the
+   OUTPUT / SCAN TYPE captions it folds up are the same tier of information,
+   so they read at the same size whichever state the line is in. Line-height
+   stays above `normal` because this one can run to several stacked lines. */
+.summary p {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  color: var(--bw-600);
 }
 
 /* The rules are zero-height lines in Figma with their 2px stroke drawn
@@ -275,6 +334,55 @@
   color: var(--black);
 }
 
+/* ---------- Extras ----------
+   Push/pull and the half-frame preference, collapsed into one section. */
+
+/* ---------- Expanded stepper ----------
+   For rows whose choices are a scale (push/pull). Sized to the 14px choice
+   rows it replaces, NOT to the quantity stepper further down the line — that
+   one is 24px and primary, and two matching − / + pairs on one item would read
+   as the same control twice. */
+.rowStepper {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  align-self: flex-start;
+}
+
+.rowStepBtn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  width: 16px;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 1;
+  color: var(--black);
+  transition: opacity 160ms var(--ease-out);
+}
+
+/* Disabled at the ends rather than hidden — a control that disappears at +3
+   makes the ceiling look like a bug. */
+.rowStepBtn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+/* Fixed width and tabular figures: "0" is one glyph and "+1" is two, and
+   without this the + button shuffles sideways as the value changes under it. */
+.rowStepValue {
+  min-width: 3ch;
+  text-align: center;
+  font-size: 14px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--black);
+}
+
 /* ---------- Expanded choice list ---------- */
 .choices {
   display: flex;
@@ -319,6 +427,24 @@
   align-items: center;
   justify-content: space-between;
   gap: 16px;
+}
+
+/* Same treatment as the per-row EDIT links inside the panel it opens, so the
+   two read as the same kind of control at two levels rather than as two
+   different mechanisms. */
+.detailsToggle {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  flex: none;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
 }
 
 .stepper {
@@ -536,6 +662,7 @@
 
 .close,
 .fieldToggle,
+.detailsToggle,
 .remove {
   padding: 10px 0 10px 16px;
   margin: -10px 0 -10px -16px;
@@ -551,7 +678,8 @@
    items, which underlines the label and leaves the swatch alone. */
 .close,
 .remove,
-.fieldToggle {
+.fieldToggle,
+.detailsToggle {
   text-decoration: underline;
   text-decoration-thickness: 1px;
   text-decoration-color: transparent;
@@ -563,7 +691,8 @@
 
   .close:hover,
   .remove:hover,
-  .fieldToggle:hover {
+  .fieldToggle:hover,
+  .detailsToggle:hover {
     text-decoration-color: currentColor;
   }
 
@@ -578,6 +707,7 @@
   /* Glyphs and the filled button dim instead — an underline under a "+" or
      across a solid red bar reads as a mistake rather than an affordance. */
   .stepBtn:hover,
+  .rowStepBtn:not(:disabled):hover,
   .checkout:hover {
     opacity: 0.75;
   }
@@ -586,6 +716,8 @@
 .close:focus-visible,
 .remove:focus-visible,
 .fieldToggle:focus-visible,
+.detailsToggle:focus-visible,
+.rowStepBtn:focus-visible,
 .choice:focus-visible,
 .stepBtn:focus-visible,
 .checkout:focus-visible,
@@ -617,9 +749,12 @@
     width: 100vw;
   }
 
-  .heading,
-  .itemTitle {
+  .heading {
     font-size: 20px;
+  }
+
+  .itemTitle {
+    font-size: 17px;
   }
 
   .stepper {
@@ -635,10 +770,12 @@
   .panel[data-open],
   .checkout,
   .stepBtn,
+  .rowStepBtn,
   .swatch,
   .remove,
   .close,
   .fieldToggle,
+  .detailsToggle,
   .resumeBtn,
   .resumeBtnGhost {
     transition: none;

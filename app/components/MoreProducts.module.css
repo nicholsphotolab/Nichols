@@ -102,10 +102,26 @@
   text-box: trim-both cap alphabetic;
 }
 
-/* Keep each title part ("C-41", "Disposable") on one line so wrapping only
-   ever happens at the separator, never mid-word. */
+/* Wrapping should happen at the separator ("C-41 - 35MM" breaking around the
+   dash) and never mid-word — but this used to say `white-space: nowrap`, which
+   buys that by making a part unbreakable at *any* space, including its own.
+   "Passport Photos" is one part with a space in it: at 20px in a 132px track
+   it ran 199px wide, and because nothing above it clips, that 67px pushed the
+   card, the grid, the section and finally the page past the viewport. The
+   whole document scrolled sideways on a phone to fit one cross-sell title.
+
+   Normal wrapping already refuses to break inside a word, which is what the
+   rule was actually protecting; the separator is its own part, so breaks still
+   prefer to land there. Multi-word parts now wrap at their own spaces when the
+   track is too narrow for them, which is the correct outcome — a title on two
+   lines costs a few pixels of height inside the card, where nothing else has
+   to agree with it.
+
+   break-word is the floor under all of it: one unbroken word longer than the
+   track (a future product name, a long slug) breaks mid-word rather than
+   taking the page with it. */
 .cardNamePart {
-  white-space: nowrap;
+  overflow-wrap: break-word;
 }
 
 .cardPrice {

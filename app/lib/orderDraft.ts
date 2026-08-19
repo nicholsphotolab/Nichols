@@ -46,6 +46,25 @@ export type FilmOrderLine = BaseOrderLine & {
   exp: string | null;
   /** Sheet dimensions, e.g. "4X5". Only set when size is "SHEET". */
   sheetSize: string | null;
+  /**
+   * Scan resolution tier — "STANDARD", "HIGH", or "TIFF". Null on develop-only
+   * lines, which have nothing scanned to set a resolution for.
+   */
+  scanType: string | null;
+  /**
+   * Stops of push (positive) or pull (negative) processing, 0 for normal
+   * development. Offered on every format and every stock, including
+   * develop-only: it is a choice about the chemistry, not about the scan.
+   * Carried at no charge — it changes what the lab does, not what it bills.
+   */
+  pushPull: number;
+  /**
+   * Half-frame handling for a 35mm roll: "INDIVIDUAL" crops each half frame to
+   * its own image (doubling the scan count), "PAIRED" leaves both halves
+   * together in one scan. Null means an ordinary full-frame roll, which is also
+   * the only valid value for every format other than 35MM.
+   */
+  halfFrame: string | null;
 };
 
 /** One tape, disc, or film reel to be transferred. */
@@ -86,6 +105,9 @@ export type LinePatch = {
   output?: string | null;
   exp?: string | null;
   sheetSize?: string | null;
+  scanType?: string | null;
+  pushPull?: number;
+  halfFrame?: string | null;
   option?: string;
   qty?: number;
 };
@@ -94,11 +116,19 @@ export type LinePatch = {
 // then unreachable (different key) and, if it somehow is read, rejected
 // (different version) instead of rendering as a half-broken line.
 //
-// v2 added `qty`. v3 added `kind` and the video line shape. Each bump simply
-// abandons the older draft — inventing a quantity, or guessing that an
-// untagged line meant film, is worse than asking for two rolls to be re-added.
-export const DRAFT_STORAGE_KEY = "nichols-order-draft-v3";
-const DRAFT_VERSION = 3;
+// v2 added `qty`. v3 added `kind` and the video line shape. v4 added `note` on
+// every line and `scanType` on film lines. v5 added `pushPull` and `halfFrame`.
+// v6 removed `note` again. Each bump simply abandons the older draft —
+// inventing a quantity, or guessing that an untagged line meant film, is worse
+// than asking for two rolls to be re-added. A v3 film line has no scan type,
+// and defaulting it to STANDARD would silently reprice rolls the customer
+// configured before the tier existed.
+//
+// v6 matters more than a removal usually would: a v5 line can carry a note the
+// customer wrote and the counter would now never see, so those drafts have to
+// go rather than come back quietly missing an instruction.
+export const DRAFT_STORAGE_KEY = "nichols-order-draft-v6";
+const DRAFT_VERSION = 6;
 
 /** Drafts older than this aren't restored silently — the user is asked first. */
 export const DRAFT_MAX_AGE_MS = 3 * 24 * 60 * 60 * 1000;
@@ -138,7 +168,12 @@ function isOrderLine(value: unknown): value is OrderLine {
       typeof line.size === "string" &&
       optionalString(line.output) &&
       optionalString(line.exp) &&
-      optionalString(line.sheetSize)
+      optionalString(line.sheetSize) &&
+      // Structural only — the stops are clamped to the offered range by
+      // reviseFilmLine, which owns what counts as a sane value.
+      typeof line.pushPull === "number" &&
+      Number.isInteger(line.pushPull) &&
+      optionalString(line.halfFrame)
     );
   }
   if (line.kind === "video") {

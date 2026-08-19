@@ -88,6 +88,10 @@ export function summarizeVideoLine(line: VideoOrderLine): LineSummary | null {
     imageSrc: option.image ?? null,
     rows,
     breakdown,
+    // Nothing on a transfer is a free-but-notable instruction the way push/pull
+    // is on a roll — a tape's every choice is priced, so a video line never
+    // carries the CUSTOM flag.
+    custom: [],
     total,
     qty,
     lineTotal: total * qty,

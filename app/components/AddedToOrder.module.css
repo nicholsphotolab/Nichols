@@ -1,19 +1,28 @@
 /* AddedToOrder.module.css
    The ADDED TO ORDER confirmation toast (Figma node 2512:1725): 333×64 hugging
    its content, 24px padding, product shot + label on the left and the cart link
-   on the right. Paper white, no stroke and no shadow — it reads as the page
-   itself carrying a line of type at the bottom, not as a panel over it.
+   on the right. A flat tint one step down from paper white, no stroke and no
+   shadow — it separates itself from the page by being a shade denser than it,
+   not by casting anything onto it.
 
    Split across two elements on purpose:
 
-     .anchor  fixed position, the entrance, and the exit
-     .band    the surface itself, and the nudge that acknowledges a repeat add
+     .anchor  fixed position, and the rise
+     .band    the surface, the fade in and out, and the repeat-add nudge
 
    Keeping them apart is what makes repeat adds safe. The anchor is centred with
    translateX(-50%), and the nudge animates translateY — on one element those
    would overwrite each other. It also keeps the exit on a *transition* rather
    than a competing animation, so an add landing mid-fade reverses smoothly back
    to full opacity instead of restarting the entrance from off-screen.
+
+   The split is by *property*, not by phase: the anchor moves, the band fades.
+   Either element could carry the fade as things stand — it sits on .band so
+   that a backdrop-filter can be put back on the surface without the exit
+   breaking it. (An ancestor at opacity < 1 becomes a backdrop root, and a
+   backdrop-filter inside one has nothing left to sample; an element's own
+   opacity is applied after its own backdrop-filter, so the two have to share
+   an element.)
 
    AddedToOrder.tsx owns the timing (3s, or 2s after the pointer leaves); its
    FADE_MS must match the opacity transition below. */
@@ -51,19 +60,10 @@
   z-index: 15;
   max-width: calc(100% - 2 * var(--page-pad));
   transform: translateX(-50%);
-  opacity: 1;
-  /* The exit. Interruptible by design: clearing data-leaving transitions back
-     to 1 from wherever it got to. */
-  transition: opacity 260ms var(--ease-soft);
-  /* `backwards` and not `both` — the entrance must not hold its end state, or
-     the filled opacity would outrank the transition above and the toast could
-     never fade. It ends exactly on the base values, so dropping the fill is
-     invisible. */
+  /* `backwards` and not `both` — it ends exactly on the base transform, so
+     dropping the fill is invisible, and nothing is left holding a transform
+     that later rules would have to fight. */
   animation: riseIn 300ms var(--ease-out) backwards;
-}
-
-.anchor[data-leaving] {
-  opacity: 0;
 }
 
 /* Rises from clear of the bottom edge — the toast's own height plus its offset
@@ -71,11 +71,9 @@
    both keyframes carry the translateX through. */
 @keyframes riseIn {
   from {
-    opacity: 0;
     transform: translate(-50%, calc(100% + 24px));
   }
   to {
-    opacity: 1;
     transform: translate(-50%, 0);
   }
 }
@@ -92,14 +90,45 @@
   width: fit-content;
   min-width: min(333px, 100%);
   max-width: 100%;
-  background: var(--paper-white);
+  /* Paper-white carrying a quarter of bw-200 (~#efeee9): one step down, so the
+     band reads as an edge where it crosses the page's own paper-white, which
+     plain paper-white can't do. Well short of bw-200 itself — at that weight it
+     stops looking like lit paper and starts looking like a grey chip.
+
+     Fully opaque. Translucency without a blur behind it doesn't read as a
+     material, just as a misprint over the product shots. */
+  background: color-mix(in srgb, var(--bw-200) 25%, var(--paper-white));
+  opacity: 1;
+  /* The exit. Interruptible by design: clearing data-leaving transitions back
+     to 1 from wherever it got to. */
+  transition: opacity 260ms var(--ease-soft);
+  /* The fade half of the entrance — the rise lives on .anchor. `backwards`, and
+     not `both`, so the transition above can still take the opacity down. */
+  animation: fadeIn 300ms var(--ease-out) backwards;
+}
+
+.anchor[data-leaving] .band {
+  opacity: 0;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* The repeat-add acknowledgement: a short lift and settle, deliberately shorter
    and smaller than the entrance so it reads as "again", not "new". Two
    identical keyframe sets under different names because a browser only restarts
    an animation when its *name* changes — the component alternates a/b, and
-   re-setting one name would replay nothing on the second add. */
+   re-setting one name would replay nothing on the second add.
+
+   These replace the entrance fade when an add lands inside its 300ms, which is
+   harmless: base opacity is 1, so the toast simply arrives at full strength
+   while the anchor carries on rising. */
 .band[data-nudge="a"] {
   animation: nudgeA 180ms var(--ease-out);
 }
@@ -203,30 +232,21 @@
 
 /* No travel at all — the toast arrives and leaves on opacity, and a repeat add
    is carried by the live region re-announcing rather than by a nudge. Timing is
-   unaffected; only the movement goes. The keyframes name no transform, so the
-   base one (centred on desktop, none on mobile) holds throughout and this works
-   at every width. */
+   unaffected; only the movement goes. Dropping the anchor's animation leaves
+   its base transform (centred on desktop, none on mobile) in place, so this
+   works at every width, and the band's fade is untouched. */
 @media (prefers-reduced-motion: reduce) {
   .link {
     transition: none;
   }
 
   .anchor {
-    animation: fadeIn 300ms var(--ease-out) backwards;
+    animation: none;
   }
 
   .band[data-nudge="a"],
   .band[data-nudge="b"] {
     animation: none;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-    }
-    to {
-      opacity: 1;
-    }
   }
 }
 
@@ -235,10 +255,25 @@
    cart link off the bezel. Centring by transform is dropped for plain insets,
    so the entrance keyframes lose their translateX here. */
 @media (max-width: 700px) {
+  /* Clear of the sticky "Add to order" bar, not on top of it. Both are pinned
+     to the bottom of the same screen, and at 16px each they landed in exactly
+     the same place — the confirmation covering the control that raised it, and
+     covering the button you'd press to add the next roll.
+
+        16px  the bar's own offset from the bottom
+        48px  its height (2px rule + 14px padding + 16px line + 14 + 2)
+         8px  air between the two
+        ----
+        72px
+
+     Named once because the entrance keyframe has to start from the same
+     number: the toast is lifted by its own height *plus* this, so it begins
+     fully off-screen and rises into place. */
   .anchor {
+    --lift: 72px;
     left: var(--page-pad);
     right: var(--page-pad);
-    bottom: 16px;
+    bottom: var(--lift);
     max-width: none;
     transform: none;
     animation: riseInFlush 300ms var(--ease-out) backwards;
@@ -253,18 +288,16 @@
 
   @keyframes riseInFlush {
     from {
-      opacity: 0;
-      transform: translateY(calc(100% + 16px));
+      transform: translateY(calc(100% + var(--lift)));
     }
     to {
-      opacity: 1;
       transform: translateY(0);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
     .anchor {
-      animation: fadeIn 300ms var(--ease-out) backwards;
+      animation: none;
     }
   }
 }

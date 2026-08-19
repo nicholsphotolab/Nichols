@@ -29,48 +29,61 @@
   isolation: isolate;
 }
 
-/* Stacked hero slides — all share the same box, parked off-screen to the
-   right until it's their turn. On change, the active slide slides out to the
-   left (heroSlidePrev) while the next slide slides in from the right
-   (heroSlideActive), both easing in/out together for a smooth, unhurried
-   glide. Slides that are neither active nor the one just retired snap back
-   to their parked position with no transition, so the snap never shows on
-   screen. Duration matches SLIDE_MS (1600ms). */
-.heroSlide {
-  object-fit: cover;
+/* The hero photos, in a scroller rather than a stack. They used to share one
+   box and animate transforms — active at translateX(0), outgoing sliding off
+   left, the rest parked off-screen right. That auto-advances but can't be
+   dragged: there's no position between two slides, only a transition between
+   them. In a scroll-snap container the drag is the platform's, and the
+   auto-advance drives the same scroll offset (useHeroSlideshow tweens it),
+   so one thing moves whether a timer or a finger is moving it.
+
+   Sits at the bottom of the hero's stacking order, under the scrim (3) and
+   the content (4). It still receives the drag because both of those are
+   pointer-events: none — a hand anywhere on the hero reaches this. */
+.heroScroller {
+  position: absolute;
+  inset: 0;
   z-index: 0;
-  transform: translateX(100%);
-  transition: none;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  /* A swipe that runs off the last photo must not become the browser's
+     back-navigation gesture. */
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
 }
 
-.heroSlideActive {
-  transform: translateX(0);
-  transition: transform 1600ms var(--ease-carousel);
-  z-index: 2; /* incoming slide rides over the outgoing one */
+.heroScroller::-webkit-scrollbar {
+  display: none;
 }
 
-.heroSlidePrev {
-  transform: translateX(-100%);
-  transition: transform 1600ms var(--ease-carousel);
-  z-index: 1;
+.heroTrack {
+  display: flex;
+  height: 100%;
 }
 
-/* Reduced motion: no slideshow timer runs, so there's nothing to animate —
-   just drop the transition so the resting position never tweens. */
-@media (prefers-reduced-motion: reduce) {
-  .heroSlide,
-  .heroSlideActive,
-  .heroSlidePrev {
-    transition: none;
-  }
+.heroSlide {
+  position: relative;
+  flex: 0 0 100%;
+  height: 100%;
+  scroll-snap-align: start;
+}
+
+.heroSlideImg {
+  object-fit: cover;
 }
 
 /* Bottom-weighted gradient for legibility — matches Figma:
    black 50% at 17.38% up, fading to transparent at ~61% up. */
+/* Both of these lie over the scroller, and both are transparent to the
+   pointer so a drag started on them still reaches it. Nothing in either is
+   interactive — the progress track, which is, sits outside .heroContent. */
 .heroScrim {
   position: absolute;
   inset: 0;
   z-index: 3;
+  pointer-events: none;
   background: linear-gradient(
     to top,
     rgba(1, 1, 1, 0.5) 17.38%,
@@ -81,6 +94,7 @@
 .heroContent {
   position: relative;
   z-index: 4;
+  pointer-events: none;
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   column-gap: var(--grid-gap);
@@ -125,58 +139,127 @@
   text-box: trim-both cap alphabetic;
 }
 
-/* Slide indicator dots — one dot per hero slide in a tight row under the
-   description, 10px between dots, first dot flush with the content's left
-   edge. The active slide's dot is full white; the rest sit at 50% opacity.
-   Each dot is a button that jumps to its slide. The button box is oversized
-   for the tap target: 18px wide so adjacent hit areas tile exactly edge to
-   edge (8px dot + 5px each side = the 10px visual gap, no overlap), 24px
-   tall with negative vertical margins so the row keeps its 8px height. The
-   row shifts left 5px to cancel the first button's padding. */
+/* Slide indicator — the segmented progress track from the configurator
+   galleries, in the hero's palette: one hairline across the full content
+   width, divided by slide, with a mark that travels along it. It replaced a
+   row of dots, which counted the slides but said nothing about how far
+   through them you were.
+
+   Same three layers as the gallery's:
+
+     ::before           the rule    — full width, paper-white at 35%
+     ::after            the ink     — 1/n wide, solid paper-white
+     .heroIndicatorSeg  the targets — transparent buttons over both
+
+   The ink glides on the hero's own 1600ms/--ease-carousel, so it crosses at
+   exactly the rate the photo behind it slides — one movement, rather than an
+   indicator reporting on one. (The gallery uses 480ms for the same reason;
+   the number differs because the thing it tracks does.)
+
+   It sits on the bottom edge of the photo, edge to edge, rather than in the
+   text block — it reports on the image, so it belongs to the image, and
+   full-bleed is the only width that matches what it's measuring. That also
+   takes it out of .heroContent's grid, which is why it can be the one thing
+   over the photo that still accepts a pointer.
+
+   The row itself is 2px; its buttons are 24px and reach *upward* (a single
+   negative top margin, not a symmetric pair), because half a target hanging
+   below the hero's bottom edge would be clipped away by its overflow. */
 .heroIndicators {
-  grid-column: 1 / -1;
-  grid-row: 3;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
   display: flex;
-  margin-top: clamp(14px, 1.8vw, 28px);
-  margin-left: -5px;
+  height: 2px;
 }
 
-.heroIndicatorDot {
-  display: grid;
-  place-items: center;
-  width: 18px;
+.heroIndicators::before,
+.heroIndicators::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 2px;
+  pointer-events: none;
+}
+
+/* Paper-white at 35% rather than the dots' 50%: an unbroken line carries much
+   further than eight separate marks did, and over a bright photo it has to
+   stay quieter than the caption beside it. */
+.heroIndicators::before {
+  left: 0;
+  right: 0;
+  background: var(--paper-white);
+  opacity: 0.35;
+}
+
+/* One slide wide, translated by its own width per index — the arithmetic is
+   just the index, at any slide count.
+
+   --slide-pos is the fractional position useHeroSlideshow writes on every
+   scroll frame; --slide-index, from the component, is the first-paint
+   fallback before any scrolling has happened. Preferring the live one is what
+   puts the mark under the finger mid-drag instead of only at the end of it,
+   and it's also why there's no transition here: the hero's own 1600ms glide
+   is now a tween of the scroll offset, so this follows it frame for frame.
+   A transition on top would lag that and then re-animate a move that had
+   already happened. */
+.heroIndicators::after {
+  left: 0;
+  width: calc(100% / var(--slide-count));
+  background: var(--paper-white);
+  transform: translateX(calc(100% * var(--slide-pos, var(--slide-index))));
+}
+
+.heroIndicatorSeg {
+  position: relative;
+  flex: 1;
+  min-width: 0;
   height: 24px;
-  margin: -8px 0;
+  /* Reaches up out of the 2px row rather than straddling it — see above. */
+  margin: -22px 0 0;
   padding: 0;
+  appearance: none;
   background: none;
   border: 0;
   cursor: pointer;
+  pointer-events: auto;
 }
 
-.heroIndicatorDot::before {
+/* Hover and focus brighten just that stretch of the rule. The dots had the
+   same affordance and a hairline needs it more — nothing else here says the
+   line can be clicked. Painted under the ink, which is the container's
+   ::after and so comes last. */
+.heroIndicatorSeg::before {
   content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  position: absolute;
+  inset: 22px 0 auto;
+  height: 2px;
   background: var(--paper-white);
-  opacity: 0.5;
+  opacity: 0;
   transition: opacity 300ms var(--ease-out);
 }
 
-.heroIndicatorDotActive::before,
-.heroIndicatorDot:focus-visible::before {
-  opacity: 1;
-}
-
 @media (hover: hover) {
-  .heroIndicatorDot:hover::before {
-    opacity: 1;
+  .heroIndicatorSeg:hover::before {
+    opacity: 0.6;
   }
 }
 
-.heroIndicatorDot:focus-visible {
+.heroIndicatorSeg:focus-visible::before {
+  opacity: 0.6;
+}
+
+.heroIndicatorSeg:focus-visible {
   outline: 1px solid var(--paper-white);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroIndicatorSeg::before {
+    transition: none;
+  }
 }
 
 /* Film-stock caption in the last 2 columns, right-aligned to the content edge
@@ -273,17 +356,18 @@
     font-size: 16px;
   }
 
-  .heroIndicators {
-    margin-top: 20px;
-  }
-
   /* The two caption parts split to opposite edges: the first span stays at
-     the left content edge, the second pushes to the right. */
+     the left content edge, the second pushes to the right.
+
+     46px, where it used to be 24px: the indicator row sat between this and the
+     description (20px of margin plus its 2px rule) and has moved to the bottom
+     edge of the photo. Absorbing its 22px here keeps the caption exactly where
+     the mobile comp puts it. */
   .heroMeta {
     grid-column: 1 / -1;
     grid-row: 4;
     align-self: start;
-    margin-top: 24px;
+    margin-top: 46px;
     display: flex;
     justify-content: space-between;
     column-gap: 24px;

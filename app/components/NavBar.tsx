@@ -1,12 +1,13 @@
 "use client";
 
 // NavBar.tsx
-// The fixed full-width background strip behind the global nav. It's frosted
-// (faint tint + backdrop blur) at the top of the page and snaps to a solid
-// paper-white bar once scrolled past a small threshold. The threshold toggle
-// is driven by the same scroll pattern as HeroLogo (passive scroll listener +
-// rAF throttle). Pages without a dark hero (e.g. the configurators) pass
-// `solid` to skip the scrim entirely and pin the solid white bar from the top.
+// The fixed full-width background strip behind the global nav. It carries a
+// soft dark scrim at the top of the page (so the paper-white links hold over a
+// hero) and snaps to a solid paper-white bar once scrolled past a small
+// threshold. The threshold toggle is driven by the same scroll pattern as
+// HeroLogo (passive scroll listener + rAF throttle). Pages without a dark hero
+// (e.g. the configurators) pass `solid` to skip the scrim entirely and pin the
+// solid bar from the top.
 
 import { useEffect, useRef, type ReactNode } from "react";
 import styles from "./Nav.module.css";

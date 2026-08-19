@@ -25,6 +25,13 @@ export type LineChoice = {
   value: string;
   /** How it reads in the cart, e.g. "PRINTS + SCANS". */
   label: string;
+  /**
+   * A compact form for the stepper control, where the row's own label is
+   * already on screen directly above and only the changing part is worth
+   * showing — "+1" rather than "Push +1". Falls back to `label`, so a row that
+   * doesn't need one simply omits it.
+   */
+  short?: string;
 };
 
 /**
@@ -45,6 +52,27 @@ export type LineRow = {
   choices: LineChoice[];
   /** The change to apply when a choice is picked. */
   patch: (value: string) => LinePatch;
+  /**
+   * How the cart should render the choices. Default is the swatch list every
+   * row has always used; "stepper" walks `choices` in order with − / + instead.
+   *
+   * Only worth it where the values form a scale rather than a set — push/pull
+   * runs −2 to +3, which as a list is six rows to say one number, and which the
+   * configurator already presents as a stepper. The order of `choices` IS the
+   * scale, so nothing extra has to be carried to describe it.
+   */
+  control?: "stepper";
+  /**
+   * True for a row describing something this line hasn't asked for — an unset
+   * extra. The cart hides these, so they can't be used to add a choice that
+   * belongs on the product's own page.
+   *
+   * They are still emitted rather than omitted so the cart can keep one on
+   * screen while its own editor is open: picking the clearing option ("Normal")
+   * flips this to true, and without that the row and the list you were reading
+   * would vanish under the pointer that just cleared it, with no way back.
+   */
+  unset?: boolean;
 };
 
 /** A stored line resolved against the live pricing data, ready to render. */
@@ -63,6 +91,17 @@ export type LineSummary = {
   imageSrc: string | null;
   rows: LineRow[];
   breakdown: LineItem[];
+  /**
+   * The free, unpriced instructions this line asked for — "Push +1", a
+   * half-frame scan preference — as display text, one entry per line.
+   *
+   * Overlaps `rows` on purpose. The same facts are in there as editable rows,
+   * but only where they apply and only once set; this is the flat text form,
+   * for the collapsed summary's CUSTOM flag and for the printed order form,
+   * which lists them in full rather than offering to change them. Empty on most
+   * lines, and on every video line.
+   */
+  custom: string[];
   /** Price of ONE unit — what the breakdown adds up to. */
   total: number;
   /** Units on this line, floored at 1 however the stored value got there. */

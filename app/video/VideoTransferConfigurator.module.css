@@ -20,21 +20,40 @@
   align-items: start;
 }
 
-/* Stretches to the right column's height (the tallest in the row) so the
-   thumbnail strip at its bottom lines up with the price block and the layout
-   never shifts as options change. */
+/* Sized to the first screen, not to the row — same construction and same
+   reasoning as the film configurator's image column: the media frame AND the
+   thumbnail strip under it have to be visible without scrolling. The column
+   starts at var(--nav-clearance) down the page, so that much comes off the
+   viewport, plus a gutter of breathing room at the bottom. Deriving the frame
+   from the viewport rather than from the leftover height also means a VHS tape
+   renders at exactly the size a roll of C-41 does. */
 .imageCol {
   grid-column: 1 / 7;
-  align-self: stretch;
+  align-self: start;
   display: flex;
   flex-direction: column;
   gap: var(--grid-gap);
+  height: calc(100svh - var(--nav-clearance) - var(--grid-gap));
   min-height: 0;
 }
 
-/* Sliding viewport: whatever space is left above the thumbs. Clips the track
-   so only the current slide shows; the media fits inside (contain — never
-   cropped). */
+/* Most video formats have a product shot and no sample clip, so the strip
+   (rendered only when there's more than one slide) is usually absent here — and
+   without this the frame would swallow its height and render a VHS tape larger
+   than any film product shot. Reserve the row when it's absent: one tile wide
+   with a square ratio is exactly a tile tall, and the percentage resolves
+   against the column, so it holds at any width. */
+.imageCol:not(:has(.thumbs))::after {
+  content: "";
+  flex: none;
+  align-self: flex-start;
+  width: calc((100% - 7 * var(--grid-gap)) / 8);
+  aspect-ratio: 1;
+}
+
+/* Sliding viewport: the screen height left over above the thumbs. Clips the
+   track so only the current slide shows; the media fits inside (contain —
+   never cropped). */
 .image {
   position: relative;
   flex: 1;
@@ -43,9 +62,13 @@
 }
 
 /* Row of full-width slides; translated by one frame per gallery index. */
+/* The offset arrives as --track-x from the component rather than as an inline
+   `transform`, so the phone block below can drop it — an inline transform
+   would outrank any media query trying to switch it off. */
 .track {
   display: flex;
   height: 100%;
+  transform: translateX(var(--track-x, 0));
   transition: transform 480ms var(--ease-carousel);
 }
 
@@ -130,6 +153,90 @@
   inset: 0;
   border: 2px solid var(--black);
   pointer-events: none;
+}
+
+/* ---------- Progress track (phones) ----------
+   Replaces the thumbnail strip below 700px. Hidden by default and switched on
+   in the phone block at the bottom, so the desktop cost is one unrendered
+   flex row.
+
+   One unbroken hairline the width of the frame, with a black mark one slide
+   wide that travels along it. Not a row of segments that light up: the line is
+   continuous and the ink moves, so the gallery reads as a single distance you
+   are somewhere along rather than as a set of lamps.
+
+   It lies on the bottom edge of the frame, the way the hero pages' track does
+   — positioned against .imageCol rather than inside .image, which is the
+   aria-hidden scroller the clips live in.
+
+   Three layers, all in one element:
+
+     ::before  the rule       — full width, bw-200, never moves
+     ::after   the ink        — 1/n wide, black, follows the scroll
+     .segment  the targets    — transparent buttons reaching up over the frame
+
+   Matches the film configurator's exactly; see that stylesheet for the rest. */
+.progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 2px;
+  display: none;
+}
+
+.progress::before,
+.progress::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  pointer-events: none;
+}
+
+.progress::before {
+  left: 0;
+  right: 0;
+  background: var(--bw-200);
+}
+
+/* One slide wide, translated by its own width per index — so the arithmetic is
+   just the index, at any slide count. Both values come in as inline custom
+   properties from the component. */
+.progress::after {
+  left: 0;
+  width: calc(100% / var(--slide-count));
+  background: var(--black);
+  transform: translateX(calc(100% * var(--slide-index)));
+  transition: transform 480ms var(--ease-carousel);
+}
+
+/* Format switches jump the frame to the first slide with no glide; the ink has
+   to jump with it. Mirrors .track[data-instant] exactly. */
+.progress[data-instant]::after {
+  transition: none;
+}
+
+/* Reach up into the frame out of the 2px row (a single negative top margin,
+   not a symmetric pair) — the target stays usable with the track on the edge. */
+.segment {
+  appearance: none;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  margin: -22px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress::after {
+    transition: none;
+  }
 }
 
 /* 24px rhythm between every section. Pinned to the right half explicitly. */
@@ -382,9 +489,14 @@
     transform 120ms ease-out;
 }
 
+/* The button now carries the running total. Hover underlines just the price —
+   the red stays put, and the underline points at the one part of the label that
+   changes as the options are set. */
 @media (hover: hover) and (pointer: fine) {
-  .addBtn:hover {
-    filter: brightness(1.08);
+  .addBtn:hover .addPrice {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 20%;
   }
 }
 
@@ -444,9 +556,20 @@
     grid-column: 1 / -1;
   }
 
-  /* Stacked above the configurator, the column no longer stretches against the
-     right column — give the gallery frame an explicit height instead of
-     flex-fill (which would collapse to 0 in an auto-height column). */
+  /* Stacked above the configurator, the column is no longer racing the right
+     column for height — drop the screen-height cap and give the gallery frame
+     an explicit height instead of flex-fill (which would collapse to 0 in an
+     auto-height column). Same values as the film page's stacked frame. */
+  .imageCol {
+    height: auto;
+  }
+
+  /* Nothing to reserve against here — the column is auto-height, so the spacer
+     would just be dead space between the media frame and the configurator. */
+  .imageCol:not(:has(.thumbs))::after {
+    display: none;
+  }
+
   .image {
     flex: none;
     height: min(56vh, 480px);
@@ -474,11 +597,137 @@
     padding-bottom: 60px;
   }
 
+  /* ---------- Gallery: dragged, not driven ----------
+     The frame stops clipping a transformed track and becomes a real horizontal
+     scroller with mandatory snapping — the drag, the momentum and the settle
+     are the platform's. See FilmStockConfigurator.module.css for the rest.
+
+     overscroll-behavior-x: contain stops a swipe that reaches the last clip
+     from turning into the browser's back-navigation gesture. */
+  .image {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .image::-webkit-scrollbar {
+    display: none;
+  }
+
+  .track {
+    transform: none;
+    transition: none;
+  }
+
+  .slide {
+    scroll-snap-align: start;
+  }
+
+  /* Fill the frame instead of fitting inside it, matching the film gallery.
+     The product shot gains the most — it's shot portrait, close to this
+     frame's own proportions, and only ever lost a little to the fit.
+
+     The sample clips are the case to watch. They're 4:3 captures in a frame
+     near 3:4, so filling scales them to the height and crops roughly a third
+     off each side; anything composed near the left or right edge of a transfer
+     goes with it. Whether that's the right trade depends on the clips, and it
+     is a one-line revert to `contain` for video alone. */
+  .slide video,
+  .slide img {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .thumbs {
+    display: none;
+  }
+
+  /* The track hangs off this, on the frame's bottom edge. With .thumbs gone
+     the frame is the column's only in-flow child, so the two edges are one. */
+  .imageCol {
+    position: relative;
+  }
+
+  .progress {
+    display: flex;
+  }
+
+  /* The ink follows the scroll rather than animating between resting places:
+     --slide-pos is the fractional position the scroll handler writes every
+     frame, so the mark moves with the finger and is carried through the snap
+     by the browser's own settle. --slide-index is the first-paint fallback. */
+  .progress::after {
+    transform: translateX(calc(100% * var(--slide-pos, var(--slide-index))));
+    transition: none;
+  }
+
+
+  /* ---------- Type ----------
+     Matched to the film configurator's phone scale line for line — the two
+     panels are the same panel with different rows in them, and a customer who
+     transfers tapes and shoots film sees both. See FilmStockConfigurator.module.css
+     for why the scale steps down here at all. */
   .title {
-    font-size: clamp(40px, 12vw, 56px);
+    font-size: clamp(32px, 9vw, 44px);
   }
 
   .price {
-    font-size: clamp(40px, 14vw, 56px);
+    font-size: clamp(36px, 12vw, 48px);
+  }
+
+  .blurb {
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .rowLabel,
+  .noticeText {
+    font-size: 13px;
+  }
+
+  .totalLabel {
+    font-size: 16px;
+  }
+
+  .lineName,
+  .lineAmount {
+    font-size: 14px;
+  }
+
+  .lineSub {
+    font-size: 11px;
+  }
+
+  /* ---------- Sticky add to order ----------
+     Sticky, not fixed. .addBlock is the last child of .body, so its resting
+     place already is the bottom of the configurator: sticking it to the
+     viewport bottom means it rides above the options for as long as there are
+     options left to set, then settles into that resting place when the panel
+     ends — and it is gone by the time the cross-sell comes up, because .body
+     is its containing block. A fixed bar would still be sitting over the
+     footer.
+
+     Full width down here, unlike the 3-column button on desktop. Floating over
+     live content, an opaque bar edge to edge is the honest shape for it; a
+     content-width button leaves the page showing beside it and reads as
+     something that came loose. */
+  .addBlock {
+    position: sticky;
+    bottom: 16px;
+    align-items: stretch;
+    /* Over the toast (15), under the cart drawer (scrim 20, panel 21) — the
+       confirmation rises from off-screen through this button's place, and
+       passing behind it is what makes it read as coming from the control that
+       raised it. */
+    z-index: 16;
+  }
+
+  .addBtn {
+    width: 100%;
+    font-size: 16px;
+    padding: 14px 18px;
   }
 }

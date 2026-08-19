@@ -27,46 +27,46 @@
   isolation: isolate;
 }
 
-/* Stacked hero clips — same choreography as the film hero's slides: all share
-   the same box, parked off-screen to the right until it's their turn. On
-   change, the active clip slides out to the left (heroSlidePrev) while the
-   next slides in from the right (heroSlideActive), both easing in/out
-   together. Clips that are neither active nor the one just retired snap back
-   to their parked position with no transition, so the snap never shows on
-   screen. Duration matches SLIDE_MS (1600ms) in VideoHero.tsx. */
+/* The hero clips, in a scroller rather than a stack — same construction as the
+   film hero's, where the reasoning lives. Sits at the bottom of the stacking
+   order and still receives the drag because the scrim (3) and the content (4)
+   above it are pointer-events: none. */
+.heroScroller {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.heroScroller::-webkit-scrollbar {
+  display: none;
+}
+
+.heroTrack {
+  display: flex;
+  height: 100%;
+}
+
 .heroSlide {
+  position: relative;
+  flex: 0 0 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  background: var(--bw-200);
+}
+
+.heroSlideVideo {
   position: absolute;
   inset: 0;
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
-  background: var(--bw-200);
-  z-index: 0;
-  transform: translateX(100%);
-  transition: none;
-}
-
-.heroSlideActive {
-  transform: translateX(0);
-  transition: transform 1600ms var(--ease-carousel);
-  z-index: 2; /* incoming clip rides over the outgoing one */
-}
-
-.heroSlidePrev {
-  transform: translateX(-100%);
-  transition: transform 1600ms var(--ease-carousel);
-  z-index: 1;
-}
-
-/* Reduced motion: clips never autoplay (posters show instead) and the dots
-   swap instantly — drop the transition so positions never tween. */
-@media (prefers-reduced-motion: reduce) {
-  .heroSlide,
-  .heroSlideActive,
-  .heroSlidePrev {
-    transition: none;
-  }
 }
 
 /* Bottom-weighted gradient for legibility. Same character as the film/passport
@@ -77,6 +77,7 @@
   position: absolute;
   inset: 0;
   z-index: 3;
+  pointer-events: none;
   background: linear-gradient(
     to top,
     rgba(1, 1, 1, 0.7) 0%,
@@ -85,9 +86,12 @@
   );
 }
 
+/* Transparent to the pointer so a drag started on the text still reaches the
+   scroller — nothing in here is interactive; the progress track sits outside. */
 .heroContent {
   position: relative;
   z-index: 4;
+  pointer-events: none;
   display: grid;
   grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
   column-gap: var(--grid-gap);
@@ -151,59 +155,92 @@
   text-box: trim-both cap alphabetic;
 }
 
-/* Clip indicator dots — same construction as the film hero's: one dot per
-   clip in a tight row under the description, 10px between dots, first dot
-   flush with the content's left edge. The active clip's dot is full white;
-   the rest sit at 50% opacity. Each dot is a button that jumps to its clip.
-   The button box is oversized for the tap target: 18px wide so adjacent hit
-   areas tile exactly edge to edge (8px dot + 5px each side = the 10px visual
-   gap, no overlap), 24px tall with negative vertical margins so the row keeps
-   its 8px height. The row shifts left 5px to cancel the first button's
-   padding. */
+/* Clip indicator — same construction as the film hero's, which is where the
+   reasoning lives: one hairline on the bottom edge of the frame, edge to edge,
+   divided by clip, with a mark that follows the scroll. Replaced a row of
+   dots in the text block. */
 .heroIndicators {
-  grid-column: 1 / -1;
-  grid-row: 3;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
   display: flex;
-  margin-top: clamp(14px, 1.8vw, 28px);
-  margin-left: -5px;
+  height: 2px;
 }
 
-.heroIndicatorDot {
-  display: grid;
-  place-items: center;
-  width: 18px;
+.heroIndicators::before,
+.heroIndicators::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 2px;
+  pointer-events: none;
+}
+
+.heroIndicators::before {
+  left: 0;
+  right: 0;
+  background: var(--paper-white);
+  opacity: 0.35;
+}
+
+/* One clip wide, translated by its own width per index. --slide-pos is the
+   fractional position useHeroSlideshow writes on every scroll frame;
+   --slide-index is the first-paint fallback. No transition — the hero's glide
+   is a tween of the scroll offset now, and this follows it frame for frame. */
+.heroIndicators::after {
+  left: 0;
+  width: calc(100% / var(--slide-count));
+  background: var(--paper-white);
+  transform: translateX(calc(100% * var(--slide-pos, var(--slide-index))));
+}
+
+.heroIndicatorSeg {
+  position: relative;
+  flex: 1;
+  min-width: 0;
   height: 24px;
-  margin: -8px 0;
+  /* Reaches up out of the 2px row rather than straddling it — half a target
+     below the hero's bottom edge would be clipped by its overflow. */
+  margin: -22px 0 0;
   padding: 0;
+  appearance: none;
   background: none;
   border: 0;
   cursor: pointer;
+  pointer-events: auto;
 }
 
-.heroIndicatorDot::before {
+.heroIndicatorSeg::before {
   content: "";
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
+  position: absolute;
+  inset: 22px 0 auto;
+  height: 2px;
   background: var(--paper-white);
-  opacity: 0.5;
+  opacity: 0;
   transition: opacity 300ms var(--ease-out);
 }
 
-.heroIndicatorDotActive::before,
-.heroIndicatorDot:focus-visible::before {
-  opacity: 1;
-}
-
 @media (hover: hover) {
-  .heroIndicatorDot:hover::before {
-    opacity: 1;
+  .heroIndicatorSeg:hover::before {
+    opacity: 0.6;
   }
 }
 
-.heroIndicatorDot:focus-visible {
+.heroIndicatorSeg:focus-visible::before {
+  opacity: 0.6;
+}
+
+.heroIndicatorSeg:focus-visible {
   outline: 1px solid var(--paper-white);
   outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .heroIndicatorSeg::before {
+    transition: none;
+  }
 }
 
 /* ---------- Divider ---------- */

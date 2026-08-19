@@ -39,7 +39,7 @@ import styles from "./AddedToOrder.module.css";
 const HOLD_MS = 3000;
 /** Once it has been hovered, every departure of the pointer buys this long. */
 const HOVER_GRACE_MS = 2000;
-/** Must match the opacity transition on .anchor in the stylesheet. */
+/** Must match the opacity transition on .band in the stylesheet. */
 const FADE_MS = 260;
 
 export default function AddedToOrder({

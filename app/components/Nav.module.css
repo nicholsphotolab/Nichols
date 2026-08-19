@@ -38,11 +38,15 @@
   transition: opacity 220ms var(--ease-out);
 }
 
+/* Solid paper-white once scrolled — the same fill as the page, so the bar
+   reads as the page's own top edge holding the nav rather than as a panel
+   floating over it. Nothing shows through: the links and the red CTA sit on a
+   flat, predictable ground whatever is scrolling underneath. */
 .bar[data-scrolled="true"] {
   background: var(--paper-white);
 }
 
-/* Solid, even bar when scrolled — drop the gradient scrim entirely. */
+/* Even bar when scrolled — drop the gradient scrim entirely. */
 .bar[data-scrolled="true"]::before {
   opacity: 0;
 }
@@ -114,22 +118,54 @@
   text-transform: uppercase;
   color: var(--paper-white);
   background: var(--darkroom-red);
-  padding: 6px 10px;
-  transition: filter 0.15s ease;
+  /* Fixed box, matching the cart chip's 35px height — the two read as a pair, so
+     any difference in height shows. Stays inline-block rather than becoming a
+     flex container: the reveal arrow leans on vertical-align, which a flex parent
+     would switch off. So the label centres on text-align and the 9px padding
+     (9 + 17 + 9 = 35) rather than on flex alignment. 120.2px of label inside
+     143 leaves it ~11px clear on each side. */
+  width: 143px;
+  height: 35px;
+  padding: 9px 0;
 }
 
 /* The ↗ aligns to the cap height of the label so its top lines up with the top
-   of the letters (e.g. the T). Same vertical-align:top + line-height:1 trick the
-   site's reveal-arrow utility uses for uppercase text. */
+   of the letters (e.g. the T) — the same vertical-align: top + line-height: 1
+   trick the global reveal-arrow utility uses for uppercase text.
+
+   What it does differently from that utility is how it hides. reveal-arrow keeps
+   the arrow's space reserved and only fades it, which is right for a link in a
+   row but wrong here: this label is centred inside a fixed-width box, so a
+   permanently reserved slot would hold the words 7.6px left of centre with
+   nothing visible on the right to balance them. Instead the arrow pulls its own
+   footprint back out of the line — a negative right margin of exactly its 11.14px
+   advance plus its 4px gap — so at rest the line is just the words and they
+   centre honestly. Hover releases the margin: the line grows by that 15.14px, the
+   text slides 7.57px left to make room, and the arrow fades in beside it.
+
+   The button itself never resizes through any of this. Its width is fixed at
+   143px above, and the full label is 119.96px, so the arrow opens into slack the
+   box already had. */
 .ctaArrow {
   display: inline-block;
   vertical-align: top;
   line-height: 1;
+  margin-left: 4px;
+  margin-right: -15.14px;
+  opacity: 0;
+  transition: margin-right 220ms var(--ease-out), opacity 180ms var(--ease-out);
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .cta:hover {
-    filter: brightness(1.08);
+  .cta:hover .ctaArrow {
+    margin-right: 0;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaArrow {
+    transition: none;
   }
 }
 
@@ -161,5 +197,16 @@
      would just dirty the panel's top edge. */
   :global(html[data-menu-open]) .bar::before {
     opacity: 0;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Matches the smaller phone mark (NavBrand.module.css) so the slot doesn't
+     keep reserving room the logo no longer uses. Height stays 33px on purpose:
+     this is what sets the bar's content height, and --nav-clearance (80.5px,
+     the top padding every page is built on) is a fixed token that wouldn't
+     follow it down. */
+  .brandSlot {
+    width: 104px;
   }
 }

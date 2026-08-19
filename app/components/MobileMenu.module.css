@@ -118,6 +118,22 @@
   }
 }
 
+/* The trigger's target, on the devices that reach for it with a thumb. The
+   label is 16px type in a box that hugs it — 49 × 20px, which is a small thing
+   to hit in the corner of a phone held one-handed, and it sits right against
+   the screen edge where the grip already interferes.
+
+   Grown by padding rather than by size, and paid for out of `top`: 12px of
+   padding with the offset pulled back 12px leaves the word exactly where it
+   was and the box 61 × 44. Padding only on the left, since `right: 20px`
+   anchors that edge and padding there would push the label off it. */
+@media (max-width: 700px) {
+  .toggle {
+    top: 1.5px;
+    padding: 12px 0 12px 12px;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .panel,
   .panel[data-open] {

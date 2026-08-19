@@ -21,17 +21,22 @@
 
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Image from "next/image";
-import { Pills } from "../components/ConfiguratorControls";
 import {
-  CATEGORIES,
+  FormatThumbs,
+  InfoModal,
+  Pills,
+  RowLabel,
+} from "../components/ConfiguratorControls";
+import {
   CATEGORIES_BY_SLUG,
   OUTPUTS,
   type VideoCategory,
   type VideoMediaItem,
 } from "./videoTransferData";
 import { withBasePath } from "../lib/basePath";
+import { useSnapGallery } from "../lib/useSnapGallery";
 import { buildQuery, matchOption, slugifyOption } from "../lib/urlState";
 import { useOrder } from "../components/OrderProvider";
 import AddedToOrder from "../components/AddedToOrder";
@@ -40,52 +45,12 @@ import type { NewOrderLine } from "../lib/orderDraft";
 import { formatUSD, summarizeLine } from "../lib/orderPricing";
 import styles from "./VideoTransferConfigurator.module.css";
 
-// CATEGORY pills, in display order. Values are slugs; labels come from the data.
-const CATEGORY_ORDER = CATEGORIES.map((c) => c.slug);
-
 // USB is the recommended output, so it starts selected.
 const RECOMMENDED_OUTPUT = OUTPUTS.find((o) => o.recommended) ?? OUTPUTS[0];
 
-// Short plain-language explanation shown in the tooltip beside each row label.
-const ROW_INFO: Record<string, string> = {
-  Type: "Tapes & Discs covers VHS, camcorder tapes, audio cassettes, and discs. Film Reels covers 8mm, Super 8, and 16mm movie film.",
-  Format: "The kind of tape or disc you're transferring.",
-  Size: "The diameter of your film reel, measured across the reel.",
-  Output:
-    "How you get your files back — a new USB drive, your own USB, or a DVD/CD. Added once per order.",
-};
-
-// Row label with an info icon that reveals a tooltip on hover or keyboard focus.
-// Mirrors the film configurator's RowLabel.
-function RowLabel({ label }: { label: string }) {
-  const info = ROW_INFO[label];
-  return (
-    <span className={styles.rowLabel}>
-      {label}
-      {info && (
-        <span className={styles.info}>
-          <button
-            type="button"
-            className={styles.infoBtn}
-            aria-label={`About ${label}`}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={withBasePath("/info.svg")}
-              alt=""
-              width={18}
-              height={18}
-              aria-hidden="true"
-            />
-          </button>
-          <span role="tooltip" className={styles.tooltip}>
-            {info}
-          </span>
-        </span>
-      )}
-    </span>
-  );
-}
+// The TYPE row is gone here too — category is chosen from the strip below the
+// configurator rather than switched in place. RowLabel, its explainer modal, and
+// the format thumbnails all come from ConfiguratorControls, shared with film.
 
 type LineItem = { name: string; sub?: string; amount: number };
 
@@ -119,7 +84,9 @@ export default function VideoTransferConfigurator({
 }: {
   initialSlug: string;
 }) {
-  const [slug, setSlug] = useState<string>(initialSlug);
+  // Fixed for the life of the page now that TYPE is gone — the category is the
+  // route, and switching one means navigating to the other category's page.
+  const slug = initialSlug;
   const category = CATEGORIES_BY_SLUG[slug] ?? CATEGORIES_BY_SLUG[initialSlug];
 
   // Raw selections; anything the current category doesn't offer is corrected by
@@ -127,6 +94,12 @@ export default function VideoTransferConfigurator({
   // back — the same pure-render pattern the film configurator uses.
   const [optionSel, setOptionSel] = useState<string>(category.options[0].name);
   const [output, setOutput] = useState<string>(RECOMMENDED_OUTPUT.name);
+
+  // Per-item instruction for the counter, cleared on add — see the film
+  // configurator for why this is the one piece of state that doesn't persist.
+
+  // Which row's explainer is open, by row label. Null closes the modal.
+  const [infoRow, setInfoRow] = useState<string | null>(null);
 
   // ---------- Running order ----------
   // Same cart the film configurator writes to: it lives in OrderProvider,
@@ -204,6 +177,28 @@ export default function VideoTransferConfigurator({
   const [animateSlide, setAnimateSlide] = useState(true);
   const videoRefs = useRef<Record<string, HTMLVideoElement | null>>({});
 
+  // Every way of reaching a slide goes through here: thumbs, progress segments,
+  // and — on phones — the scroller reporting where it landed. Clamped rather
+  // than wrapped: a gallery that loops from the last clip back to the first
+  // gives no sense of where its ends are, and the progress track under it is a
+  // statement about exactly that.
+  const goToSlide = (i: number) => {
+    if (i < 0 || i > slides.length - 1) return;
+    setAnimateSlide(true);
+    setGalleryIdxSel(i);
+  };
+
+  // Below 700px the frame becomes a scroll-snap container and the drag is the
+  // browser's. This keeps that scroller and galleryIdx in agreement, and feeds
+  // the progress ink a fractional position while the finger is down. Landing
+  // on a clip is what starts it playing — the effect above keys off galleryIdx,
+  // which this commits as the scroll crosses each midpoint.
+  const { scrollerRef, progressRef } = useSnapGallery({
+    index: galleryIdx,
+    animate: animateSlide,
+    onSettle: goToSlide,
+  });
+
   // Only the visible slide's clip plays; the rest sit paused on their poster.
   // Reduced-motion users get posters only — nothing autoplays.
   useEffect(() => {
@@ -239,18 +234,8 @@ export default function VideoTransferConfigurator({
     );
   }, [slug, category, option, output]);
 
-  // Switching TYPE swaps the category but keeps the raw selection — the
-  // derivation above absorbs anything the new category doesn't offer. The URL
-  // follows automatically via the sync effect above. Any change to the visible
-  // strip restarts it from the first slide, without gliding.
-  function selectCategory(next: string) {
-    if (CATEGORIES_BY_SLUG[next]) {
-      setSlug(next);
-      setGalleryIdxSel(0);
-      setAnimateSlide(false);
-    }
-  }
-
+  // Any change to the visible strip restarts it from the first slide, without
+  // gliding — the set changes, so the reset should be instant.
   function selectOption(next: string) {
     setOptionSel(next);
     setGalleryIdxSel(0);
@@ -299,13 +284,24 @@ export default function VideoTransferConfigurator({
             column's height so the thumbs bottom-align with the price block;
             the media fits (contain) in the remaining space. */}
         <div className={styles.imageCol}>
-          <div className={styles.image} aria-hidden="true">
-            {/* Horizontal track: all slides sit side by side and the track
-                slides by one frame width per gallery index. */}
+          {/* On phones this is the scroll-snap container the customer drags;
+              above 700px it clips a transformed track and never scrolls.
+              tabIndex -1 keeps it out of the tab order — Chrome makes scroll
+              containers focusable on their own, and a focusable aria-hidden
+              element is a trap for anyone tabbing through. The segments below
+              are the keyboard route into the gallery. */}
+          <div className={styles.image} aria-hidden="true" tabIndex={-1} ref={scrollerRef}>
+            {/* Horizontal track: all slides sit side by side. Above the phone
+                breakpoint it slides by one frame width per gallery index; at
+                phone width the stylesheet drops the transform and the
+                scroller's own offset does that job instead — which is why the
+                position is handed over as a custom property rather than set
+                directly on `transform`, where a media query couldn't reach
+                past the inline style to switch it off. */}
             <div
               className={styles.track}
               data-instant={!animateSlide || undefined}
-              style={{ transform: `translateX(-${galleryIdx * 100}%)` }}
+              style={{ "--track-x": `-${galleryIdx * 100}%` } as CSSProperties}
             >
               {slides.map((s) =>
                 s.kind === "clip" ? (
@@ -343,7 +339,7 @@ export default function VideoTransferConfigurator({
 
           {/* Uniform square thumbs, each poster frame filling its tile
               edge-to-edge (cover crop); the selection border traces the
-              square. */}
+              square. Hidden on phones, where the progress track takes over. */}
           {slides.length > 1 && (
             <div
               className={styles.thumbs}
@@ -362,10 +358,7 @@ export default function VideoTransferConfigurator({
                     data-active={i === galleryIdx || undefined}
                     aria-pressed={i === galleryIdx}
                     aria-label={`Sample ${i + 1} of ${slides.length}`}
-                    onClick={() => {
-                      setAnimateSlide(true);
-                      setGalleryIdxSel(i);
-                    }}
+                    onClick={() => goToSlide(i)}
                   >
                     {thumbSrc ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -381,6 +374,50 @@ export default function VideoTransferConfigurator({
                   </button>
                 );
               })}
+            </div>
+          )}
+
+          {/* Phone-only: one hairline across the width of the frame, divided
+              into a segment per slide with the current one inked. Four square
+              thumbnails is a second gallery competing with the first on a
+              screen that has room for one; this says the same thing — how many
+              clips, which one you're on — in 2px.
+
+              Still buttons, not decoration. The segment is a hairline but its
+              target is the full height of this strip, so it stays tappable for
+              anyone who doesn't swipe, and it keeps the whole gallery reachable
+              from the keyboard at phone widths. The mark that travels along the
+              rule is drawn by the container, not by these — see the stylesheet. */}
+          {slides.length > 1 && (
+            <div
+              className={styles.progress}
+              role="group"
+              aria-label="Sample clips"
+              data-instant={!animateSlide || undefined}
+              ref={progressRef}
+              // The only two numbers the stylesheet can't work out for itself.
+              // useSnapGallery writes a third, --slide-pos, straight to this
+              // node while a drag is in progress; the stylesheet prefers it
+              // when it's there, which is what lets the ink track the finger
+              // between slides instead of only landing on them.
+              style={
+                {
+                  "--slide-count": slides.length,
+                  "--slide-index": galleryIdx,
+                } as CSSProperties
+              }
+            >
+              {slides.map((s, i) => (
+                <button
+                  key={s.kind === "clip" ? s.media.video : s.src ?? "product-placeholder"}
+                  type="button"
+                  className={styles.segment}
+                  data-active={i === galleryIdx || undefined}
+                  aria-pressed={i === galleryIdx}
+                  aria-label={`Sample ${i + 1} of ${slides.length}`}
+                  onClick={() => goToSlide(i)}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -403,26 +440,20 @@ export default function VideoTransferConfigurator({
 
           <div className={styles.rows}>
             <div className={styles.row}>
-              <RowLabel label="Type" />
-              <Pills
-                values={CATEGORY_ORDER}
-                selected={slug}
-                onSelect={selectCategory}
-                format={(s) => CATEGORIES_BY_SLUG[s]?.name ?? s}
-              />
-            </div>
-
-            <div className={styles.row}>
-              <RowLabel label={formatLabel} />
-              <Pills
+              <RowLabel label={formatLabel} onExplain={setInfoRow} />
+              <FormatThumbs
                 values={category.options.map((o) => o.name)}
                 selected={option}
                 onSelect={selectOption}
+                image={(v) =>
+                  category.options.find((o) => o.name === v)?.image
+                }
+                label={(v) => v}
               />
             </div>
 
             <div className={styles.row}>
-              <RowLabel label="Output" />
+              <RowLabel label="Output" onExplain={setInfoRow} />
               <Pills
                 values={OUTPUTS.map((o) => o.name)}
                 selected={output}
@@ -433,6 +464,7 @@ export default function VideoTransferConfigurator({
                 }}
               />
             </div>
+
           </div>
 
           <hr className={styles.divider} />
@@ -464,26 +496,36 @@ export default function VideoTransferConfigurator({
 
           <hr className={styles.divider} />
 
-          <p className={styles.price} aria-live="polite">
-            {formatUSD(total)}
-          </p>
-
+          {/* The standalone headline price is gone — the total lives in the
+              button now, matching the film configurator. */}
           <div className={styles.addBlock}>
             <button type="button" className={styles.addBtn} onClick={addToOrder}>
-              Add to order
+              Add to order -{" "}
+              <span className={styles.addPrice} aria-live="polite">
+                {formatUSD(total)}
+              </span>
             </button>
-            {/* The note is now spoken-only — AddedToOrder keeps it in an
-                always-mounted live region and raises the toast. */}
-            <AddedToOrder
-              note={addedNote}
-              image={addedShot}
-              onViewCart={openCart}
-            />
           </div>
         </div>
       </div>
 
+      {/* The note is now spoken-only — AddedToOrder keeps it in an
+          always-mounted live region and raises the toast.
+
+          Outside .addBlock, which is sticky on phones. Sticky positioning
+          always opens a stacking context, and this component's band is a fixed
+          element at z-index 15 chosen to clear the nav (9) and duck under the
+          cart drawer (20/21) — sealed inside .addBlock those numbers would only
+          be compared against each other, and the toast would slide under the
+          nav. Nothing else moves with it: the band is fixed to the viewport and
+          the live region is visually hidden, so neither has a position in this
+          layout to lose. */}
+      <AddedToOrder note={addedNote} image={addedShot} onViewCart={openCart} />
+
       {/* Cross-sell: leads with a service they aren't already looking at. */}
+      {/* Explainer for whichever row's ↗ was clicked. Copy is still a TODO. */}
+      <InfoModal label={infoRow} onClose={() => setInfoRow(null)} />
+
       <MoreProducts family={slug} />
     </main>
   );

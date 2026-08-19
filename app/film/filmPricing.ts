@@ -11,7 +11,14 @@
 // at compile time).
 
 import type { FilmStock } from "./FilmStockConfigurator";
-import { STOCKS } from "./filmStocksData";
+import {
+  STOCKS,
+  SCAN_TYPE_LABELS,
+  SCAN_TYPE_LINE_LABEL,
+  SCAN_TYPE_ORDER,
+  SCAN_TYPE_RATES,
+  SHEET_SCAN_TYPE_RATES,
+} from "./filmStocksData";
 import type { FilmOrderLine, LinePatch } from "../lib/orderDraft";
 import {
   formatUSD,
@@ -39,9 +46,148 @@ export const OUTPUT_LABELS: Record<string, string> = {
 
 /** How the scan surcharge reads in the itemized breakdown. */
 export const SCAN_LINE_LABEL: Record<string, string> = {
-  SCANS: "Standard Scans",
+  SCANS: "Scans",
   "PRINTS/SCANS": "Prints + Scans",
 };
+
+export { SCAN_TYPE_LABELS, SCAN_TYPE_ORDER } from "./filmStocksData";
+
+/** Outputs that include scanning, and so offer a resolution tier. */
+export function outputHasScans(output: string | null): boolean {
+  return output === "SCANS" || output === "PRINTS/SCANS";
+}
+
+// ---------- Pull / push ----------
+// Stops of compensation the lab will run, as a closed range rather than a pill
+// list: it is a number the customer steps through, and −2…+3 covers everything
+// realistically shot. Free — pushing changes the development time, not the bill.
+
+export const PUSH_PULL_MIN = -2;
+export const PUSH_PULL_MAX = 3;
+
+/** Every offered value, low to high — the cart lists these as choices. */
+export const PUSH_PULL_VALUES: number[] = Array.from(
+  { length: PUSH_PULL_MAX - PUSH_PULL_MIN + 1 },
+  (_, i) => PUSH_PULL_MIN + i
+);
+
+/** Whatever the stepper is at, brought back inside the offered range. */
+export function clampPushPull(stops: number): number {
+  if (!Number.isFinite(stops)) return 0;
+  return Math.min(PUSH_PULL_MAX, Math.max(PUSH_PULL_MIN, Math.round(stops)));
+}
+
+/**
+ * "Push +1", "Pull −2", or null at zero.
+ *
+ * Null rather than "Normal" because this reads on the counter's printed sheet
+ * and in the cart's CUSTOM list, both of which exist to carry the exceptions —
+ * a line saying the roll is to be developed normally is noise in the one place
+ * that has to be scannable.
+ */
+/**
+ * "+1", "−2", "0" — the signed stops alone, for the − / + steppers.
+ *
+ * The stepper sits under a label that already says PULL / PUSH, so repeating
+ * the word between the two buttons says nothing the customer can't see; the
+ * number is the only part that changes as they press. Shared by the
+ * configurator and the cart so the same control reads the same in both.
+ *
+ * Real minus sign, matching the "−" on the button beside it.
+ */
+export function pushPullShort(stops: number): string {
+  const n = clampPushPull(stops);
+  return n > 0 ? `+${n}` : n < 0 ? `−${-n}` : "0";
+}
+
+export function pushPullLabel(stops: number): string | null {
+  const n = clampPushPull(stops);
+  if (n === 0) return null;
+  // Real minus sign, matching the stepper's own "−".
+  return n > 0 ? `Push +${n}` : `Pull −${Math.abs(n)}`;
+}
+
+// ---------- Half frame ----------
+// A half-frame camera splits each 35mm frame in two, so a 36-exposure roll comes
+// back as 72 images. That is the whole of the price difference: INDIVIDUAL bills
+// twice the frames at the ordinary rate for the size and tier, PAIRED bills the
+// roll exactly as a full-frame one. There is no separate half-frame rate table
+// and no flat surcharge.
+
+export const HALF_FRAME_ORDER = ["INDIVIDUAL", "PAIRED"];
+
+export const HALF_FRAME_LABELS: Record<string, string> = {
+  INDIVIDUAL: "INDIVIDUAL FRAME SCANS",
+  PAIRED: "PAIRED FRAME SCANS",
+};
+
+/** Second line under each pill, explaining what the choice yields. */
+export const HALF_FRAME_CAPTIONS: Record<string, (frames: number) => string> = {
+  INDIVIDUAL: (frames) =>
+    `Up to ${frames} images\nEach half frame cropped on its own`,
+  PAIRED: (frames) =>
+    `Up to ${frames} images\nBoth half frames left together in one scan`,
+};
+
+/** How the choice reads in the cart's CUSTOM list and on the printed sheet. */
+export const HALF_FRAME_LINE_LABEL: Record<string, string> = {
+  INDIVIDUAL: "Half frame — individual scans",
+  PAIRED: "Half frame — paired scans",
+};
+
+/**
+ * Whether the HALF FRAME CAMERA row applies at all.
+ *
+ * 35mm only — it describes a camera that exposes half of a 35mm frame, and no
+ * other format has one. Disposables are 35mm film but are configured as their
+ * own format here, and are excluded deliberately.
+ *
+ * Also gated on the output actually including scans: the choice is between two
+ * ways of scanning, so on DEVELOP ONLY there is nothing for it to decide.
+ */
+export function halfFrameAvailable(
+  size: string,
+  output: string | null
+): boolean {
+  return size === "35MM" && outputHasScans(output);
+}
+
+/**
+ * Frames billed for a roll — the exposure count, doubled when each half frame
+ * is being cropped and scanned separately.
+ *
+ * Guarded on halfFrameAvailable rather than on `halfFrame` alone so a stored
+ * value that has stopped applying (the customer moved the roll to 120, or to
+ * develop-only) can never double a bill for a row that is no longer on screen.
+ */
+export function billedFrames(
+  count: number,
+  size: string,
+  output: string | null,
+  halfFrame: string | null
+): number {
+  return halfFrame === "INDIVIDUAL" && halfFrameAvailable(size, output)
+    ? count * 2
+    : count;
+}
+
+/**
+ * The rate for one exposure (or one sheet) at a given resolution tier.
+ *
+ * Tiers other than STANDARD are looked up in their own table and fall back to
+ * the standard rate when a cell is missing, so a size added to the base tables
+ * prices correctly at standard rather than silently costing nothing.
+ */
+function scanRate(
+  standard: number | undefined,
+  table: Record<string, Record<string, number>> | undefined,
+  key: string,
+  output: string,
+  scanType: string | null
+): number | undefined {
+  if (!scanType || scanType === "STANDARD") return standard;
+  return table?.[key]?.[output] ?? standard;
+}
 
 // Builds the itemized estimate from a selection. Development is always
 // charged; a scans line is added when an output that includes scanning is
@@ -51,8 +197,19 @@ export function buildBreakdown(
   size: string,
   output: string | null,
   exp: string | null,
-  sheetSize: string | null
+  sheetSize: string | null,
+  scanType: string | null = null,
+  halfFrame: string | null = null
 ): LineItem[] {
+  // "35mm Standard Scans", "35mm Prints + High Resolution Scans" — the tier
+  // qualifies the scan, so on prints+scans it belongs after the "+" rather than
+  // in front of the whole thing.
+  const scanLabel = (sizeLabel: string, out: string) => {
+    const tier = SCAN_TYPE_LINE_LABEL[scanType ?? "STANDARD"] ?? "Standard";
+    return out === "PRINTS/SCANS"
+      ? `${sizeLabel} Prints + ${tier} Scans`
+      : `${sizeLabel} ${tier} ${SCAN_LINE_LABEL[out] ?? "Scans"}`;
+  };
   // Sheet film develops per sheet at a rate set by stock + sheet size, so it
   // replaces the roll basePrice line entirely.
   if (size === "SHEET") {
@@ -67,10 +224,16 @@ export function buildBreakdown(
       },
     ];
     if (output && output !== "NONE" && sheetSize) {
-      const rate = stock.sheetSizeRates?.[sheetSize]?.[output];
+      const rate = scanRate(
+        stock.sheetSizeRates?.[sheetSize]?.[output],
+        SHEET_SCAN_TYPE_RATES[scanType ?? "STANDARD"],
+        sheetSize,
+        output,
+        scanType
+      );
       if (rate) {
         items.push({
-          name: `${sheetSize.toLowerCase()} ${SCAN_LINE_LABEL[output] ?? "Scans"}`,
+          name: scanLabel(sheetSize.toLowerCase(), output),
           sub: "per sheet",
           amount: rate,
         });
@@ -85,14 +248,25 @@ export function buildBreakdown(
 
   const resolvedExp = exp ?? stock.defaultExposures?.[size] ?? null;
   if (output && output !== "NONE" && resolvedExp) {
-    const rate = stock.perExposureRate[size]?.[output];
+    const rate = scanRate(
+      stock.perExposureRate[size]?.[output],
+      SCAN_TYPE_RATES[scanType ?? "STANDARD"],
+      size,
+      output,
+      scanType
+    );
     const count = parseInt(resolvedExp, 10);
     if (rate && !Number.isNaN(count)) {
       const sizeLabel = (SIZE_LABELS[size] ?? size).toLowerCase();
+      const frames = billedFrames(count, size, output, halfFrame);
+      // "36EXP" is the roll; "72 images" is what comes off a half-frame roll
+      // scanned individually. Calling those 72 exposures on the counter's sheet
+      // would misdescribe a roll that really does hold 36.
+      const unit = frames === count ? `${frames}EXP` : `${frames} images`;
       items.push({
-        name: `${sizeLabel} ${SCAN_LINE_LABEL[output] ?? "Scans"}`,
-        sub: `${formatUSD(rate)} × ${resolvedExp}EXP`,
-        amount: rate * count,
+        name: scanLabel(sizeLabel, output),
+        sub: `${formatUSD(rate)} × ${unit}`,
+        amount: rate * frames,
       });
     }
   }
@@ -108,7 +282,108 @@ export function defaultsFor(stock: FilmStock) {
   const output = stock.outputs.includes("SCANS") ? "SCANS" : stock.outputs[0] ?? null;
   const exps = output ? stock.exposures[size]?.[output] ?? [] : [];
   const exp = exps.includes("36") ? "36" : exps[0] ?? null;
-  return { size, output, exp };
+  // Null rather than STANDARD on develop-only: there is nothing being scanned,
+  // so a resolution would be a charge-free selection the customer never made.
+  const scanType = outputHasScans(output) ? "STANDARD" : null;
+  // Both extras rest at "not asked for". They live behind a collapsed
+  // disclosure, so anything else would charge (or instruct) on a choice the
+  // customer never opened.
+  return { size, output, exp, scanType, pushPull: 0, halfFrame: null };
+}
+
+/**
+ * The free, unpriced instructions attached to a roll, in the order they read.
+ *
+ * Both are filtered through the same availability rules the configurator uses,
+ * so a stored value that no longer applies stays out of the cart and off the
+ * printed sheet instead of instructing the counter to do something the customer
+ * can no longer see they asked for.
+ */
+export function filmCustomEntries(line: FilmOrderLine): string[] {
+  const entries: string[] = [];
+  const push = pushPullLabel(line.pushPull ?? 0);
+  if (push) entries.push(push);
+  if (line.halfFrame && halfFrameAvailable(line.size, line.output)) {
+    entries.push(HALF_FRAME_LINE_LABEL[line.halfFrame] ?? line.halfFrame);
+  }
+  return entries;
+}
+
+/**
+ * The extras as editable rows, appended to a line's ordinary option rows.
+ *
+ * One row per extra rather than one row holding both: they are two unrelated
+ * questions, and grouping them meant a roll that only asked for a push still
+ * had to open a control offering half-frame choices it had never chosen.
+ *
+ * Each appears ONLY when that extra is actually set. Extras are chosen on the
+ * roll's own page, under "Show More Options" — the cart's job is to show what
+ * was asked for and let it be changed, not to offer the whole menu again on
+ * every line. So the rows can't be used to add an extra after the fact, only to
+ * revise or clear one.
+ *
+ * The choice lists stay complete either way: once a row is on screen it has to
+ * be able to reach every value, including the one that clears it.
+ *
+ * Push/pull is a list of its six values rather than the configurator's stepper:
+ * every other control in the drawer is a list of choices, and a second stepper
+ * beside the quantity one would be two steppers on a line meaning entirely
+ * different things.
+ */
+export function filmExtraRows(line: FilmOrderLine): LineRow[] {
+  const rows: LineRow[] = [];
+  const stops = clampPushPull(line.pushPull ?? 0);
+
+  rows.push({
+    field: "pushPull",
+    label: "Pull / Push",
+    value: pushPullLabel(stops) ?? "Normal",
+    selected: String(stops),
+    choices: PUSH_PULL_VALUES.map((n) => ({
+      value: String(n),
+      label: pushPullLabel(n) ?? "Normal",
+      short: pushPullShort(n),
+    })),
+    patch: (value): LinePatch => ({ pushPull: clampPushPull(Number(value)) }),
+    unset: stops === 0,
+    // Stops are a scale, not a menu — and spelling all six out was six rows to
+    // express one number. Matches the stepper the configurator sets it with.
+    control: "stepper",
+  });
+
+  // Availability is a harder gate than `unset`: a roll on 120, or on
+  // develop-only, has no half-frame question at all, so the row isn't emitted
+  // even for the cart to hide. Same rule the configurator and the pricing use.
+  if (halfFrameAvailable(line.size, line.output)) {
+    rows.push({
+      field: "halfFrame",
+      label: "Half Frame",
+      value: line.halfFrame
+        ? HALF_FRAME_LINE_LABEL[line.halfFrame] ?? line.halfFrame
+        : "No",
+      // "NONE" stands in for null: LineRow choices are strings, and a null
+      // value would make the clearing option unselectable in the list.
+      selected: line.halfFrame ?? "NONE",
+      choices: [
+        { value: "NONE", label: "Not a half frame roll" },
+        ...HALF_FRAME_ORDER.map((v) => ({
+          value: v,
+          label: HALF_FRAME_LINE_LABEL[v] ?? v,
+        })),
+      ],
+      patch: (value): LinePatch => ({
+        halfFrame: value === "NONE" ? null : value,
+      }),
+      unset: !line.halfFrame,
+    });
+  }
+
+  return rows;
+}
+
+/** Scan tiers this line offers — empty when nothing on it is being scanned. */
+export function scanTypeOptionsFor(line: FilmOrderLine): string[] {
+  return outputHasScans(line.output) ? SCAN_TYPE_ORDER : [];
 }
 
 // ---------- Options for an already-added roll ----------
@@ -164,11 +439,35 @@ export function reviseFilmLine(
     ...(patch.output !== undefined && { output: patch.output }),
     ...(patch.exp !== undefined && { exp: patch.exp }),
     ...(patch.sheetSize !== undefined && { sheetSize: patch.sheetSize }),
+    ...(patch.scanType !== undefined && { scanType: patch.scanType }),
+    ...(patch.pushPull !== undefined && { pushPull: patch.pushPull }),
+    ...(patch.halfFrame !== undefined && { halfFrame: patch.halfFrame }),
     ...(patch.qty !== undefined && { qty: patch.qty }),
   };
   const exps = expOptionsFor(next);
   if (exps.length > 0 && (!next.exp || !exps.includes(next.exp))) {
     next.exp = exps.includes("36") ? "36" : exps[0];
+  }
+  // Output drives whether a tier applies at all. Switching to develop-only
+  // clears it; switching back restores STANDARD rather than leaving the line
+  // priced at a tier with no visible selector to change it.
+  if (!outputHasScans(next.output)) {
+    next.scanType = null;
+  } else if (!next.scanType || !SCAN_TYPE_ORDER.includes(next.scanType)) {
+    next.scanType = "STANDARD";
+  }
+  // Stops survive every other change untouched — push/pull is offered on every
+  // format and every output, so nothing an edit can do takes the row away.
+  // Only the value itself is defended, against a hand-edited draft.
+  next.pushPull = clampPushPull(next.pushPull ?? 0);
+  // Half frame does go away: moving a roll off 35mm, or to develop-only, takes
+  // the row with it. Cleared rather than kept, unlike the exposure count — a
+  // hidden "INDIVIDUAL" would double the scan line the moment the customer
+  // switched back to a scanning output, with nothing on screen explaining why.
+  if (!halfFrameAvailable(next.size, next.output)) {
+    next.halfFrame = null;
+  } else if (next.halfFrame && !HALF_FRAME_ORDER.includes(next.halfFrame)) {
+    next.halfFrame = "INDIVIDUAL";
   }
   return next;
 }
@@ -215,9 +514,12 @@ export function summarizeFilmLine(line: FilmOrderLine): LineSummary | null {
     isSheet || developOnly
       ? null
       : line.exp ?? stock.defaultExposures?.[line.size] ?? null;
-  // "24 EXP." — the trailing period is the design's, and the cart shows this
-  // label directly above the list of alternatives, so the two have to agree.
-  const expLabel = resolvedExp ? `${resolvedExp} EXP.` : null;
+  // "24 EXP", no trailing period. The design had one, but this label now also
+  // lands mid-sentence in the collapsed summary — "36 EXP. · CUSTOM" put a full
+  // stop immediately before a separator dot and read as two marks of
+  // punctuation colliding. Dropped here AND on the choices below, which the
+  // cart lists directly under this value: they have to agree.
+  const expLabel = resolvedExp ? `${resolvedExp} EXP` : null;
 
   // Same precedence as the configurator's product slot: the selected sheet
   // size's own shot ("SHEET/4X5"), then the format's, then nothing.
@@ -231,7 +533,9 @@ export function summarizeFilmLine(line: FilmOrderLine): LineSummary | null {
     line.size,
     line.output,
     line.exp,
-    sheetSize
+    sheetSize,
+    line.scanType,
+    line.halfFrame
   );
   const total = breakdown.reduce((sum, item) => sum + item.amount, 0);
   const qty = safeQty(line);
@@ -254,6 +558,22 @@ export function summarizeFilmLine(line: FilmOrderLine): LineSummary | null {
     },
   ];
 
+  // Only where something is actually being scanned — a develop-only line has no
+  // resolution to change, and reviseFilmLine keeps its scanType null to match.
+  if (outputHasScans(line.output) && line.scanType) {
+    rows.push({
+      field: "scanType",
+      label: "Scan type",
+      value: SCAN_TYPE_LABELS[line.scanType] ?? line.scanType,
+      selected: line.scanType,
+      choices: scanTypeOptionsFor(line).map((v) => ({
+        value: v,
+        label: SCAN_TYPE_LABELS[v] ?? v,
+      })),
+      patch: (scanType): LinePatch => ({ scanType }),
+    });
+  }
+
   if (sheetSize) {
     rows.push({
       field: "sheetSize",
@@ -271,7 +591,7 @@ export function summarizeFilmLine(line: FilmOrderLine): LineSummary | null {
       selected: line.exp,
       choices: expOptionsFor(line).map((v) => ({
         value: v,
-        label: `${v} EXP.`,
+        label: `${v} EXP`,
       })),
       patch: (exp): LinePatch => ({ exp }),
     });
@@ -281,15 +601,32 @@ export function summarizeFilmLine(line: FilmOrderLine): LineSummary | null {
   // An en dash here made the same product read two different ways depending on
   // whether you were looking at the page or at the cart.
   const title = `${stock.name} - ${formatLabel}`;
-  const details = [outputLabel, expLabel].filter(Boolean).join(" · ");
+  // The scan tier belongs here alongside the output and the frame count: this
+  // string is what the cart shows in place of the option rows once they're
+  // folded behind Details, and the tier is the one thing in that set that moves
+  // the price. It reaches the printed order form by the same route.
+  //
+  // Null on develop-only lines (nothing is being scanned), where filter drops
+  // it rather than printing a resolution the roll was never charged for.
+  const scanTypeLabel =
+    outputHasScans(line.output) && line.scanType
+      ? SCAN_TYPE_LABELS[line.scanType] ?? line.scanType
+      : null;
+  const details = [outputLabel, scanTypeLabel, expLabel]
+    .filter(Boolean)
+    .join(" · ");
 
   return {
     kind: "film",
     title,
     details,
     imageSrc,
-    rows,
+    // Extras are ordinary rows now, appended after the options they qualify —
+    // an editable "Pull / Push" reads no differently from an editable
+    // "Exposure", so the cart renders one list rather than two.
+    rows: [...rows, ...filmExtraRows(line)],
     breakdown,
+    custom: filmCustomEntries(line),
     total,
     qty,
     lineTotal: total * qty,

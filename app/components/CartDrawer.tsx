@@ -49,6 +49,64 @@ function formatDraftDate(savedAt: number): string {
 type OpenEditor = { lineId: string; field: string };
 
 /**
+ * A row's choices as a − / value / + stepper instead of a list.
+ *
+ * Walks `row.choices` by index rather than doing arithmetic on the values: the
+ * array is already the scale in order, so this stays a plain ordered-choice
+ * control and can serve any row whose options are a range. The ends disable
+ * rather than wrap — on push/pull, rolling from +3 round to −2 would invert the
+ * instruction rather than clamp it.
+ *
+ * Deliberately smaller than the quantity stepper below it. Both are − / + pairs
+ * on the same line item, and the quantity one is the primary control; matching
+ * their weight would make the panel read as having two equal steppers that mean
+ * completely different things.
+ */
+function RowStepper({
+  row,
+  onSelect,
+}: {
+  row: LineRow;
+  onSelect: (value: string) => void;
+}) {
+  const found = row.choices.findIndex((c) => c.value === row.selected);
+  const at = found < 0 ? 0 : found;
+  const step = (delta: number) => {
+    const next = row.choices[at + delta];
+    if (next) onSelect(next.value);
+  };
+
+  return (
+    <div className={styles.rowStepper} role="group" aria-label={row.label}>
+      <button
+        type="button"
+        className={styles.rowStepBtn}
+        onClick={() => step(-1)}
+        disabled={at <= 0}
+        aria-label={`Down one, ${row.label.toLowerCase()}`}
+      >
+        −
+      </button>
+      {/* The compact form where a row supplies one: the caption above already
+          says PULL / PUSH, so the word between the buttons would only repeat
+          it — the sign and the number are the parts that move. */}
+      <span className={styles.rowStepValue} aria-live="polite">
+        {row.choices[at]?.short ?? row.choices[at]?.label}
+      </span>
+      <button
+        type="button"
+        className={styles.rowStepBtn}
+        onClick={() => step(1)}
+        disabled={at >= row.choices.length - 1}
+        aria-label={`Up one, ${row.label.toLowerCase()}`}
+      >
+        +
+      </button>
+    </div>
+  );
+}
+
+/**
  * One labelled row inside a line: caption, current value, and an Edit link
  * that swaps for a swatch list of the alternatives.
  *
@@ -91,7 +149,11 @@ function EditableRow({
         </div>
       </div>
 
-      {editable && open && (
+      {editable && open && row.control === "stepper" && (
+        <RowStepper row={row} onSelect={onSelect} />
+      )}
+
+      {editable && open && row.control !== "stepper" && (
         <div className={styles.choices} role="radiogroup" aria-label={row.label}>
           {row.choices.map((choice) => (
             <button
@@ -131,6 +193,12 @@ export default function CartDrawer() {
 
   const [formOpen, setFormOpen] = useState(false);
   const [openEditor, setOpenEditor] = useState<OpenEditor | null>(null);
+  // Which line has its Details panel open, by line id. Deliberately NOT routed
+  // through openEditor: that holds one open thing across the whole cart, so
+  // opening a row's choice list from inside Details would take Details — and
+  // the row you were aiming at — off the screen. They nest, so they need two
+  // pieces of state. One line at a time, matching the row rule.
+  const [openDetails, setOpenDetails] = useState<string | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
   // Lock page scroll while the drawer is up. Set on both roots, matching
@@ -168,8 +236,24 @@ export default function CartDrawer() {
   // An open row shouldn't still be open the next time the cart is pulled up —
   // that state belongs to one editing session, not to the order.
   useEffect(() => {
-    if (!cartOpen) setOpenEditor(null);
+    if (!cartOpen) {
+      setOpenEditor(null);
+      setOpenDetails(null);
+    }
   }, [cartOpen]);
+
+  // Closing Details takes any row editor inside it with it — otherwise the
+  // editor stays "open" against a hidden row and reopening Details shows a
+  // choice list the customer didn't ask for.
+  function toggleDetails(lineId: string) {
+    setOpenDetails((current) => {
+      if (current === lineId) {
+        setOpenEditor(null);
+        return null;
+      }
+      return lineId;
+    });
+  }
 
   function toggleEditor(lineId: string, field: OpenEditor["field"]) {
     setOpenEditor((current) =>
@@ -264,6 +348,17 @@ export default function CartDrawer() {
                   // can't stand behind.
                   if (!summary) return null;
 
+                  // A line with nothing to change gets no toggle rather than a
+                  // Details link opening an empty panel.
+                  // Unset extras are carried on `rows` but not shown — except
+                  // the one whose editor is open, which is a row the customer
+                  // just cleared and may want to put back.
+                  const visibleRows = summary.rows.filter(
+                    (row) => !row.unset || isOpen(line.id, row.field)
+                  );
+                  const hasDetails = visibleRows.length > 0;
+                  const detailsOpen = openDetails === line.id;
+
                   return (
                     <li className={styles.item} key={line.id}>
                       {/* Decorative: the title beside it already names the
@@ -282,37 +377,81 @@ export default function CartDrawer() {
                       </span>
 
                       <div className={styles.itemBody}>
+                        {/* Title and price on one line in matching weight, rule
+                            beneath — the ORDER OVERVIEW header, so the drawer
+                            and that page read as the same object seen twice. */}
+                        {/* Details rides the title row, opposite the name, with
+                            the price tucked under it. Sat directly above the
+                            summary it read as a caption FOR that summary rather
+                            than a control for something else — up here it has
+                            nothing to be mistaken for. */}
                         <div className={styles.itemHead}>
-                          <h3 className={styles.itemTitle}>{summary.title}</h3>
-                          <p className={styles.itemPrice}>
-                            {formatUSD(summary.lineTotal)}
-                          </p>
+                          <div className={styles.itemHeading}>
+                            <h3 className={styles.itemTitle}>{summary.title}</h3>
+                            <p className={styles.itemPrice}>
+                              {formatUSD(summary.lineTotal)}
+                            </p>
+                          </div>
+                          {hasDetails && (
+                            <button
+                              type="button"
+                              className={styles.detailsToggle}
+                              onClick={() => toggleDetails(line.id)}
+                              aria-expanded={detailsOpen}
+                              aria-label={`Details for ${summary.text}`}
+                            >
+                              Details {detailsOpen ? "↑" : "↓"}
+                            </button>
+                          )}
                         </div>
 
-                        {/* A rule under the title, one between each pair of
-                            rows, and one above the stepper — so a line with
-                            no rows at all still gets exactly one, not two
-                            stacked together. */}
-                        {summary.rows.length > 0 && (
-                          <>
-                            <hr className={styles.rule} />
-                            {summary.rows.map((row, i) => (
-                              <Fragment key={row.field}>
-                                {i > 0 && <hr className={styles.rule} />}
-                                <EditableRow
-                                  row={row}
-                                  open={isOpen(line.id, row.field)}
-                                  onToggle={() =>
-                                    toggleEditor(line.id, row.field)
-                                  }
-                                  onSelect={(value) =>
-                                    updateLine(line.id, row.patch(value))
-                                  }
-                                />
-                              </Fragment>
-                            ))}
-                          </>
+                        {/* Summary and rows are the same slot in two states,
+                            never both at once. They say the same four things —
+                            stacked, the summary just restated the rows it sat
+                            above, and the eye had to work out which of the two
+                            it was meant to read. Collapsed answers "what did I
+                            order"; expanded answers "change it". */}
+                        {!detailsOpen && (
+                          <div className={styles.summary}>
+                            <p>
+                              {summary.details}
+                              {/* A flag, not a control — it rides the end of the
+                                  options line rather than taking one of its own,
+                                  and what it stands for is spelled out among the
+                                  rows under Details. Naming the extras here
+                                  instead would run to three lines on a roll that
+                                  asked for both, which is what this replaced. */}
+                              {summary.custom.length > 0 && (
+                                <span className={styles.summaryFlag}>
+                                  {" · Custom"}
+                                </span>
+                              )}
+                            </p>
+                          </div>
                         )}
+
+                        {/* One flat list. Push/pull and half frame arrive on
+                            `rows` alongside output and exposure, already
+                            filtered by summarizeFilmLine to the ones this roll
+                            actually set — so a roll with a push and no half
+                            frame gets exactly one extra row, not a control
+                            offering choices it never made. */}
+                        {detailsOpen &&
+                          visibleRows.map((row, i) => (
+                            <Fragment key={row.field}>
+                              {i > 0 && <hr className={styles.rule} />}
+                              <EditableRow
+                                row={row}
+                                open={isOpen(line.id, row.field)}
+                                onToggle={() =>
+                                  toggleEditor(line.id, row.field)
+                                }
+                                onSelect={(value) =>
+                                  updateLine(line.id, row.patch(value))
+                                }
+                              />
+                            </Fragment>
+                          ))}
 
                         <hr className={styles.rule} />
 

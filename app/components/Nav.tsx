@@ -36,15 +36,18 @@ export default function Nav({
           ))}
         </nav>
 
+        {/* Same reveal gesture as the global reveal-arrow utility, but local: that
+            one keeps the arrow's space reserved at all times, which would hold
+            this label off-centre inside its fixed-width box. See Nav.module.css. */}
         <Link className={styles.cta} href={ORDER_URL}>
-          order prints{" "}
+          order prints
           <span className={styles.ctaArrow} aria-hidden="true">↗</span>
         </Link>
 
         {/* Rightmost item in the bar, and the only one that survives the 900px
             breakpoint — the links and the CTA move into the hamburger menu,
             but the order stays one tap away. */}
-        <CartButton />
+        <CartButton solid={solid} />
       </NavBar>
 
       <MobileMenu activeHref={activeHref} />

@@ -15,12 +15,17 @@ const expByOutput = (list: string[]) => ({
 // Exposures shown in the EXP selector, keyed by [size][output].
 // Disposable cameras are intentionally excluded — their 27-exposure count is
 // applied silently via defaultExposures so the EXP row never appears.
-// Sheet film sizes (4X5, 5X7, 8X10) are also excluded — billed per sheet.
+// Sheet film sizes (4X5, 5X7, 8X10) are also excluded — billed per sheet, so
+// they have no exposure list to order.
+//
+// Highest count first in every list. The order is also the default: defaultsFor
+// takes the head of the list when it can't find 36, so a full roll is what the
+// estimate opens on rather than the smallest one the format comes in.
 const SHARED_EXPOSURES = {
-  "35MM": expByOutput(["24", "36"]),
-  "110": expByOutput(["12", "24"]),
-  // 120 frame counts vary by camera format (6x7, 6x6, 6x4.5).
-  "120": expByOutput(["10", "12", "16"]),
+  "35MM": expByOutput(["36", "24"]),
+  "110": expByOutput(["24", "12"]),
+  // 120 frame counts vary by camera format (6x4.5, 6x6, 6x7).
+  "120": expByOutput(["16", "12", "10"]),
 };
 
 // Silent default exposure count per size — used in price calculation without
@@ -58,6 +63,69 @@ const SHARED_RATES = {
 
 };
 
+// ---------- Scan type ----------
+// Resolution tier, offered whenever the output includes scanning. The rates
+// below are the tables above scaled whole — +48.57% for high resolution (the
+// 0.35 → 0.52 step, ×52/35) and +100% for TIFF, which is high resolution plus
+// the TIFF file. Written out rather than computed so every price is visible and
+// individually editable: the $0.60 cells are hand-set to $0.90 / $1.20 rather
+// than the $0.89 / $1.20 the multiplier alone would give.
+//
+// Standard is the base table, so it is not repeated here — a missing cell falls
+// back to it, which also means a new size only needs adding where it differs.
+export const SCAN_TYPE_ORDER = ["STANDARD", "HIGH", "TIFF"];
+
+export const SCAN_TYPE_LABELS: Record<string, string> = {
+  STANDARD: "STANDARD",
+  HIGH: "HIGH RESOLUTION",
+  TIFF: "TIFF",
+};
+
+/** How the tier reads in the itemized breakdown, appended to the scan line. */
+export const SCAN_TYPE_LINE_LABEL: Record<string, string> = {
+  STANDARD: "Standard",
+  HIGH: "High Resolution",
+  TIFF: "TIFF",
+};
+
+/** Per-exposure rates by [scanType][size][output]. */
+export const SCAN_TYPE_RATES: Record<
+  string,
+  Record<string, Record<string, number>>
+> = {
+  STANDARD: SHARED_RATES,
+  HIGH: {
+    "35MM": { SCANS: 0.52, "PRINTS/SCANS": 0.9 },
+    "DISPOSABLE CAMERA": { SCANS: 0.52, "PRINTS/SCANS": 0.9 },
+    "110": { SCANS: 1.11, "PRINTS/SCANS": 2.01 },
+    "120": { SCANS: 0.9, "PRINTS/SCANS": 1.19 },
+  },
+  TIFF: {
+    "35MM": { SCANS: 0.7, "PRINTS/SCANS": 1.2 },
+    "DISPOSABLE CAMERA": { SCANS: 0.7, "PRINTS/SCANS": 1.2 },
+    "110": { SCANS: 1.5, "PRINTS/SCANS": 2.7 },
+    "120": { SCANS: 1.2, "PRINTS/SCANS": 1.6 },
+  },
+};
+
+/** Per-sheet rates by [scanType][sheetSize][output]. */
+export const SHEET_SCAN_TYPE_RATES: Record<
+  string,
+  Record<string, Record<string, number>>
+> = {
+  STANDARD: SHEET_RATES,
+  HIGH: {
+    "4X5": { SCANS: 7.43, "PRINTS/SCANS": 8.32 },
+    "5X7": { SCANS: 7.43, "PRINTS/SCANS": 8.88 },
+    "8X10": { SCANS: 7.43, "PRINTS/SCANS": 13.37 },
+  },
+  TIFF: {
+    "4X5": { SCANS: 10, "PRINTS/SCANS": 11.2 },
+    "5X7": { SCANS: 10, "PRINTS/SCANS": 11.96 },
+    "8X10": { SCANS: 10, "PRINTS/SCANS": 18 },
+  },
+};
+
 export const STOCKS: Record<string, FilmStock> = {
   "c-41": {
     slug: "c-41",
@@ -93,6 +161,7 @@ export const STOCKS: Record<string, FilmStock> = {
     image: "/B&W.webp",
     sizeImages: {
       "35MM": "/B&W_35mm.webp",
+      "DISPOSABLE CAMERA": "/B&W_Disposable.webp",
       "110": "/B&W_110.webp",
       "SHEET/4X5": "/B&W_Sheet_4x5.webp",
     },

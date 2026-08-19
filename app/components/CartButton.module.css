@@ -1,68 +1,113 @@
 /* CartButton.module.css
-   The nav-bar cart control. Sits at the far right of the bar on desktop; on
-   mobile the bar's links and CTA hide, so it holds the right edge on its own,
-   inset to clear the fixed MENU trigger (MobileMenu.module.css). */
+   The nav-bar cart control: the CART (n) chip. Sits at the far right of the bar
+   on desktop; on mobile the bar's links and CTA hide, so it holds the right edge
+   on its own, inset to clear the fixed MENU trigger (MobileMenu.module.css).
+
+   One chip in two colourways — Figma nodes 2679:1664 (over a hero image) and
+   2679:1712 (against the solid paper-white bar) — sharing one hover: the outline
+   fills in and the label flips to the background's colour. */
 
 .cart {
   flex: none;
-  position: relative;
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  /* A fixed slot with the chip pinned right. This is the last item in the bar,
+     so every pixel the chip gains it would otherwise take out of ORDER PRINTS'
+     position. The chip is a fixed width per digit count and never moves on
+     hover, so the only growth left is the count stepping up — 103px at three
+     digits, which with the 20px gap to the CTA is exactly the 123px reserved
+     here. The steps happen leftward into slack that was already there. */
+  justify-content: flex-end;
+  min-width: 123px;
   appearance: none;
   background: transparent;
   border: 0;
   padding: 0 0 0 20px;
   cursor: pointer;
-  /* Both the glyph and the badge ride currentColor, so the scrolled/unscrolled
-     swap below is a single property change. */
+}
+
+/* ---------- Over a hero image — Figma node 2679:1664 ----------
+   The node's two variants differ only in fill and label colour: the 2px rule is
+   paper-white in both, so it stays exactly where it is when the fill arrives.
+   Nothing on this chip transitions, in either colourway — the hover is instant
+   by design. */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* Sized, not hugged: the box is set per digit count so the only thing that
+     ever changes its width is the count itself. Height is set rather than left
+     to the padding — 35px holds a 17px line inside 6px padding and the 2px rule
+     with 2px to spare, which align-items splits evenly, so the label reads 7px
+     clear of the rule top and bottom. */
+  width: 86px;
+  height: 35px;
+  padding: 6px 10px;
+  border: 2px solid var(--paper-white);
   color: var(--paper-white);
-  transition: color 220ms var(--ease-out);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  line-height: normal;
+  text-transform: uppercase;
+  white-space: nowrap;
 }
 
-/* Dark once the solid white bar snaps in, and likewise while the mobile menu
-   panel is open — both put paper-white behind the button. Same mechanism as
-   the nav links, the brand mark, and the MENU trigger. */
-:global(html[data-nav-scrolled="true"]) .cart,
-:global(html[data-menu-open]) .cart {
-  color: var(--black);
+/* Each extra digit gets its own step. CartButton.tsx counts them and caps at 3,
+   which is also where the slot above runs out: 103 + the 20px gap is exactly the
+   123px reserved, so even a three-digit order leaves ORDER PRINTS where it is. */
+.chip[data-digits="2"] {
+  width: 93px;
 }
 
-.icon {
-  display: block;
+.chip[data-digits="3"] {
+  width: 103px;
 }
 
 @media (hover: hover) and (pointer: fine) {
-  .cart:hover {
-    color: var(--darkroom-red);
+  .cart:hover .chip {
+    background: var(--paper-white);
+    color: var(--black);
+  }
+}
+
+/* ---------- Against the solid bar — Figma node 2679:1712 ----------
+   Once the solid white bar snaps in, and likewise while the mobile menu panel is
+   open — both put paper-white behind the chip, so it inverts to black. Same
+   mechanism as the nav links, the brand mark, and the MENU trigger.
+
+   `data-solid` is the same state arriving from the other direction: the pages
+   that pin the solid bar from the top would otherwise paint a paper-white chip
+   on a paper-white bar for the frame before NavBar's effect ran.
+
+   These rules are more specific than the image hover above, so the fill they set
+   there is re-stated below in this colourway's own ink. */
+:global(html[data-nav-scrolled="true"]) .chip,
+:global(html[data-menu-open]) .chip,
+.cart[data-solid="true"] .chip {
+  background: transparent;
+  border-color: var(--black);
+  color: var(--black);
+}
+
+/* The same gesture as over an image — the outline fills in and the label flips
+   to the background's colour — just in this colourway's ink. Departs from the
+   node, which thickens the rule to 4px and bolds the label instead: that was the
+   only weight change and the only stroke change in the project, and it left one
+   control behaving two different ways depending on what was behind it. Instant,
+   like its counterpart above. */
+@media (hover: hover) and (pointer: fine) {
+  :global(html[data-nav-scrolled="true"]) .cart:hover .chip,
+  :global(html[data-menu-open]) .cart:hover .chip,
+  .cart[data-solid="true"]:hover .chip {
+    background: var(--black);
+    color: var(--paper-white);
   }
 }
 
 .cart:focus-visible {
   outline: 2px solid var(--darkroom-red);
   outline-offset: 4px;
-}
-
-/* Count badge, pinned to the glyph's top-right corner. Always the brand red on
-   paper-white, in both nav states — a badge that inverted with the bar would
-   read as a different control rather than the same one on a new background. */
-.badge {
-  position: absolute;
-  top: -5px;
-  right: -7px;
-  min-width: 17px;
-  height: 17px;
-  padding: 0 4px;
-  border-radius: 9px;
-  background: var(--darkroom-red);
-  color: var(--paper-white);
-  font-size: 11px;
-  font-weight: 700;
-  line-height: 17px;
-  letter-spacing: 0.02em;
-  text-align: center;
-  font-variant-numeric: tabular-nums;
-  pointer-events: none;
 }
 
 /* The bar hides its links and CTA at 900px, so the cart becomes the only
@@ -79,5 +124,19 @@
   .cart {
     margin-left: auto;
     margin-right: 76px;
+  }
+}
+
+/* The chip is a designed 35px box and stays one — but 35px is a thin thing to
+   tap, so on phones the button around it grows to 44px and gives the height
+   straight back as negative margin. The hit area is 44px tall, the layout is
+   still 35px, and the bar's height (and with it --nav-clearance) doesn't
+   move. */
+@media (max-width: 700px) {
+  .cart {
+    padding-top: 4.5px;
+    padding-bottom: 4.5px;
+    margin-top: -4.5px;
+    margin-bottom: -4.5px;
   }
 }
