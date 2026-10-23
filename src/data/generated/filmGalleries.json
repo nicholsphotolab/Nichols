@@ -1,0 +1,53 @@
+{
+  "c-41": {
+    "product": [],
+    "bySize": {
+      "120": [
+        "/FILM/gallery/c-41/120/120_Gold_200-1.webp",
+        "/FILM/gallery/c-41/120/120_Gold_200-2.webp"
+      ],
+      "35MM": [
+        "/FILM/gallery/c-41/35mm/35MM_FUJIFILM-2.webp",
+        "/FILM/gallery/c-41/35mm/35MM_FUJIFILM.webp",
+        "/FILM/gallery/c-41/35mm/35mm_Cinestill800-2.webp",
+        "/FILM/gallery/c-41/35mm/35mm_Gold_200.webp",
+        "/FILM/gallery/c-41/35mm/35mm_PORTRA400.webp",
+        "/FILM/gallery/c-41/35mm/35mm_Portra_400.webp"
+      ],
+      "DISPOSABLE CAMERA": [
+        "/FILM/gallery/c-41/Disposable/DISPOSABLE_FUJIFILM.webp",
+        "/FILM/gallery/c-41/Disposable/DISPOSABLE_FUJIFILM_2.webp",
+        "/FILM/gallery/c-41/Disposable/DISPOSABLE_FUJIFILM_3.webp"
+      ],
+      "SHEET/4X5": [
+        "/FILM/gallery/c-41/Sheet/4x5/4x5_Sheet_Portra.webp"
+      ]
+    }
+  },
+  "bw": {
+    "product": [],
+    "bySize": {
+      "120": [
+        "/FILM/gallery/bw/120/120_HP5.webp"
+      ],
+      "35MM": [
+        "/FILM/gallery/bw/35mm/35mm_ilford.webp"
+      ],
+      "SHEET/4X5": [
+        "/FILM/gallery/bw/Sheet/4x5/4x5_Sheet_Ilford%20copy.webp",
+        "/FILM/gallery/bw/Sheet/4x5/4x5_Sheet_Ilford-2%20copy.webp"
+      ]
+    }
+  },
+  "e-6": {
+    "product": [],
+    "bySize": {
+      "35MM": [
+        "/FILM/gallery/e-6/35mm/35MM_EKTACHROME_E100-1.webp",
+        "/FILM/gallery/e-6/35mm/35MM_EKTACHROME_E100-3.webp",
+        "/FILM/gallery/e-6/35mm/35MM_EKTACHROME_E100-4.webp",
+        "/FILM/gallery/e-6/35mm/35MM_EKTACHROME_E100-5.webp"
+      ]
+    }
+  }
+}

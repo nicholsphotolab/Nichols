@@ -1,0 +1,60 @@
+.brand {
+  position: fixed;
+  top: 13.5px;
+  left: var(--page-pad);
+  width: 145.41px;
+  height: 33px;
+  color: var(--paper-white);
+  z-index: 10;
+  display: block;
+  transition: color 220ms var(--ease-out);
+}
+
+/* Above 900px the bar becomes MENU (left) / logo (center) / CART+ORDER
+   PRINTS (right) — MobileMenu.module.css's .toggle takes the left edge, so
+   the mark centers instead of sitting where it does on the still-unchanged
+   mobile bar below. translateX(-50%) centers on the mark's own width, so
+   this needs no extra width math. */
+@media (min-width: 901px) {
+  .brand {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* Dark once the solid white bar snaps in, and likewise while the mobile menu
+   panel is open — both put paper-white behind the mark. */
+:global(html[data-nav-scrolled="true"]) .brand,
+:global(html[data-menu-open]) .brand {
+  color: var(--black);
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .brand {
+    left: 20px;
+  }
+}
+
+/* On a phone the desktop mark takes 145 of the 335px between the page's
+   padding — 43% of the bar spent on the logo, with the cart chip and the MENU
+   trigger dividing what's left. At 104px it reads the same and gives that row
+   41px back. The ratio is held exactly (145.41:33 → 104:23.6) so the wordmark
+   doesn't distort.
+
+   The bar's height is deliberately untouched: --nav-clearance is a fixed 80.5px
+   that every page's top padding is built on, and .brandSlot sets the bar's
+   content height. So the slot stays 33px and the mark is re-centred inside it
+   instead — 13.5 + (33 − 23.6) / 2 = 18.2px from the top. */
+@media (max-width: 700px) {
+  .brand {
+    top: 18.2px;
+    width: 104px;
+    height: 23.6px;
+  }
+}

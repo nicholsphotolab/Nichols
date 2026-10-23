@@ -1,0 +1,75 @@
+/* The stacked photo effect from the Figma menu design (Frame430, node
+   2934:1412): three photo rectangles, each backed by a paper-white rect
+   offset toward the top-left, which is what reads as a border/notch — there
+   is no actual border property involved.
+
+   Percentages below are each layer's position/size normalized against the
+   composition's own bounding box (not the whole panel), so the five layers
+   scale together as one unit regardless of the panel's width. Values are
+   derived directly from the Figma frame's absolute px, not hand-tuned.
+
+   Hover is the only way any of this ever shows a photo (see MobileMenu.tsx),
+   so on touch devices — no hover state to trigger it — the whole stack would
+   just sit there permanently black. Hidden outside real-hover contexts
+   instead of shipping dead decoration. */
+
+.stack {
+  display: none;
+  position: relative;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stack {
+    display: block;
+    flex: 0 1 47%;
+    max-width: 480px;
+    aspect-ratio: 648.04 / 795.5;
+  }
+}
+
+.photo {
+  position: absolute;
+  background-color: var(--black);
+  background-size: cover;
+  background-position: center;
+}
+
+.backer {
+  position: absolute;
+  background: var(--paper-white);
+}
+
+.layer3 {
+  left: 0%;
+  top: 0%;
+  width: 54.48%;
+  aspect-ratio: 353.054 / 500.533;
+}
+
+.backer2 {
+  left: 17.25%;
+  top: 14.05%;
+  width: 62.44%;
+  aspect-ratio: 404.605 / 545.153;
+}
+
+.photo2 {
+  left: 22.77%;
+  top: 18.54%;
+  width: 54.48%;
+  aspect-ratio: 353.054 / 500.533;
+}
+
+.backer1 {
+  left: 40%;
+  top: 32.59%;
+  width: 59.55%;
+  aspect-ratio: 385.875 / 519.915;
+}
+
+.photo1 {
+  left: 45.52%;
+  top: 37.08%;
+  width: 54.48%;
+  aspect-ratio: 353.054 / 500.533;
+}

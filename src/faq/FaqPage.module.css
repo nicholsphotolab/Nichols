@@ -1,0 +1,38 @@
+/* FAQ page — the question sections under the shared PageHero. Page padding
+   and the hero live in components/page/. */
+
+.sections {
+  display: flex;
+  flex-direction: column;
+  gap: 56px;
+  /* 8 of 12 site-grid columns: 100% × 8/12 − gap × 4/12 */
+  width: calc(100% * 8 / 12 - var(--grid-gap) * 4 / 12);
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sectionHeading {
+  margin: 0 0 16px;
+  font-size: 16px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--bw-400);
+}
+
+/* Tablet and below: questions take the full content width */
+@media (max-width: 900px) {
+  .sections {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .sections {
+    gap: 40px;
+  }
+}

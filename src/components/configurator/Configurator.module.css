@@ -1,0 +1,661 @@
+/* Configurator.module.css
+   Shared layout for the product configurators (film stocks, video transfers).
+   Mirrors the Figma "Desktop - 54" design: a ~50/50 two-column grid — gallery
+   left, configurator right — with a consistent 24px vertical rhythm between
+   every section and hairline dividers separating the header, the option rows,
+   the itemized total, and the add button. Option rows stack a small label over
+   the shared pill group; the controls themselves come from
+   ConfiguratorControls.module.css. */
+
+.page {
+  background: var(--paper-white);
+  color: var(--black);
+  padding: var(--nav-clearance) var(--page-pad) 80px;
+}
+
+/* Site column grid; photo + thumbs on columns 1–8, configurator on 9–16. */
+.layout {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  gap: var(--grid-gap);
+  align-items: start;
+}
+
+/* Sized to the first screen, not to the row: the photo AND the thumbnail strip
+   under it have to be visible without scrolling — a gallery you have to scroll
+   to find isn't a gallery. The column starts at var(--nav-clearance) down the
+   page, so that much comes off the viewport, plus a gutter of breathing room at
+   the bottom. svh (not vh) so mobile browsers measure with their chrome shown
+   rather than letting the thumbs hide behind it.
+
+   This also fixes the sizing inconsistency: the frame is now derived from the
+   viewport, which is the same on every page, instead of stretching to fill
+   whatever height that page's option list happened to leave over. */
+.imageCol {
+  grid-column: 1 / 7;
+  align-self: start;
+  display: flex;
+  flex-direction: column;
+  gap: var(--grid-gap);
+  height: calc(100svh - var(--nav-clearance) - var(--grid-gap));
+  min-height: 0;
+}
+
+/* The strip is only rendered when a product has more than one slide, and the
+   frame takes whatever height is left — so without this a single-slide product
+   would hand its frame the strip's height back and render noticeably larger
+   than everything else. Reserve the row when it's absent: one tile wide with a
+   square ratio is exactly a tile tall, and the percentage resolves against the
+   column, so it stays correct at any width without restating the grid math. */
+.imageCol:not(:has(.thumbs))::after {
+  content: "";
+  flex: none;
+  align-self: flex-start;
+  width: calc((100% - 7 * var(--grid-gap)) / 8);
+  aspect-ratio: 1;
+}
+
+/* Sliding viewport: the screen height left over above the thumbs. Clips the
+   track so only the current slide shows; the photo fits inside (contain —
+   never cropped), anchored to the bottom edge. */
+.image {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Row of full-width slides; translated by one frame per gallery index. The
+   offset arrives as --track-x from the component rather than as an inline
+   `transform`, so the phone block below can drop it — an inline transform
+   would outrank any media query trying to switch it off. */
+.track {
+  display: flex;
+  height: 100%;
+  transform: translateX(var(--track-x, 0));
+  transition: transform 480ms var(--ease-carousel);
+}
+
+.slide {
+  position: relative;
+  flex: 0 0 100%;
+  min-width: 0;
+}
+
+/* Product shots and sample clips fit the frame whole (contain — never
+   cropped). Portrait shots fill its height and sit on its bottom edge. */
+.slide img,
+.slide video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center bottom;
+}
+
+/* Temporary product-shot block — solid bw-600 filling its frame, shown in the
+   product slot (first slide + first thumb) for sizes whose product photography
+   doesn't exist yet. Works in both .slide and .thumb (both position:relative). */
+.productFill {
+  position: absolute;
+  inset: 0;
+  background: var(--bw-600);
+}
+
+/* Landscape shots — and the 4:3 sample clips — have vertical slack under
+   `contain`; center them in the frame instead of bottom-anchoring (which
+   strands them against the edge). */
+.slide img[data-landscape],
+.slide video {
+  object-position: center center;
+}
+
+/* Respect reduced-motion: swap slides instantly, no horizontal glide. */
+@media (prefers-reduced-motion: reduce) {
+  .track {
+    transition: none;
+  }
+}
+
+/* ---------- Thumbnail strip ----------
+   Uniform 1:1 square tiles, one site-column wide. The photo FILLS the square
+   edge-to-edge (cover — center-cropped). The selected state draws a 2px black
+   stroke on the INSIDE of the container, painted on top of the photo, so the
+   square never grows and the image never moves. */
+.thumbs {
+  display: flex;
+  justify-content: center;
+  gap: var(--grid-gap);
+}
+
+.thumb {
+  appearance: none;
+  background: transparent;
+  padding: 0;
+  border: 0;
+  cursor: pointer;
+  width: calc((100% - 7 * var(--grid-gap)) / 8);
+  aspect-ratio: 1;
+  position: relative;
+  /* The square IS the boundary. The tile width is fractional (a 16th of the
+     content width), and a photo bitmap rasterized into a fractional box can
+     bleed a device pixel past its CSS box — without this clip it pokes out
+     past any stroke drawn at the edge. Clipping cuts the photo and the
+     selection stroke at the same rectangle, so they can never disagree. */
+  overflow: hidden;
+}
+
+/* Photo fills the whole square (cover, never letterboxed). */
+.thumb img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Selected: 2px stroke on the inside of the square, painted over the photo. */
+.thumb[data-active]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--black);
+  pointer-events: none;
+}
+
+/* ---------- Progress track (phones) ----------
+   Replaces the thumbnail strip below 700px. Hidden by default and switched on
+   in the phone block at the bottom, so the desktop cost is one unrendered
+   flex row.
+
+   One unbroken hairline the width of the photo, with a black mark one slide
+   wide that travels along it. Not a row of segments that light up: the line is
+   continuous and the ink moves, so the gallery reads as a single distance you
+   are somewhere along rather than as a set of lamps.
+
+   It lies *on* the bottom edge of the photo, the way the hero pages' track
+   does — not in a row beneath it. Same reason as there: it reports on the
+   image, so it belongs to the image. Absolutely positioned against .imageCol
+   rather than inside .image, because .image is the aria-hidden scroll
+   container the photos live in; segments placed in there would be hidden
+   buttons that scrolled away with the picture. Below 700px the thumbnails are
+   gone, so .image is .imageCol's only in-flow child and its bottom edge is the
+   column's.
+
+   Three layers, all in one element:
+
+     ::before  the rule       — full width, bw-200, never moves
+     ::after   the ink        — 1/n wide, black, follows the scroll
+     .segment  the targets    — transparent buttons reaching up over the photo
+
+   The rule is 2px on the edge itself; the targets are 24px and reach upward
+   into the picture, so the visible mark stays a hairline while the thing you
+   press is a proper band. Upward, not straddling, because half a target below
+   the photo would sit in the gap under it. */
+.progress {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  height: 2px;
+  display: none;
+}
+
+/* The rule. bw-200 is the site's divider grey, so the unfilled part of the
+   track is exactly the hairline used everywhere else on the page. */
+.progress::before,
+.progress::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  height: 2px;
+  pointer-events: none;
+}
+
+.progress::before {
+  left: 0;
+  right: 0;
+  background: var(--bw-200);
+}
+
+/* The ink. One slide wide, and translated by its own width per index — so the
+   arithmetic is just the index, at any slide count. Both values come in as
+   inline custom properties from the component, which is the only part of this
+   that has to know how many photos there are. */
+.progress::after {
+  left: 0;
+  width: calc(100% / var(--slide-count));
+  background: var(--black);
+  transform: translateX(calc(100% * var(--slide-index)));
+  transition: transform 480ms var(--ease-carousel);
+}
+
+/* Transparent hit areas sitting over the rule — the line is drawn by the
+   pseudo-elements, so these carry no ink of their own. They reach up into the
+   photo out of the 2px row (a single negative top margin, not a symmetric
+   pair), which is what keeps the target usable now that the track sits on the
+   image's bottom edge. */
+.segment {
+  appearance: none;
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  margin: -22px 0 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .progress::after {
+    transition: none;
+  }
+}
+
+/* 24px rhythm between every section. Pinned to the right half explicitly —
+   with the image on 2/8, auto-placement would otherwise start this at 8. */
+.body {
+  grid-column: 7 / 13;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  min-width: 0;
+}
+
+/* ---------- Header ---------- */
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.title {
+  margin: 0;
+  font-weight: 700;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: normal;
+  letter-spacing: 0.02em;
+  /* Some titles come from mixed-case data ("Hi8") for screen readers; the
+     display stays all-caps. */
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.blurb {
+  margin: 0;
+  max-width: 62ch;
+  font-size: 20px;
+  line-height: normal;
+  letter-spacing: 0.01em;
+  color: var(--black);
+}
+
+/* ---------- Dividers ---------- */
+.divider {
+  width: 100%;
+  margin: 0;
+  border: 0;
+  border-top: 2px solid var(--black);
+}
+
+/* ---------- Option rows ----------
+   Label over pills, no per-row rule (the section dividers do that work). */
+.rows {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.row {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ---------- Itemized estimate ---------- */
+.total {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Heading + notice, stacked with no gap so the red notice sits directly under
+   the label. */
+.totalHead {
+  display: flex;
+  flex-direction: column;
+}
+
+.totalLabel {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: normal;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Subdivides each line into 8 equal tracks with the site gutter, keeping the
+   original 3:5 label/amount proportions. (.body now spans 6 of the 12 site
+   columns, so these tracks no longer sit on site column lines.) */
+.lineItem {
+  display: grid;
+  grid-template-columns: repeat(8, minmax(0, 1fr));
+  gap: var(--grid-gap);
+  align-items: baseline;
+}
+
+.lineLabel {
+  grid-column: span 3;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lineName {
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.01em;
+  color: var(--black);
+}
+
+.lineSub {
+  font-size: 12px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  color: var(--bw-400);
+}
+
+.lineAmount {
+  grid-column: span 5;
+  font-size: 16px;
+  line-height: normal;
+  letter-spacing: 0.01em;
+  text-align: left;
+  color: var(--black);
+}
+
+/* ---------- Add to order ----------
+   The button carries the running total, so it is the one place to read the
+   price. Subdivided into 6 tracks, NOT the 8 that .lineItem uses. .body spans exactly
+   6 site columns and this grid repeats the site gutter, so 6 tracks come out
+   exactly one site column wide and land on the real column lines — `span 3` on
+   the button is then 3 site columns, full stop. (.lineItem's 8 tracks are a
+   3:5 proportion inherited from the 16-column grid and sit off the column
+   lines, so a span there measures ~0.75 of a column.) */
+.addBlock {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  row-gap: 8px;
+  align-items: start;
+}
+
+.addBtn {
+  grid-column: span 3;
+  appearance: none;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 14px 24px;
+  background: var(--darkroom-red);
+  border: 2px solid var(--darkroom-red);
+  color: var(--paper-white);
+  transition:
+    filter 160ms var(--ease-out),
+    transform 120ms ease-out;
+}
+
+/* The button now carries the running total. Hover underlines just the price —
+   the red stays put, and the underline points at the one part of the label that
+   changes as the options are set. */
+@media (hover: hover) and (pointer: fine) {
+  .addBtn:hover .addPrice {
+    text-decoration: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 20%;
+  }
+}
+
+.addBtn:active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .addBtn {
+    transition: none;
+  }
+}
+
+/* ---------- Notice ---------- */
+.noticeText {
+  margin: 0;
+  font-size: 16px;
+  line-height: normal;
+  color: var(--darkroom-red);
+}
+
+/* ---------- Responsive ---------- */
+/* Tablet and below: image stacks above the configurator. */
+@media (max-width: 900px) {
+  .layout {
+    row-gap: 32px;
+  }
+
+  .imageCol,
+  .body {
+    grid-column: 1 / -1;
+  }
+
+  /* Stacked above the configurator, the column is no longer racing the right
+     column for height — drop the screen-height cap and give the photo box an
+     explicit height instead of flex-fill (which would collapse to 0 in an
+     auto-height column). Sized under half the screen so the first option row
+     is still visible under it without scrolling. */
+  .imageCol {
+    height: auto;
+  }
+
+  /* Nothing to reserve against here — the column is auto-height, so the spacer
+     would just be dead space between the photo and the configurator. */
+  .imageCol:not(:has(.thumbs))::after {
+    display: none;
+  }
+
+  .image {
+    flex: none;
+    height: min(56vh, 480px);
+  }
+
+  /* Wider tap targets: quarter-width keeps four thumbs across on tablet. */
+  .thumb {
+    width: calc((100% - 3 * var(--grid-gap)) / 4);
+    max-width: 96px;
+  }
+
+  /* .body spans all 12 site columns here, so the 6-track subdivision above
+     stops being one-column-per-track (each becomes two) and a 3-track button
+     would be half the viewport — under ~200px on a phone, which wraps the
+     label onto two lines. The gutter is a fixed 24px at every width, so at
+     375px the twelve columns are only ~6px each and the gutters eat the row;
+     column spans just aren't a usable unit down here. Size to content. */
+  .addBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding-bottom: 60px;
+  }
+
+  /* ---------- Gallery: dragged, not driven ----------
+     The photo box stops clipping a transformed track and becomes a real
+     horizontal scroller with mandatory snapping. Everything that makes the
+     gesture feel right — the next photo's edge appearing as you pull, the
+     momentum, a hard flick carrying past several, the settle — is the
+     platform's, not ours. The transform has to go, or it would offset the
+     slides on top of the scroll and show the wrong one.
+
+     overscroll-behavior-x: contain stops a swipe that reaches the last photo
+     from turning into the browser's back-navigation gesture, which on iOS is
+     the difference between a gallery and a way to leave the page by accident. */
+  .image {
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .image::-webkit-scrollbar {
+    display: none;
+  }
+
+  .track {
+    transform: none;
+    transition: none;
+  }
+
+  .slide {
+    scroll-snap-align: start;
+  }
+
+  /* Fill the frame instead of fitting inside it. On desktop the photo sits in
+     a tall column beside the configurator and `contain` is right — nothing is
+     cropped and the shot is seen whole. On a phone the frame is 335×455 and
+     the photos are not: the portrait ones run 0.66 against its 0.74 and leave
+     bars down the sides, the landscape ones 1.51 and leave bands above and
+     below deep enough to read as a broken image. Cropping to fill costs the
+     edges of a photo; fitting costs the frame, and the frame is most of what
+     is on screen at this width.
+
+     Stated for the landscape variant too, which is a more specific selector
+     and would otherwise keep its own object-position. Under `cover` the
+     distinction it was drawing — where to strand a photo in its slack — no
+     longer exists, because there is no slack.
+
+     The sample clips are the case to watch: 4:3 captures in a frame near 3:4
+     lose roughly a third off each side. It's a one-line revert to `contain`
+     for video alone if that turns out to cost too much. */
+  .slide img,
+  .slide img[data-landscape],
+  .slide video {
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .thumbs {
+    display: none;
+  }
+
+  /* The track hangs off this, on the photo's bottom edge. With .thumbs gone
+     the photo is the column's only in-flow child, so the two edges are one. */
+  .imageCol {
+    position: relative;
+  }
+
+  .progress {
+    display: flex;
+  }
+
+  /* The ink follows the scroll rather than animating between resting places:
+     --slide-pos is the fractional position the scroll handler writes every
+     frame, so the mark moves with the finger and is carried through the
+     snap by the browser's own settle. A transition here would fight both —
+     it would lag the drag and then re-animate a move that already happened.
+     --slide-index is the fallback for the first paint, before any scrolling. */
+  .progress::after {
+    transform: translateX(calc(100% * var(--slide-pos, var(--slide-index))));
+    transition: none;
+  }
+
+
+  /* ---------- Type ----------
+     Everything below this line is one pass, not a series of local decisions:
+     the panel's type came from the desktop column, where 16px body copy sits
+     in a half-width column with the photo beside it. On a phone that same
+     column is the whole screen, and 16px across 375px reads as a form to fill
+     in rather than a spec sheet to scan. The scale steps down roughly 20% and
+     leans harder on the uppercase tracking, which does the separating that
+     size was doing before.
+
+     Nothing here goes below 11px, and the two controls (button, pills) hold
+     16px — a shrunk control invites a mis-tap in a way a shrunk label doesn't. */
+  .title {
+    font-size: clamp(32px, 9vw, 44px);
+  }
+
+  .blurb {
+    font-size: 15px;
+    line-height: 1.45;
+  }
+
+  .noticeText {
+    font-size: 13px;
+  }
+
+  /* Still the loudest thing in the panel relative to the lines under it — it
+     just no longer has to shout at desktop volume to be. */
+  .totalLabel {
+    font-size: 16px;
+  }
+
+  .lineName,
+  .lineAmount {
+    font-size: 14px;
+  }
+
+  .lineSub {
+    font-size: 11px;
+  }
+
+  /* ---------- Sticky add to order ----------
+     Sticky, not fixed. .addBlock is the last child of .body, so its resting
+     place already is the bottom of the configurator: sticking it to the
+     viewport bottom means it rides above the options for as long as there are
+     options left to set, then settles into that resting place when the panel
+     ends — and it is gone by the time the cross-sell comes up, because .body
+     is its containing block. A fixed bar would still be sitting over the
+     footer.
+
+     Full width down here, unlike the 3-column button on desktop. Floating over
+     live content, an opaque bar edge to edge is the honest shape for it; a
+     content-width button leaves the page showing beside it and reads as
+     something that came loose. */
+  .addBlock {
+    position: sticky;
+    bottom: 16px;
+    align-items: stretch;
+    /* Over the toast (15), under the cart drawer (scrim 20, panel 21). Sticky
+       already opens a stacking context here, so this only decides where that
+       context sits — and it has to sit above the confirmation, which rises
+       from off-screen through this button's place on its way to resting just
+       above it. Behind the button it reads as coming out from under the
+       control that raised it; in front, it wipes across it. */
+    z-index: 16;
+  }
+
+  .addBtn {
+    width: 100%;
+    font-size: 16px;
+    padding: 14px 18px;
+  }
+}

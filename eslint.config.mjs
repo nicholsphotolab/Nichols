@@ -1,21 +1,36 @@
-// ESLint flat config. Pulls in Next.js's recommended rule sets
-// (next/core-web-vitals: React + hooks + next/* rules; next/typescript adds
-// @typescript-eslint recommendations) via the FlatCompat bridge, since
-// eslint-config-next still ships in the legacy "extends" format.
-// Run with `npm run lint` (plain `eslint .` — `next lint` is deprecated).
+// ESLint flat config. Standard Vite + React + TypeScript rule sets
+// (previously bridged in Next's `next/core-web-vitals` via FlatCompat — that
+// bundled React, hooks, and Next-router rules together; this splits it back
+// into its actual parts now that there's no Next router to lint against).
+// Run with `npm run lint`.
 
-import { dirname } from "path";
-import { fileURLToPath } from "url";
-import { FlatCompat } from "@eslint/eslintrc";
+import js from "@eslint/js";
+import globals from "globals";
+import reactHooks from "eslint-plugin-react-hooks";
+import reactRefresh from "eslint-plugin-react-refresh";
+import tseslint from "typescript-eslint";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-
-const compat = new FlatCompat({ baseDirectory: __dirname });
-
-const eslintConfig = [
-  { ignores: [".next/", "out/", "node_modules/", "next-env.d.ts"] },
-  ...compat.extends("next/core-web-vitals", "next/typescript"),
-];
-
-export default eslintConfig;
+export default tseslint.config(
+  { ignores: ["out/", "node_modules/", "src/data/generated/", ".next/", ".claude/", "public/"] },
+  {
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      ecmaVersion: 2022,
+      globals: globals.browser,
+    },
+    plugins: {
+      "react-hooks": reactHooks,
+      "react-refresh": reactRefresh,
+    },
+    rules: {
+      ...reactHooks.configs.recommended.rules,
+      "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
+      "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_" }],
+    },
+  },
+  {
+    files: ["scripts/**/*.{ts,mjs}", "vite.config.ts"],
+    languageOptions: { globals: globals.node },
+  }
+);

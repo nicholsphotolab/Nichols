@@ -1,0 +1,303 @@
+/* globals.css
+   Site-wide base styles, design tokens, and reusable utility classes.
+   Imported once in RootLayout.tsx so these apply to every page.
+   ABC Areal Variable's @font-face rule is injected at runtime by
+   components/FontFace.tsx rather than written here directly — the font file
+   lives in public/fonts/ and its URL has to run through withBasePath() so it
+   still resolves once the site is deployed under the GitHub Pages /Nichols/
+   subpath, which a plain CSS url() can't do. */
+
+/* ---------- Design tokens ---------- */
+:root {
+  /* Brand colours */
+  --paper-white: #f9f8f4;
+  /* off-white page background */
+  --darkroom-red: #ff0100;
+  /* primary accent — buttons, hover states */
+  --darkroom-red-light: #fc7d7a;
+  /* darkroom-red mixed 50/50 with paper-white — for hovers that preview a red
+     selection without reading as already selected (the cart's choice swatches) */
+  --black: #010101;
+  /* near-black for all body text */
+  --bw-200: #d6d3cc;
+  /* light grey — borders, dividers */
+  --bw-400: #a09991;
+  /* mid grey — secondary text */
+  --bw-600: #666666;
+  /* dark grey — body copy, captions */
+
+  /* Font stack — ABC Areal Variable (its @font-face injected by FontFace.tsx)
+     first, then system fallbacks */
+  --font-areal: "ABC Areal Variable";
+  --font-sans: var(--font-areal), "ABC Areal", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+
+  /* Easing curves used across components */
+  --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  /* strong deceleration for UI interactions */
+  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
+  /* gentle in/out for subtle transitions */
+  --ease-carousel: cubic-bezier(0.65, 0, 0.35, 1);
+  /* heavier curve for carousel slides */
+
+  /* Horizontal page padding — reduced on small screens below */
+  --page-pad: 60px;
+
+  /* Vertical clearance under the fixed nav (60px bar + breathing room).
+     Every page's top padding AND every full-bleed hero's negative top margin
+     use this same token — they must cancel exactly or a gap opens above the
+     hero. The nav is 60px at every breakpoint, so this never changes. */
+  --nav-clearance: 80.5px;
+
+  /* ---------- Layout grid ----------
+     Site-wide column grid: 12 columns at every breakpoint, with 24px
+     gutters. Layout containers use:
+       display: grid;
+       grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+       gap: var(--grid-gap);
+     Nested grids with the same gap align exactly with the parent's column
+     lines (an n-column span subdivided into n equal 1fr tracks reproduces
+     the parent columns). For a non-grid element that must match an
+     n-column span:
+       width: calc(100% * n / cols - var(--grid-gap) * (cols - n) / cols); */
+  --grid-cols: 12;
+  --grid-gap: 24px;
+
+  /* ---------- Hero title scale ----------
+     One size for every page's hero wordmark (FILM, VIDEO, FAQ, QUOTE…),
+     derived from FILM's ink filling a 6-column span (half the grid):
+     6-col span = (content width) / 2 − (grid gap) / 2, divided by 2.155 —
+     the measured ink width of "FILM" in ABC Areal Variable (wght 700)
+     at -0.02em tracking. Other titles run wider or narrower than 6 columns;
+     their heights all match. */
+  --hero-type-size: clamp(40px,
+      calc(((100vw - 2 * var(--page-pad)) / 2 - var(--grid-gap) / 2) / 2.155),
+      640px);
+
+  /* Default image aspect ratio: the shape of the front rectangle in the
+     Nichols logo mark (15.1929 × 20.3075 in the SVG — portrait, ≈3:4).
+     Every image on the site uses this unless a component specifies otherwise.
+     --image-ratio-wide is the same rectangle rotated, for landscape uses. */
+  --image-ratio: 15.1929 / 20.3075;
+  --image-ratio-wide: 20.3075 / 15.1929;
+}
+
+@media (max-width: 700px) {
+  :root {
+    --page-pad: 20px;
+  }
+}
+
+/* ---------- Grid utility ----------
+   Drop-in container on the site column grid. minmax(0, 1fr) (rather than
+   plain 1fr) keeps wide content — long words, media, pre blocks — from
+   blowing out column widths. Place children with grid-column
+   (e.g. grid-column: 1 / 7 or span 6) and redefine spans per breakpoint
+   where needed. Toggle the column overlay with the G key to check
+   alignment (GridOverlay component, mounted in the root layout). */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--grid-cols), minmax(0, 1fr));
+  column-gap: var(--grid-gap);
+  padding-inline: var(--page-pad);
+}
+
+/* ---------- Reset ---------- */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+}
+
+/* Canvas colour — what Safari paints in the elastic-overscroll zone (body's
+   background doesn't reach it; the root element's does). */
+html {
+  background: var(--paper-white);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  /* Every number on the site in monospace uppercase/lining figures (Figma's
+     "Numbers → Monospace uppercase/lining"): same height as capitals, same
+     width as each other, so prices, counts and dates line up in columns and
+     don't shift as they change. */
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--paper-white);
+  background: var(--paper-white);
+  /* Render ABC Areal at its intended weight on both Mac and Windows */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Strip default link styles — colour is always set by the component */
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+/* Controls inherit the page font — and its number style — so they don't fall
+   back to the browser's form styling */
+button,
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-variant-numeric: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+/* ---------- Reveal-arrow utility ----------
+   Used on nav links, footer links, and any CTA that should show a ↗ or →
+   arrow on hover. The arrow span is always in the DOM (opacity 0) so the
+   surrounding text never shifts when it appears.
+
+   Usage:
+     <a className="reveal-on-hover">
+       Label<span className="reveal-arrow" aria-hidden="true">↗</span>
+     </a>
+
+   Notes:
+   - vertical-align: top + line-height: 1 aligns the arrow with the cap-height
+     of uppercase text.
+   - will-change keeps the element on the GPU compositor so there's no
+     subpixel snap when the animation settles.
+   - The hover rule is scoped to devices with a real pointer so touch users
+     don't get stuck hover states.
+   - prefers-reduced-motion removes the transition for accessibility. */
+.reveal-arrow {
+  display: inline-block;
+  margin-left: 4px;
+  vertical-align: top;
+  line-height: 1;
+  opacity: 0;
+  transform: translateX(-4px);
+  will-change: transform, opacity;
+  transition: opacity 180ms var(--ease-out), transform 220ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .reveal-on-hover:hover .reveal-arrow {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Keyboard focus shows the arrow too — it's the same "this goes somewhere"
+   cue, and keyboard users have no hover to reveal it. */
+.reveal-on-hover:focus-visible .reveal-arrow {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal-arrow {
+    transition: none;
+  }
+}
+
+/* ---------- Keyboard & screen-reader basics ----------
+   A visible focus ring on anything reachable by Tab, for every component that
+   doesn't draw its own. Darkroom red reads on both the paper-white pages and
+   the dark photo heroes. :focus-visible means mouse clicks don't show it —
+   only keyboard (and other non-pointer) focus does. Components with their own
+   ring override this. */
+:focus-visible {
+  outline: 2px solid var(--darkroom-red);
+  outline-offset: 3px;
+}
+
+/* Containers that take focus programmatically (dialogs, drawers) so screen
+   readers land in them — a ring around the whole panel is noise. */
+[tabindex="-1"]:focus-visible {
+  outline: none;
+}
+
+/* Hidden on screen, still read by screen readers. */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* "Skip to content" — the first Tab stop on every page, so keyboard users
+   don't have to tab through the nav each time. Off-screen until focused. */
+.skip-link {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--black);
+  color: var(--paper-white);
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* ---------- Printable order sheet ----------
+   The printable order form (order/OrderForm.tsx) renders through a portal as a
+   direct child of <body>, tagged [data-print-root], and stamps
+   data-order-sheet="open" on <body> for as long as it's mounted.
+
+   These rules live here rather than in the component's CSS module because what
+   has to be hidden — the nav, the hero/nav logo, the footer — is rendered by
+   the root layout, outside any one component's reach, with hashed module class
+   names a module can't target anyway.
+
+   Everything is scoped to body[data-order-sheet="open"], so a page with no
+   sheet open prints exactly as it always did. The attribute (rather than :has())
+   keeps this working in older Safari, and doubles as the scroll lock while the
+   dialog is up. */
+body[data-order-sheet="open"] {
+  overflow: hidden;
+}
+
+@media print {
+
+  /* Only the sheet prints. Direct children of <body> cover every layout
+     region — the sheet itself is one of them, courtesy of the portal. */
+  body[data-order-sheet="open"]>*:not([data-print-root]) {
+    display: none !important;
+  }
+
+  /* The dialog's scroll container mustn't clip the sheet to one screenful. */
+  body[data-order-sheet="open"] {
+    overflow: visible;
+  }
+
+  /* Paper is white; the site's off-white would print as a grey wash on
+     printers that honour background colours. */
+  html,
+  body {
+    background: #fff;
+  }
+
+  @page {
+    margin: 0.5in;
+  }
+}

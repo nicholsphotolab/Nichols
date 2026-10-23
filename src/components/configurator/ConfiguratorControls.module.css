@@ -1,0 +1,506 @@
+/* ConfiguratorControls.module.css
+   Styles for the configurator controls — pills, format thumbs, checkboxes,
+   steppers, row labels and the explainer modal — shared by the film and video
+   configurators. Row and page layout live in Configurator.module.css. */
+
+/* ---------- Pills ---------- */
+.pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+/* Outlined box buttons. Unselected ones sit back in bw-600 — rule and label
+   both — so the one black pill in the row reads as the answer rather than
+   competing with four equally dark alternatives. Hover brings a pill up to
+   black, which is the same move as being chosen, only without the fill. */
+.pill {
+  appearance: none;
+  background: transparent;
+  border: 2px solid var(--bw-600);
+  padding: 10px 20px;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  /* Option values may be stored mixed-case ("Hi8") for screen readers;
+     pills always display all-caps. */
+  text-transform: uppercase;
+  color: var(--bw-600);
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    color 160ms var(--ease-out),
+    transform 120ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pill:not([data-active]):hover {
+    border-color: var(--black);
+    color: var(--black);
+  }
+}
+
+.pill:active {
+  transform: scale(0.97);
+}
+
+.pill[data-active] {
+  background: var(--black);
+  border-color: var(--black);
+  color: var(--paper-white);
+}
+
+/* ---------- Checkbox rows ----------
+   The optional extras (HALF FRAME CAMERA, PULL / PUSH) sit behind a small
+   square that fills red when on. Red rather than black because black is what a
+   *selected pill* looks like all over this page: these switch a whole block of
+   options on, which is a different kind of act from picking one of three, and
+   the accent keeps the two from reading as the same control. */
+.checkRow {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.checkLabel {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
+  cursor: pointer;
+}
+
+/* The real control, kept in the layout (not display:none) so it stays
+   focusable and reachable by assistive tech; the square beside it is the
+   visible state. Clipped to a pixel rather than moved off-screen, which some
+   browsers treat as unfocusable. */
+.checkInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.checkBox {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  background: var(--bw-200);
+  transition:
+    background-color 160ms var(--ease-out),
+    box-shadow 160ms var(--ease-out);
+}
+
+.checkInput:checked + .checkBox {
+  background: var(--darkroom-red);
+}
+
+/* Focus lands on the hidden input, so the ring has to be drawn on the square
+   next to it or keyboard users get no visible focus at all. */
+.checkInput:focus-visible + .checkBox {
+  box-shadow: 0 0 0 2px var(--paper-white), 0 0 0 4px var(--black);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .checkLabel:hover .checkBox {
+    background: var(--bw-400);
+  }
+
+  .checkLabel:hover .checkInput:checked + .checkBox {
+    background: var(--darkroom-red);
+  }
+}
+
+/* ---------- Stepper ---------- */
+.stepper {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  align-self: flex-start;
+}
+
+.stepperBtn {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  width: 24px;
+  font: inherit;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--black);
+  cursor: pointer;
+  transition:
+    color 160ms var(--ease-out),
+    opacity 160ms var(--ease-out);
+}
+
+/* Disabled at the ends of the range rather than hidden — a control that
+   disappears at +3 makes the ceiling look like a bug. */
+.stepperBtn:disabled {
+  opacity: 0.25;
+  cursor: default;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .stepperBtn:not(:disabled):hover {
+    color: var(--darkroom-red);
+  }
+}
+
+/* Tabular figures and a fixed width: "0" and "+3" and "−2" are all the same
+   number of glyphs, and without this the + button shuffles sideways as the
+   value changes under it. */
+.stepperValue {
+  min-width: 2.5ch;
+  text-align: center;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--black);
+}
+
+/* ---------- Captioned pills (half-frame scan choice) ---------- */
+.captionPills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.captionPillCol {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Same box as .pill, plus room for the glyph. Kept as its own rule rather than
+   composed from .pill so the glyph's colour handoff lives with the thing that
+   has a glyph. */
+.captionPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  appearance: none;
+  background: transparent;
+  border: 2px solid var(--bw-600);
+  padding: 10px 20px;
+  font: inherit;
+  font-size: 20px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--bw-600);
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-out),
+    border-color 160ms var(--ease-out),
+    color 160ms var(--ease-out),
+    transform 120ms ease-out;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .captionPill:not([data-active]):hover {
+    border-color: var(--black);
+    color: var(--black);
+  }
+}
+
+.captionPill:active {
+  transform: scale(0.97);
+}
+
+.captionPill[data-active] {
+  background: var(--black);
+  border-color: var(--black);
+  color: var(--paper-white);
+}
+
+/* Caption sits under the pill, not inside it: it is the consequence of the
+   choice ("Up to 72 images"), which the customer wants while comparing the two
+   and not once they've decided. Newline-separated in the data — pre-line keeps
+   the two lines the design has without an array and a map. */
+.captionText {
+  max-width: 30ch;
+  font-size: 13px;
+  line-height: 1.25;
+  white-space: pre-line;
+  color: var(--bw-400);
+}
+
+/* The frame glyph. Each box is a portrait half-frame at the same 3:4 the real
+   thing is, numbered so the pair reads as two images rather than one wide one.
+   currentColor throughout, so the glyph inverts with the pill it sits in. */
+.glyph {
+  display: inline-flex;
+  flex: none;
+}
+
+/* The pair overlaps rather than sitting apart, so the two halves read as one
+   35mm frame divided down the middle — which is what they are. Done with a
+   negative margin because `gap` can't go below zero, and −2px against the 2px
+   stroke lands the two borders exactly on top of each other, so the divider
+   down the middle is the same weight as the outline around it. */
+.glyphFrame + .glyphFrame {
+  margin-left: -2px;
+}
+
+.glyphFrame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 24px;
+  border: 2px solid currentColor;
+  font-size: 12px;
+  line-height: 1;
+  /* The digit is a label on a diagram, not part of the pill's word. */
+  letter-spacing: 0;
+}
+
+/* ---------- Format thumbnails ---------- */
+.thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.thumb {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+/* The 80px square from the design. Only the selected format is ringed; the rest
+   show no rule at all. The 2px border still exists underneath, just transparent
+   — dropping it outright would hand the selected state 4px of box the others
+   don't have, and with border-box that shrinks the image the moment it's picked.
+   Keeping it reserved means selecting a thumbnail changes one colour and moves
+   nothing. */
+.thumbFrame {
+  position: relative;
+  display: block;
+  width: 80px;
+  height: 80px;
+  background: var(--bw-200);
+  overflow: hidden;
+}
+
+/* The selection ring is painted ON TOP of the image at the frame's own edges,
+   not built from a border. A border would be part of the box: with border-box
+   it eats 2px inward and shrinks the image on selection, and without it the
+   square grows. Either way the selected thumbnail stops matching its
+   neighbours. Drawn this way the frame is 80px and the image fills all 80px in
+   every state, and selecting one only paints a rule over the top.
+   Same construction as the photo strips under both configurators. */
+.thumbFrame::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 2px solid transparent;
+  pointer-events: none;
+  transition: border-color 160ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .thumb:not([data-active]):hover .thumbFrame::after {
+    border-color: var(--bw-600);
+  }
+}
+
+.thumb[data-active] .thumbFrame::after {
+  border-color: var(--black);
+}
+
+/* Fills the square edge-to-edge, centre-cropped — the same treatment the photo
+   strips under both configurators already use, so every thumbnail on the page
+   crops the same way. The paper-white plate only shows while the image loads. */
+.thumbImg {
+  object-fit: cover;
+  background: var(--paper-white);
+}
+
+.thumbLabel {
+  font-size: 11px;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  text-align: center;
+  max-width: 84px;
+  color: var(--bw-600);
+  transition: color 160ms var(--ease-out);
+}
+
+.thumb[data-active] .thumbLabel {
+  color: var(--black);
+}
+
+/* ---------- Row label + explainer ----------
+   The label and its ↗ are one control, not a label with a small target beside
+   it: the arrow alone is a ~10px hit area, and the word is what someone reads
+   before deciding they want the explanation. */
+.rowLabel {
+  display: inline-block;
+  /* The rows are flex columns, so a stretched item would run the full width and
+     — this being a <button> — centre its own text. Both have to be undone for
+     the label to sit where a label sits. */
+  align-self: flex-start;
+  text-align: left;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.rowLabel[data-explain] {
+  cursor: pointer;
+  /* Same red-on-hover as the footer links. */
+  transition: color 0.15s ease;
+}
+
+/* The ↗ aligns to the cap height of the label so its top lines up with the top
+   of the letters (the E in EXPOSURE) rather than sitting on the baseline. Same
+   vertical-align: top + line-height: 1 trick the reveal-arrow utility and the
+   nav CTA use for uppercase text. */
+.rowArrow {
+  display: inline-block;
+  vertical-align: top;
+  line-height: 1;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .rowLabel[data-explain]:hover {
+    color: var(--darkroom-red);
+  }
+}
+
+/* ---------- Explainer modal ---------- */
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(1, 1, 1, 0.5);
+}
+
+.modalPanel {
+  position: relative;
+  width: min(480px, 100%);
+  padding: 32px;
+  background: var(--paper-white);
+  color: var(--black);
+}
+
+.modalClose {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 4px;
+  font-size: 24px;
+  line-height: 1;
+  color: var(--black);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .modalClose:hover {
+    color: var(--darkroom-red);
+  }
+}
+
+.modalTitle {
+  margin: 0 0 12px;
+  font-size: 24px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.modalBody {
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  /* Pills are already 20px at every width; only the box tightens here. */
+  .pill {
+    padding: 8px 16px;
+  }
+}
+
+@media (max-width: 700px) {
+  .pills {
+    gap: 12px;
+  }
+
+  .pill {
+    font-size: 16px;
+    padding: 6px 12px;
+  }
+
+  /* The two half-frame pills won't sit side by side at this width — they stack,
+     and each caption belongs with its own pill, so the column gap has to open
+     up or the previous caption reads as the next pill's. */
+  .captionPills {
+    gap: 20px;
+  }
+
+  .captionPill {
+    font-size: 16px;
+    padding: 6px 12px;
+  }
+
+  /* Bigger targets for the one control here that's a bare glyph. */
+  .stepperBtn {
+    width: 32px;
+    font-size: 28px;
+  }
+
+  /* The labelling steps down with the configurator panels it sits inside (see
+     Configurator.module.css) while the pills above hold 16px. That
+     split is the rule for this whole breakpoint: things you read get smaller,
+     things you tap don't. */
+  .rowLabel,
+  .checkLabel {
+    font-size: 13px;
+  }
+
+  .captionText {
+    font-size: 12px;
+  }
+
+  /* The modal is the one place down here that gets *more* room rather than
+     less — it's a page's worth of explanation on a phone screen, with nothing
+     else on screen competing for the attention. Only the heading comes down,
+     to sit closer to the copy it introduces. */
+  .modalTitle {
+    font-size: 18px;
+  }
+
+  .modalBody {
+    font-size: 15px;
+  }
+}
