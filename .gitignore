@@ -25,3 +25,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# licensed fonts — the license doesn't allow sharing them in a public repo
+/public/fonts/ABCAreal*
