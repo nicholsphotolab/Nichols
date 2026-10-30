@@ -1,0 +1,61 @@
+.brand {
+  position: fixed;
+  top: 13.5px;
+  left: var(--page-pad);
+  width: 145.41px;
+  height: 33px;
+  color: var(--paper-white);
+  z-index: 10;
+  display: block;
+  transition: color 220ms var(--ease-out);
+}
+
+/* Above 900px the bar becomes MENU (left) / logo (center) / CART+ORDER
+   PRINTS (right) — MobileMenu.module.css's .toggle takes the left edge, so
+   the mark centers instead of sitting where it does on the still-unchanged
+   mobile bar below. translateX(-50%) centers on the mark's own width, so
+   this needs no extra width math. */
+@media (min-width: 901px) {
+  .brand {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+}
+
+/* Dark once the solid white bar snaps in, and likewise while the mobile menu
+   panel is open — both put paper-white behind the mark. */
+:global(html[data-nav-scrolled="true"]) .brand,
+:global(html[data-menu-open]) .brand {
+  color: var(--black);
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+@media (max-width: 900px) {
+  .brand {
+    left: 20px;
+  }
+}
+
+/* On a phone the mark is drawn at 171.9 × 39 (Figma "iPhone 17 - 14", node
+   3154:1591) — the same artwork, ratio held, just larger. It gives a little
+   back on phones narrower than ~392px so a filled cart chip and CLOSE still
+   fit beside it (212px = both 16px page pads, the chip, CLOSE and the gaps).
+
+   The bar's height is deliberately untouched: --nav-clearance is a fixed
+   80.5px every page's top padding is built on, and .brandSlot sets the bar's
+   content height at 33px. The mark is centred on that slot's midline (30px
+   down) instead, overhanging it by 3px top and bottom. */
+@media (max-width: 700px) {
+  .brand {
+    --brand-w: min(171.9px, 100vw - 212px);
+    left: var(--page-pad);
+    width: var(--brand-w);
+    height: calc(var(--brand-w) * 39 / 171.9);
+    top: calc(30px - var(--brand-w) * 39 / 171.9 / 2);
+  }
+}

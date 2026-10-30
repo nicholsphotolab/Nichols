@@ -1,0 +1,41 @@
+/* Page.module.css
+   The <main> wrapper every content page shares: clears the fixed nav, holds
+   the side gutters, and stacks the page's sections with a responsive gap.
+   PageHero breaks back out of this padding to run full-bleed.
+
+   `.roomy` is the deeper bottom padding the text-led pages (FAQ, quote) use. */
+
+.page {
+  background: var(--paper-white);
+  color: var(--black);
+  padding: var(--nav-clearance) var(--page-pad) 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.page.roomy {
+  padding-bottom: 80px;
+}
+
+@media (max-width: 1024px) {
+  .page {
+    padding-bottom: 80px;
+    gap: 40px;
+  }
+
+  .page.roomy {
+    padding-bottom: 60px;
+  }
+}
+
+@media (max-width: 700px) {
+  .page {
+    padding-bottom: 60px;
+    gap: 32px;
+  }
+
+  .page.roomy {
+    padding-bottom: 48px;
+  }
+}

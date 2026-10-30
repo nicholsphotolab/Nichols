@@ -1,9 +1,0 @@
-/* Height math (must mirror the constants in HeroLogo.tsx):
-     logo top offset (120px)
-   + logo height ((100vw - 2×40px side pad) × 33/136 ≈ × 0.24265)
-   + 80px gap before the services index. */
-.hero {
-  position: relative;
-  width: 100%;
-  height: calc(200px + (100vw - 120px) * 0.24265);
-}

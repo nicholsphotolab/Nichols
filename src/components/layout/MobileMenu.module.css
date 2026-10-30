@@ -1,0 +1,187 @@
+/* The site's primary nav: a MENU control that opens this full-screen panel,
+   at every width — not just mobile. Above 900px it sits at the bar's left
+   edge (MENU / logo center / CART+ORDER PRINTS, per Nav.module.css and
+   NavBrand.module.css); at and below 900px it keeps its original position
+   and behavior, unchanged, since that page hasn't been redesigned yet.
+   Matches the Figma reference (Frame430, node 2934:1412) for the panel's
+   own content: a left column of large nav links and a photo stack on the
+   right that swaps per hovered nav item (see MenuPhotoStack) — but not for
+   a header row. There's no separate header here: the persistent site bar
+   (Nav.tsx) stays visible above the panel while it's open (lifted in
+   Nav.module.css) rather than being replaced by a second, differently
+   styled one, so this toggle keeps showing (as CLOSE) instead of handing
+   off to a duplicate control.
+
+   The panel sits at z-index 9, under the lifted bar. The bar's own brand
+   mark and cart button are fixed elements outside it, coloured paper-white
+   so they read over a dark hero — which left them invisible against the
+   panel's paper-white. MobileMenu.tsx sets html[data-menu-open] while the
+   panel is up and each one switches to black off that, mirroring how they
+   already respond to html[data-nav-scrolled]. */
+
+.toggle {
+  display: block;
+  position: fixed;
+  top: 13.5px;
+  right: 20px;
+  z-index: 11;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--paper-white);
+  cursor: pointer;
+  transition: color 220ms var(--ease-out);
+}
+
+@media (min-width: 901px) {
+  .toggle {
+    left: var(--page-pad);
+    right: auto;
+  }
+}
+
+/* Phone: 20px, as drawn (node 3154:1591), its capitals centred on the bar's
+   midline (30px down) with the logo — the line box sits 4px lower than that,
+   since caps ride above the middle of it. The 10px of padding all round makes
+   a 44px tap target; the label still ends at the page margin. */
+@media (max-width: 700px) {
+  .toggle {
+    top: 12px;
+    right: calc(var(--page-pad) - 10px);
+    padding: 10px;
+    font-size: 20px;
+    line-height: 24px;
+  }
+}
+
+/* Dark once the solid white bar snaps in, and likewise while this panel is
+   open — both put paper-white behind the label. Only needed here now that
+   the toggle stays visible (as CLOSE) instead of hiding while open — the
+   brand mark and cart chip already do this same swap. */
+:global(html[data-nav-scrolled="true"]) .toggle,
+:global(html[data-menu-open]) .toggle {
+  color: var(--black);
+}
+
+.panel {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  display: flex;
+  flex-direction: column;
+  /* Clears the persistent bar, which stays lifted above this panel while
+     it's open (Nav.module.css) — the same clearance every page's own
+     content uses under the bar when it's not covered by a panel. */
+  padding-top: var(--nav-clearance);
+  background: var(--paper-white);
+  overflow-y: auto;
+  transform: translateY(-100%);
+  visibility: hidden;
+  transition:
+    transform 600ms var(--ease-out),
+    visibility 0s linear 600ms;
+}
+
+.panel[data-open] {
+  transform: translateY(0);
+  visibility: visible;
+  transition: transform 600ms var(--ease-out);
+}
+
+/* ---------- Body: nav list + photo stack ---------- */
+.body {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--grid-gap);
+  padding: 20px var(--page-pad) 60px;
+}
+
+.links {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(20px, 4vw, 58px);
+}
+
+.link {
+  display: inline-block;
+  width: fit-content;
+  font-weight: 400;
+  font-size: clamp(28px, 6vw, 64px);
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+  color: var(--black);
+  opacity: 0.5;
+}
+
+.active {
+  font-weight: 700;
+  opacity: 1;
+}
+
+/* Repeats ORDER PRINTS as a plain row in the list — not a second bar's
+   worth of chrome — since the persistent bar above hides its own copy
+   below 900px (Nav.module.css .cta). Kept as the site's red-pill CTA
+   rather than styled like the plain link rows above it, so it still reads
+   as the primary action rather than a sixth nav item. */
+.orderLink {
+  display: inline-block;
+  width: fit-content;
+  background: var(--darkroom-red);
+  color: var(--paper-white);
+  font-weight: 400;
+  font-size: clamp(16px, 2.5vw, 20px);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  padding: 12px 18px;
+}
+
+.orderLinkArrow {
+  display: inline-block;
+  vertical-align: top;
+  line-height: 1;
+  margin-left: 4px;
+}
+
+/* Above 900px the persistent bar shows its own ORDER PRINTS (Nav.module.css
+   .cta) — this row exists only to stand in for that below 900px, where the
+   bar hides it. Showing both here would just duplicate it. */
+@media (min-width: 901px) {
+  .orderLink {
+    display: none;
+  }
+}
+
+/* The trigger's target, on the devices that reach for it with a thumb. The
+   label is 16px type in a box that hugs it — 49 × 20px, which is a small thing
+   to hit in the corner of a phone held one-handed, and it sits right against
+   the screen edge where the grip already interferes.
+
+   Grown by padding rather than by size, and paid for out of `top`: 12px of
+   padding with the offset pulled back 12px leaves the word exactly where it
+   was and the box 61 × 44. Padding only on the left, since `right: 20px`
+   anchors that edge and padding there would push the label off it. Only
+   below 900px — above that the trigger sits at the bar's left edge instead,
+   with page-pad already giving it room. */
+@media (max-width: 700px) {
+  .toggle {
+    top: 1.5px;
+    padding: 12px 0 12px 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel,
+  .panel[data-open] {
+    transition: none;
+  }
+}

@@ -1,0 +1,214 @@
+/* HeroSlides.module.css
+   The draggable slideshow behind the film and video heroes, and the segmented
+   progress track along its bottom edge. Sits inside PageHero, whose stacking
+   order this follows: scroller at 0 (under the scrim and text), indicator at 5
+   (above them). */
+
+/* The slides, in a scroller rather than a stack. They used to share one box
+   and animate transforms — active at translateX(0), outgoing sliding off left,
+   the rest parked off-screen right. That auto-advances but can't be dragged:
+   there's no position between two slides, only a transition between them. In
+   a scroll-snap container the drag is the platform's, and the auto-advance
+   drives the same scroll offset (useHeroSlideshow tweens it), so one thing
+   moves whether a timer or a finger is moving it. */
+.scroller {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  /* A swipe that runs off the last slide must not become the browser's
+     back-navigation gesture. */
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.scroller::-webkit-scrollbar {
+  display: none;
+}
+
+.track {
+  display: flex;
+  height: 100%;
+}
+
+.slide {
+  position: relative;
+  flex: 0 0 100%;
+  height: 100%;
+  scroll-snap-align: start;
+  /* Placeholder while a slide's photo or poster frame loads. */
+  background: var(--bw-200);
+}
+
+.slide img,
+.slide video {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Slide indicator — the segmented progress track from the configurator
+   galleries, in the hero's palette: one hairline along the bottom edge of the
+   frame, edge to edge, divided by slide, with a mark that travels along it.
+   It replaced a row of dots, which counted the slides but said nothing about
+   how far through them you were.
+
+   Three layers:
+     .rail            the rule  — full width, dim
+     .rail::before    the ink   — one slide wide, moved by the scroll position
+     .rail::after     the ink again, for a forward-only loop (below)
+     .segment         targets   — transparent buttons, one per slide */
+.indicators {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  height: 2px;
+}
+
+/* Along the top edge of a page's own strip (the film hero) rather than the
+   bottom of the frame. The parent is positioned; the track sits just inside
+   its top edge. */
+.indicators[data-placement="top"] {
+  top: 0;
+  bottom: auto;
+}
+
+/* Clipped, so the ink can run off either end. */
+.rail {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--paper-white) 35%, transparent);
+}
+
+/* On the strip, the unfilled track is black — only the mark shows. */
+.indicators[data-placement="top"] .rail {
+  background: var(--black);
+}
+
+/* One slide wide, translated by its own width per index. --slide-pos is the
+   fractional position useHeroSlideshow writes on every scroll frame;
+   --slide-index, from the component, is the first-paint fallback before any
+   scrolling has happened. Preferring the live one is what puts the mark under
+   the finger mid-drag instead of only at the end of it, and it's also why
+   there's no transition here: the hero's own glide is a tween of the scroll
+   offset, so this follows it frame for frame. A transition on top would lag
+   that and then re-animate a move that had already happened.
+
+   The second mark is the same one a whole track-length behind. Normally it's
+   parked off the left end, out of sight. On a forward-only loop the position
+   runs on past the last slide (on to the copy of the first), so as the main
+   mark slides off the right end, this one slides in from the left — the ink
+   wraps round rather than travelling back. */
+.rail::before,
+.rail::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% / var(--slide-count));
+  height: 100%;
+  background: var(--paper-white);
+}
+
+.rail::before {
+  transform: translateX(calc(100% * var(--slide-pos, var(--slide-index))));
+}
+
+.rail::after {
+  transform: translateX(
+    calc(100% * (var(--slide-pos, var(--slide-index)) - var(--slide-count)))
+  );
+}
+
+.segment {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+  height: 24px;
+  /* Reaches up out of the 2px row rather than straddling it — half a target
+     below the hero's bottom edge would be clipped by its overflow. */
+  margin: -22px 0 0;
+  padding: 0;
+  appearance: none;
+  background: none;
+  border: 0;
+  cursor: pointer;
+  pointer-events: auto;
+}
+
+/* Hover and focus brighten just that stretch of the rule — nothing else here
+   says the line can be clicked. */
+.segment::before {
+  content: "";
+  position: absolute;
+  inset: 22px 0 auto;
+  height: 2px;
+  background: var(--paper-white);
+  opacity: 0;
+  transition: opacity 300ms var(--ease-out);
+}
+
+@media (hover: hover) {
+  .segment:hover::before {
+    opacity: 0.6;
+  }
+}
+
+.segment:focus-visible::before {
+  opacity: 0.6;
+}
+
+.segment:focus-visible {
+  outline: 1px solid var(--paper-white);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .segment::before {
+    transition: none;
+  }
+}
+
+/* Pause / play for the auto-advance. Quiet, bottom-right under the caption,
+   above the indicator rule. */
+.pause {
+  position: absolute;
+  right: var(--page-pad);
+  bottom: 14px;
+  z-index: 5;
+  padding: 4px 0;
+  appearance: none;
+  background: none;
+  border: 0;
+  font: inherit;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--paper-white);
+  opacity: 0.75;
+  cursor: pointer;
+  transition: opacity 200ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pause:hover {
+    opacity: 1;
+  }
+}
+
+.pause:focus-visible {
+  opacity: 1;
+  outline: 1px solid var(--paper-white);
+  outline-offset: 2px;
+}

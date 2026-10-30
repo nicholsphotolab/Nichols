@@ -1,12 +1,12 @@
 # dependencies
 /node_modules
 
-# next.js
-/.next/
+# build output
 /out/
+/.vite-ssr-tmp/
 
-# production
-/build
+# leftover from the pre-migration Next.js dev server, if it's still running
+/.next/
 
 # misc
 .DS_Store
@@ -25,4 +25,6 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+
+# licensed fonts — the license doesn't allow sharing them in a public repo
+/public/fonts/ABCAreal*

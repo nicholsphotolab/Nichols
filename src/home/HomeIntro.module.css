@@ -1,0 +1,157 @@
+/* HomeIntro.module.css
+   Figma "Slide up / Photos" (node 2653:6088), a 1440 × 1080 frame. The three
+   prints form a 424 × 522 stack centred in the frame; their positions below
+   are the Figma layout relative to the stack's top-left corner, rounded to
+   whole pixels.
+
+   Timing, from the Figma timeline (3.1s, all three on the same track shape):
+     each print rises in 300ms (ease-out), holds 1200ms, lifts out in 300ms
+     (ease-in) — 1800ms in all — starting 150ms after the one behind it.
+   The last print is gone at 300 + 1800 = 2100ms; the overlay then holds blank
+   for the rest of Figma's 3.1s cycle before revealing the page.
+
+   Travel: Figma starts each print 825.68px below its resting place and ends it
+   966.44px above — just past the frame edges at 1080px tall. Expressed here as
+   half the viewport plus the stack's half-height and Figma's margin, so the
+   prints start and finish just off-screen at any window height, and match
+   Figma exactly at 1080. */
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  /* Above everything — nav (9–11), toast (15–16), cart drawer (20–21). */
+  z-index: 50;
+  overflow: hidden;
+  background: var(--paper-white);
+  /* A zero-length step at the end of the sequence; its animationend is what
+     HomeIntro listens for to unmount the overlay. Hidden by the animation
+     itself first, so the page is revealed on time even if JS is slow. */
+  animation: introDone 1ms linear 3100ms forwards;
+}
+
+@keyframes introDone {
+  to {
+    visibility: hidden;
+  }
+}
+
+.stack {
+  --s: 1;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 424px;
+  /* Even, so centring it (translate -50%) stays on whole pixels. */
+  height: 522px;
+  translate: -50% -50%;
+  scale: var(--s);
+}
+
+/* Phones: the 424px stack shrinks to fit with a gutter. Travel is divided by
+   the same factor (below) so the prints still clear the screen edges. */
+@media (max-width: 500px) {
+  .stack {
+    --s: 0.75;
+  }
+}
+
+.print {
+  position: absolute;
+  --from: calc((50svh + 286px) / var(--s));
+  --to: calc((-50svh - 426px) / var(--s));
+  animation: introPrint 1800ms both;
+}
+
+@keyframes introPrint {
+  0% {
+    transform: translateY(var(--from));
+    animation-timing-function: ease-out;
+  }
+  16.667% {
+    transform: translateY(0);
+  }
+  83.333% {
+    transform: translateY(0);
+    animation-timing-function: ease-in;
+  }
+  100% {
+    transform: translateY(var(--to));
+  }
+}
+
+.photo {
+  position: absolute;
+  width: 231px;
+  height: 328px;
+  background: var(--black);
+}
+
+/* Back print ("Black 3") — the black block alone, no mat. */
+.print3 {
+  left: 0;
+  top: 0;
+  width: 231px;
+  height: 328px;
+}
+
+.print3 .photo {
+  left: 0;
+  top: 0;
+}
+
+/* Middle print ("2") — black block inset in a paper-white mat. */
+.print2 {
+  left: 73px;
+  top: 73px;
+  width: 269px;
+  height: 361px;
+  animation-delay: 150ms;
+}
+
+/* The mat (265 × 357) is drawn on a pseudo-element inside a box 4px larger,
+   rather than as the print's own background. Chrome leaves a thin dark line
+   along the right and bottom edges of a moving box; this way that edge falls
+   on transparent space instead of on the mat. (The front print's box already
+   runs past its mat, so it never shows the line.) */
+.print2::before {
+  content: "";
+  position: absolute;
+  inset: 0 4px 4px 0;
+  background: var(--paper-white);
+}
+
+.print2 .photo {
+  left: 23px;
+  top: 23px;
+}
+
+/* Front print ("1"). Its mat is a touch smaller than its photo plus inset, so
+   the block runs past the mat's right and bottom edges — as drawn in Figma. */
+.print1 {
+  left: 170px;
+  top: 170px;
+  width: 254px;
+  height: 351px;
+  animation-delay: 300ms;
+}
+
+.print1::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 252px;
+  height: 340px;
+  background: var(--paper-white);
+}
+
+.print1 .photo {
+  left: 23px;
+  top: 23px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .overlay {
+    display: none;
+  }
+}

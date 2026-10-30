@@ -1,0 +1,197 @@
+/* ProductGrid.module.css
+   The product-card row on the film and video pages (Figma node 1960:880): a
+   header row with the title + ← / → paging arrows, and a row of cards — a
+   bracketed eyebrow above a square, cropped-to-fill photo, then the format
+   name and price below. Each card is 3 grid columns wide with a single gutter
+   between them, so 4 cards fill the 12-column row. The arrows page the row
+   (one card per click) and grey out at each end. */
+
+.wrapper {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  /* An in-page jump (the film hero's LEARN MORE) lands clear of the fixed nav. */
+  scroll-margin-top: var(--nav-clearance);
+}
+
+/* ---------- Header: title + paging arrows ---------- */
+.header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.heading {
+  margin: 0;
+  font-weight: 700;
+  font-size: 24px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--black);
+}
+
+.arrows {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.arrow {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  color: var(--black);
+  transition: color 0.15s ease;
+}
+
+/* Disabled at the start/end — greyed. */
+.arrow:disabled {
+  color: var(--bw-400);
+  cursor: default;
+}
+
+/* ---------- Track: arrow-driven scroller (no visible scrollbar) ---------- */
+.track {
+  /* One site-grid column of the content width (the track sits inside the page
+     padding, so 100% is already the grid content width). */
+  --col-unit: calc(
+    (100% - (var(--grid-cols) - 1) * var(--grid-gap)) / var(--grid-cols)
+  );
+  display: flex;
+  /* Single gutter between cards (no empty column), so 4 three-column cards
+     fill the 12-column row exactly. */
+  gap: var(--grid-gap);
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scroll-behavior: smooth;
+  /* Hide the scrollbar — paging is driven by the arrows. */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.track::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Card ---------- */
+.card {
+  /* 3 of 12 columns (quarter row); tablet/mobile widths override below. */
+  flex: 0 0 calc(3 * var(--col-unit) + 2 * var(--grid-gap));
+  /* Stop a long card title from forcing the card wider than its flex-basis
+     (which would scale its image box taller and misalign the row). */
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  color: var(--black);
+}
+
+/* Square, cropped-to-fill product shot (Figma node 2827:1465). */
+.cardImage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--paper-white);
+  overflow: hidden;
+}
+
+.cardImg {
+  object-fit: cover;
+  object-position: center;
+}
+
+/* Solid placeholder used in place of a product photo for cards without one. */
+.cardImageFill {
+  position: absolute;
+  inset: 0;
+  background: var(--bw-600);
+}
+
+.cardText {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+}
+
+/* Bracketed eyebrow above the photo (Figma node 2841:2522) — the process on
+   film (C-41, B&W, E-6), the product category on video. */
+.cardTag {
+  margin: 0;
+  font-weight: 700;
+  font-size: 14px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  color: var(--black);
+  text-transform: uppercase;
+}
+
+.cardFormat {
+  margin: 0;
+  font-weight: 400;
+  font-size: 18px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  color: var(--black);
+  text-transform: uppercase;
+}
+
+.cardPrice {
+  margin: 0;
+  font-weight: 400;
+  font-size: 14px;
+  line-height: normal;
+  letter-spacing: 0.02em;
+  color: var(--bw-600);
+}
+
+/* Tablet: two cards per row (6 of 12 columns each). */
+@media (max-width: 900px) {
+  .card {
+    flex-basis: calc(6 * var(--col-unit) + 5 * var(--grid-gap));
+  }
+}
+
+/* Mobile (Figma node 2370:2315): no carousel — arrows hidden, all cards in a
+   two-column vertical grid with a 16px gutter. */
+@media (max-width: 700px) {
+  .arrows {
+    display: none;
+  }
+
+  .track {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 32px 16px;
+    overflow: visible;
+  }
+
+  .card {
+    flex-basis: auto;
+    gap: 8px;
+  }
+
+  .cardTag {
+    font-size: 12px;
+  }
+
+  .cardFormat {
+    font-size: 16px;
+  }
+
+  .cardPrice {
+    font-size: 13px;
+  }
+}

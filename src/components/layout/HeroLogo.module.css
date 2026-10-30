@@ -1,0 +1,33 @@
+.logo {
+  position: fixed;
+  top: 0;
+  left: 0;
+  /* Element is rendered at HERO size and scaled DOWN as you scroll, so the
+     docked nav state stays crisp. */
+  width: var(--logo-w, 145.41px);
+  height: var(--logo-h, 33px);
+  --tx: 40px;
+  --ty: 20.5px;
+  --scale: 1;
+  transform: translate(var(--tx), var(--ty)) scale(var(--scale));
+  transform-origin: top left;
+  /* Paper-white over the hero photo; black once docked in the solid nav bar
+     (or over the open menu's paper-white panel) — the same switch NavBrand
+     makes on every other page. */
+  color: var(--paper-white);
+  z-index: 10;
+  will-change: transform;
+  display: block;
+  transition: color 220ms var(--ease-out);
+}
+
+:global(html[data-nav-scrolled="true"]) .logo,
+:global(html[data-menu-open]) .logo {
+  color: var(--black);
+}
+
+.svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}

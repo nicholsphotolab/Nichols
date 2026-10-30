@@ -1,0 +1,159 @@
+/* The nav bar: a real flex container with 13.5px top/bottom padding. Its
+   height comes from that padding + the content (the brand slot sets the
+   content height) — 13.5 + 33 + 13.5 = 60px total. The brand mark is
+   rendered globally by <BrandLogoSwitch /> in RootLayout.tsx (HeroLogo on home,
+   NavBrand elsewhere) and overlays the slot. Soft scrim at the top of the
+   page; snaps to a solid paper-white bar once scrolled (data-scrolled set by
+   NavBar.tsx). */
+.bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 9;
+  display: flex;
+  align-items: center;
+  padding: 13.5px var(--page-pad);
+  transition: background 220ms var(--ease-out);
+}
+
+/* Slight black gradient behind the nav (from the Figma frame) — a smooth
+   top-down fade, darker at the top, to nothing at the bottom. A separate
+   pseudo-element sized taller than the (now 60px) bar so the fade tapers out
+   gradually instead of hard-cutting at the bar's bottom edge. */
+.bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.5) 0%,
+    rgba(0, 0, 0, 0) 100%
+  );
+  transition: opacity 220ms var(--ease-out);
+}
+
+/* Solid paper-white once scrolled — the same fill as the page, so the bar
+   reads as the page's own top edge holding the nav rather than as a panel
+   floating over it. Nothing shows through: the links and the red CTA sit on a
+   flat, predictable ground whatever is scrolling underneath. */
+.bar[data-scrolled="true"] {
+  background: var(--paper-white);
+}
+
+/* Even bar when scrolled — drop the gradient scrim entirely. */
+.bar[data-scrolled="true"]::before {
+  opacity: 0;
+}
+
+/* Reserves the brand mark's footprint on the left and sets the content height
+   the 40px padding wraps (so the bar is a true 40 + 33 + 40). */
+.brandSlot {
+  flex: none;
+  width: 145.41px;
+  height: 33px;
+}
+
+.cta {
+  /* Flex child pushed to the right edge of the padded bar. */
+  margin-left: auto;
+  flex: none;
+  display: inline-block;
+  text-align: center;
+  font-weight: 400;
+  font-size: 14px;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--paper-white);
+  background: var(--darkroom-red);
+  /* Fixed box, matching the cart chip's 35px height — the two read as a pair, so
+     any difference in height shows. Stays inline-block rather than becoming a
+     flex container: the reveal arrow leans on vertical-align, which a flex parent
+     would switch off. So the label centres on text-align and the 9px padding
+     (9 + 17 + 9 = 35) rather than on flex alignment. 120.2px of label inside
+     143 leaves it ~11px clear on each side. */
+  width: 143px;
+  height: 35px;
+  padding: 9px 0;
+}
+
+/* The ↗ aligns to the cap height of the label so its top lines up with the top
+   of the letters (e.g. the T) — the same vertical-align: top + line-height: 1
+   trick the global reveal-arrow utility uses for uppercase text.
+
+   What it does differently from that utility is how it hides. reveal-arrow keeps
+   the arrow's space reserved and only fades it, which is right for a link in a
+   row but wrong here: this label is centred inside a fixed-width box, so a
+   permanently reserved slot would hold the words 7.6px left of centre with
+   nothing visible on the right to balance them. Instead the arrow pulls its own
+   footprint back out of the line — a negative right margin of exactly its 11.14px
+   advance plus its 4px gap — so at rest the line is just the words and they
+   centre honestly. Hover releases the margin: the line grows by that 15.14px, the
+   text slides 7.57px left to make room, and the arrow fades in beside it.
+
+   The button itself never resizes through any of this. Its width is fixed at
+   143px above, and the full label is 119.96px, so the arrow opens into slack the
+   box already had. */
+.ctaArrow {
+  display: inline-block;
+  vertical-align: top;
+  line-height: 1;
+  margin-left: 4px;
+  margin-right: -15.14px;
+  opacity: 0;
+  transition: margin-right 220ms var(--ease-out), opacity 180ms var(--ease-out);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .cta:hover .ctaArrow {
+    margin-right: 0;
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaArrow {
+    transition: none;
+  }
+}
+
+/* This bar IS the menu's header — the open panel doesn't get a second,
+   differently styled one of its own (MobileMenu.tsx). At equal z-index and
+   later in the DOM, the panel would otherwise paint over it, so it lifts
+   above instead while the panel's open. Applies at every width, since MENU
+   opens the same full-screen panel everywhere now, not just ≤900px. */
+:global(html[data-menu-open]) .bar {
+  z-index: 10;
+}
+
+/* The hero scrim has nothing left to sit over once the panel is up, and
+   would just dirty the panel's top edge. */
+:global(html[data-menu-open]) .bar::before {
+  opacity: 0;
+}
+
+@media (max-width: 900px) {
+  /* Below the desktop MENU/logo-center/cart+order-prints arrangement, ORDER
+     PRINTS moves into the mobile panel's own header instead — the bar's
+     copy would otherwise fight the still-top-left logo for the same space
+     (see the ≤900px override in NavBrand.module.css). */
+  .cta {
+    display: none;
+  }
+}
+
+@media (max-width: 700px) {
+  /* Matches the phone mark (NavBrand.module.css) so the slot reserves the
+     room the logo actually uses. Height stays 33px on purpose:
+     this is what sets the bar's content height, and --nav-clearance (80.5px,
+     the top padding every page is built on) is a fixed token that wouldn't
+     follow it down. */
+  .brandSlot {
+    width: min(171.9px, 100vw - 212px);
+  }
+}

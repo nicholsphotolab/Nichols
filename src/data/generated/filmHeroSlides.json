@@ -1,0 +1,66 @@
+{
+  "desktop": [
+    {
+      "src": "/FILM/EKTACHROME%20E100_E-6_35MM.webp",
+      "stock": "EKTACHROME E100",
+      "process": "E-6",
+      "format": "35MM"
+    },
+    {
+      "src": "/FILM/FUJIFILM_C-41_35MM.webp",
+      "stock": "FUJIFILM",
+      "process": "C-41",
+      "format": "35MM"
+    },
+    {
+      "src": "/FILM/FUJIFILM_C-41_DISPOSABLE-2.webp",
+      "stock": "FUJIFILM",
+      "process": "C-41",
+      "format": "DISPOSABLE"
+    },
+    {
+      "src": "/FILM/Gold%20200_C-41_35MM.webp",
+      "stock": "Gold 200",
+      "process": "C-41",
+      "format": "35MM"
+    },
+    {
+      "src": "/FILM/Ilford%20HP5%20Plus%20400_BW_120.webp",
+      "stock": "Ilford HP5 Plus 400",
+      "process": "B&W",
+      "format": "120"
+    },
+    {
+      "src": "/FILM/Portra%20400_C-41_35MM.webp",
+      "stock": "Portra 400",
+      "process": "C-41",
+      "format": "35MM"
+    }
+  ],
+  "mobile": [
+    {
+      "src": "/FILM/mobile/120_C-41_Gold%20200.jpg",
+      "stock": "Gold 200",
+      "process": "C-41",
+      "format": "120"
+    },
+    {
+      "src": "/FILM/mobile/35MM_C-41_GOLD%20200.webp",
+      "stock": "GOLD 200",
+      "process": "C-41",
+      "format": "35MM"
+    },
+    {
+      "src": "/FILM/mobile/35mm_BW_Ilford%20HP5%20Plus%20400.webp",
+      "stock": "Ilford HP5 Plus 400",
+      "process": "B&W",
+      "format": "35mm"
+    },
+    {
+      "src": "/FILM/mobile/35mm_C-41_Cinestill800.webp",
+      "stock": "Cinestill 800",
+      "process": "C-41",
+      "format": "35mm"
+    }
+  ]
+}

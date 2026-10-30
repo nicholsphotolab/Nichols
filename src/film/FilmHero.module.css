@@ -1,0 +1,229 @@
+/* FilmHero.module.css
+   The black strip along the bottom of the film hero (Figma "Desktop - 102",
+   node 3141:2025): what the photo on screen was shot on on the left, its DX
+   edge code centred — both swapping, caption-style, as the photos change —
+   and the slideshow controls fixed on the right. 17px top and
+   bottom around a 14.5px row — 48.5px in all, which PageHero reserves under
+   the centred title (--hero-footer-h). */
+
+.strip {
+  position: relative;
+  padding: 17px 0;
+  background: var(--black);
+  color: var(--paper-white);
+  font-size: 12px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* ---------- The details ----------
+   One frame of details per photo, all in the same grid cell, and only the
+   current photo's showing — so they swap in place like a caption changing
+   from post to post rather than sliding. `index` flips at the halfway point
+   of a swipe or an auto-advance (useHeroSlideshow), so that's when it
+   changes. Every frame stays in the layout, so the strip holds the height of
+   the tallest. One column the strip's width, so a long frame squeezes to fit
+   instead of widening every frame past the screen. */
+.frames {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+}
+
+/* One photo's details, laid out across the strip: what it was shot on at the
+   left, its edge code dead centre (equal outer columns), the controls'
+   column left empty. */
+.frame {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  column-gap: var(--grid-gap);
+  padding: 0 var(--page-pad);
+}
+
+.frame[data-current] {
+  visibility: visible;
+}
+
+/* Stock, process, format — 100px apart, as drawn. */
+.shotOn {
+  display: flex;
+  align-items: flex-end;
+  gap: 100px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Only drawn in the phone layout, between process and format. */
+.slash {
+  display: none;
+}
+
+/* Sized with the hero's width: 183px at 1440, the Figma artwork's width. */
+.edge {
+  width: calc(100vw * 183 / 1440);
+  min-width: 140px;
+}
+
+/* Fixed over the right end of the strip, on its own black. */
+.controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  padding: 0 var(--page-pad) 0 36px;
+  background: var(--black);
+}
+
+.pause,
+.arrow {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pause {
+  font: inherit;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.arrow {
+  display: block;
+  width: 16.2px;
+  height: 15.12px;
+}
+
+.arrow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+/* ← at the first photo. The slideshow only ever moves forward — → wraps
+   from the last photo on to the first — so going back from the first is the
+   one move it doesn't make. */
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* What a photo was shot on, plus (phones only) its credit. On desktop the
+   wrapper steps aside so the details sit straight in the frame's grid. */
+.info {
+  display: contents;
+}
+
+.credit {
+  display: none;
+}
+
+/* ---------- Phone ----------
+   Figma "iPhone 17 - 21" (node 3209:2439), with the type at 10px rather
+   than the comp's 8px: two 10px lines 4px apart, 10px top and bottom — 44px
+   in all (PageHero's --hero-footer-h on a phone). At the left, two
+   lines 4px apart: "E6 / 35MM / EKTACHROME E100", then the photo credit.
+   The edge code sits at the right edge. No controls: the photos swipe, and
+   a swipe stops the auto-advance (FilmHero.tsx). */
+@media (max-width: 700px) {
+  .strip {
+    padding: 10px 0;
+    font-size: 10px;
+    line-height: 1;
+  }
+
+  /* Details at the left edge, the edge code at the right, at least 20px
+     apart. */
+  .frame {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    column-gap: 20px;
+  }
+
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* One line: process / format / stock. */
+  .shotOn {
+    display: flex;
+    gap: 4px;
+  }
+
+  .process {
+    order: 1;
+  }
+
+  .slash {
+    display: inline;
+    order: 2;
+  }
+
+  .format {
+    order: 3;
+  }
+
+  .slashStock {
+    order: 4;
+  }
+
+  .stock {
+    order: 5;
+  }
+
+  .credit {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .credit a {
+    position: relative;
+    color: inherit;
+    /* No underline — the ↗ marks it as a link. */
+    text-decoration: none;
+  }
+
+  /* The link is 10px type; this gives it a 24px-tall tap target without
+     moving anything. */
+  .credit a::after {
+    content: "";
+    position: absolute;
+    inset: -7px -4px;
+  }
+
+  .credit a:focus-visible {
+    outline: 1px solid var(--paper-white);
+    outline-offset: 2px;
+  }
+
+  /* 196px at 402 wide, as drawn; narrower phones (or a long stock name) take
+     it down to whatever room is left, and the code scales with it. */
+  .edge {
+    flex: 0 1 196px;
+    width: auto;
+    min-width: 0;
+  }
+
+  .controls {
+    display: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pause:hover {
+    opacity: 1;
+  }
+}

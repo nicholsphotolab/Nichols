@@ -1,0 +1,52 @@
+/* FilmStockConfigurator.module.css
+   Film-only additions to the shared configurator layout
+   (components/configurator/Configurator.module.css).
+
+   ---------- Optional extras ----------
+   Push/pull and the half-frame scan choice, behind their own disclosure between
+   the option rows and the estimate. Kept out of the option rows deliberately:
+   those are the questions every roll has to answer, and the divider above this
+   section is what marks the line between "configure your roll" and "anything
+   unusual?". */
+.more {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Reads as a quiet control, not another option row. */
+.moreToggle {
+  align-self: flex-start;
+  text-align: left;
+  appearance: none;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  color: var(--bw-600);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .moreToggle:hover {
+    color: var(--darkroom-red);
+  }
+}
+
+/* Wider than the 12px inside a single row: each entry here is a checkbox with
+   a block of controls under it, so they need to read as two separate questions
+   rather than one long list. */
+.moreRows {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 700px) {
+  .moreToggle {
+    font-size: 14px;
+  }
+}

@@ -8,9 +8,9 @@
   }
 </style>
 <rect width="1000" height="1000" class="bg"/>
-<path d="M308.229 252.398H532.971V149.77H210.51V580.822H308.229V252.398Z" class="fg"/>
-<path d="M437.697 388.401H660.022V283.176H337.534V714.228H437.697V388.401Z" class="fg"/>
-<path d="M467.001 419.177H660.022V714.228H467.001V419.177Z" class="fg"/>
-<path d="M467.001 419.177H760.185V819.453H467.001V419.177Z" class="fg"/>
-<path d="M467.001 419.177H789.49V850.231H467.001V419.177Z" class="fg"/>
+<g transform="translate(214.42 150.00) scale(0.52161)">
+<path d="M595 186H186V842H0V0H595V186Z" class="fg"/>
+<path d="M845 436H436V1092H250V250H845V436Z" class="fg"/>
+<rect x="500" y="500" width="595" height="842" class="fg"/>
+</g>
 </svg>
