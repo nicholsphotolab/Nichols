@@ -190,7 +190,7 @@
   }
 
   .hero[data-mobile="stacked"][data-footer] {
-    --hero-footer-h: 40px;
+    --hero-footer-h: 44px;
     min-height: 100lvh;
     justify-content: flex-end;
     padding-bottom: calc(var(--hero-footer-h) + 60px + var(--fold-slack));

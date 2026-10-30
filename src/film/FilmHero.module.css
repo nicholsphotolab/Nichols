@@ -22,9 +22,11 @@
    from post to post rather than sliding. `index` flips at the halfway point
    of a swipe or an auto-advance (useHeroSlideshow), so that's when it
    changes. Every frame stays in the layout, so the strip holds the height of
-   the tallest. */
+   the tallest. One column the strip's width, so a long frame squeezes to fit
+   instead of widening every frame past the screen. */
 .frames {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
 }
 
 /* One photo's details, laid out across the strip: what it was shot on at the
@@ -125,15 +127,16 @@
 }
 
 /* ---------- Phone ----------
-   Figma "iPhone 17 - 21" (node 3209:2439): 8px type, 10px top and bottom —
-   40px in all (PageHero's --hero-footer-h on a phone). At the left, two
+   Figma "iPhone 17 - 21" (node 3209:2439), with the type at 10px rather
+   than the comp's 8px: two 10px lines 4px apart, 10px top and bottom — 44px
+   in all (PageHero's --hero-footer-h on a phone). At the left, two
    lines 4px apart: "E6 / 35MM / EKTACHROME E100", then the photo credit.
    The edge code sits at the right edge. No controls: the photos swipe, and
    a swipe stops the auto-advance (FilmHero.tsx). */
 @media (max-width: 700px) {
   .strip {
     padding: 10px 0;
-    font-size: 8px;
+    font-size: 10px;
     line-height: 1;
   }
 
@@ -189,16 +192,16 @@
   .credit a {
     position: relative;
     color: inherit;
-    text-decoration: underline;
-    text-underline-offset: 1px;
+    /* No underline — the ↗ marks it as a link. */
+    text-decoration: none;
   }
 
-  /* The link is 8px type; this gives it a 24px-tall tap target without
+  /* The link is 10px type; this gives it a 24px-tall tap target without
      moving anything. */
   .credit a::after {
     content: "";
     position: absolute;
-    inset: -8px -4px;
+    inset: -7px -4px;
   }
 
   .credit a:focus-visible {
@@ -206,10 +209,11 @@
     outline-offset: 2px;
   }
 
-  /* 196px at 402 wide, as drawn. */
+  /* 196px at 402 wide, as drawn; narrower phones (or a long stock name) take
+     it down to whatever room is left, and the code scales with it. */
   .edge {
-    flex: none;
-    width: min(196px, 49vw);
+    flex: 0 1 196px;
+    width: auto;
     min-width: 0;
   }
 
