@@ -154,6 +154,6 @@
      the top padding every page is built on) is a fixed token that wouldn't
      follow it down. */
   .brandSlot {
-    width: min(171.9px, 100vw - 220px);
+    width: min(171.9px, 100vw - 212px);
   }
 }

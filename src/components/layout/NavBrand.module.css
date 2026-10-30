@@ -44,7 +44,7 @@
 /* On a phone the mark is drawn at 171.9 × 39 (Figma "iPhone 17 - 14", node
    3154:1591) — the same artwork, ratio held, just larger. It gives a little
    back on phones narrower than ~392px so a filled cart chip and CLOSE still
-   fit beside it (220px = both page pads, the chip, CLOSE and the gaps).
+   fit beside it (212px = both 16px page pads, the chip, CLOSE and the gaps).
 
    The bar's height is deliberately untouched: --nav-clearance is a fixed
    80.5px every page's top padding is built on, and .brandSlot sets the bar's
@@ -52,7 +52,8 @@
    down) instead, overhanging it by 3px top and bottom. */
 @media (max-width: 700px) {
   .brand {
-    --brand-w: min(171.9px, 100vw - 220px);
+    --brand-w: min(171.9px, 100vw - 212px);
+    left: var(--page-pad);
     width: var(--brand-w);
     height: calc(var(--brand-w) * 39 / 171.9);
     top: calc(30px - var(--brand-w) * 39 / 171.9 / 2);

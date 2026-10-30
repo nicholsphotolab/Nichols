@@ -42,6 +42,20 @@ const START_FRAME = 1;
 // scripts/generateStaticData.ts from the image's filename.
 export type HeroSlide = { src: string; stock: string; process: string; format: string };
 
+// Who took the hero photos — credited in the strip on phones.
+// Instagram handles. Each photo set has its own default photographer; a
+// stock listed here credits someone else, wherever that stock's photo
+// appears. (The credit line only shows on phones.)
+const DEFAULT_CREDIT = { desktop: "keatonhacking.design", mobile: "_madshutters_" };
+const CREDITS_BY_STOCK: Record<string, string> = {
+  "ilford hp5 plus 400": "_haycreates",
+};
+
+function creditFor(stock: string, fallback: string) {
+  const handle = CREDITS_BY_STOCK[stock.toLowerCase()] ?? fallback;
+  return { handle: `@${handle}`, href: `https://www.instagram.com/${handle}/` };
+}
+
 // "E-6" → "E6", as the strip prints it.
 const processLabel = (process: string) => process.replace("-", "");
 
@@ -69,11 +83,18 @@ export default function FilmHero({
     <HeroSlideshow
       key={useMobile ? "mobile" : "desktop"}
       slides={useMobile ? mobileSlides : slides}
+      defaultCredit={useMobile ? DEFAULT_CREDIT.mobile : DEFAULT_CREDIT.desktop}
     />
   );
 }
 
-function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
+function HeroSlideshow({
+  slides,
+  defaultCredit,
+}: {
+  slides: HeroSlide[];
+  defaultCredit: string;
+}) {
   const count = slides.length;
 
   // Bumped whenever the customer takes hold of the hero — a drag, or a step
@@ -161,16 +182,35 @@ function HeroSlideshow({ slides }: { slides: HeroSlide[] }) {
                 data-current={i === index || undefined}
                 aria-hidden={i !== index || undefined}
               >
-                {/* What this photo was shot on. A row on desktop; on a
-                    phone, process / format over the stock. */}
-                <p className={styles.shotOn}>
-                  <span className={styles.stock}>{s.stock}</span>
-                  <span className={styles.process}>{processLabel(s.process)}</span>
-                  <span className={styles.slash} aria-hidden="true">
-                    /
-                  </span>
-                  <span className={styles.format}>{s.format}</span>
-                </p>
+                <div className={styles.info}>
+                  {/* What this photo was shot on: stock, process, format
+                      100px apart on desktop; on a phone one line, "E6 /
+                      35MM / EKTACHROME E100". */}
+                  <p className={styles.shotOn}>
+                    <span className={styles.stock}>{s.stock}</span>
+                    <span className={styles.process}>{processLabel(s.process)}</span>
+                    <span className={styles.slash} aria-hidden="true">
+                      /
+                    </span>
+                    <span className={styles.format}>{s.format}</span>
+                    <span className={`${styles.slash} ${styles.slashStock}`} aria-hidden="true">
+                      /
+                    </span>
+                  </p>
+
+                  {/* Phones only. */}
+                  <p className={styles.credit}>
+                    <span>Photo:</span>
+                    <a
+                      href={creditFor(s.stock, defaultCredit).href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={`${creditFor(s.stock, defaultCredit).handle} on Instagram (opens in a new tab)`}
+                    >
+                      {creditFor(s.stock, defaultCredit).handle} <span aria-hidden="true">↗</span>
+                    </a>
+                  </p>
+                </div>
 
                 {/* Every photo gets one, 120 included — real film only
                     carries it on 35mm, but here it's the strip's look. */}

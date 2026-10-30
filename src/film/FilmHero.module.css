@@ -114,53 +114,102 @@
   cursor: default;
 }
 
+/* What a photo was shot on, plus (phones only) its credit. On desktop the
+   wrapper steps aside so the details sit straight in the frame's grid. */
+.info {
+  display: contents;
+}
+
+.credit {
+  display: none;
+}
+
 /* ---------- Phone ----------
-   Figma "iPhone 17 - 14" (node 3154:1591): 10px type, 10px top and bottom
-   (46px in all — PageHero's --hero-footer-h on a phone), process / format
-   stacked over the stock at the left, the edge code at the right. No
-   controls: the photos swipe, and a swipe stops the auto-advance
-   (FilmHero.tsx). */
+   Figma "iPhone 17 - 21" (node 3209:2439): 8px type, 10px top and bottom —
+   40px in all (PageHero's --hero-footer-h on a phone). At the left, two
+   lines 4px apart: "E6 / 35MM / EKTACHROME E100", then the photo credit.
+   The edge code sits at the right edge. No controls: the photos swipe, and
+   a swipe stops the auto-advance (FilmHero.tsx). */
 @media (max-width: 700px) {
   .strip {
     padding: 10px 0;
-    font-size: 10px;
-    line-height: 1.2;
+    font-size: 8px;
+    line-height: 1;
   }
 
+  /* Details at the left edge, the edge code at the right, at least 20px
+     apart. */
   .frame {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
+    align-items: center;
+    column-gap: 20px;
   }
 
+  .info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  /* One line: process / format / stock. */
   .shotOn {
-    display: grid;
-    /* The last column takes any width a long stock name below adds, so
-       "B&W / 35MM" stays tight instead of spreading to match it. */
-    grid-template-columns: max-content max-content 1fr;
-    justify-content: start;
-    column-gap: 4px;
-    row-gap: 2px;
+    display: flex;
+    gap: 4px;
   }
 
-  .process,
-  .slash,
-  .format {
-    grid-row: 1;
+  .process {
+    order: 1;
   }
 
   .slash {
     display: inline;
+    order: 2;
+  }
+
+  .format {
+    order: 3;
+  }
+
+  .slashStock {
+    order: 4;
   }
 
   .stock {
-    grid-row: 2;
-    grid-column: 1 / -1;
+    order: 5;
   }
 
-  /* 223px at 402 wide, as drawn. */
+  .credit {
+    display: flex;
+    gap: 4px;
+    margin: 0;
+    white-space: nowrap;
+  }
+
+  .credit a {
+    position: relative;
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 1px;
+  }
+
+  /* The link is 8px type; this gives it a 24px-tall tap target without
+     moving anything. */
+  .credit a::after {
+    content: "";
+    position: absolute;
+    inset: -8px -4px;
+  }
+
+  .credit a:focus-visible {
+    outline: 1px solid var(--paper-white);
+    outline-offset: 2px;
+  }
+
+  /* 196px at 402 wide, as drawn. */
   .edge {
-    width: min(223px, 52vw);
+    flex: none;
+    width: min(196px, 49vw);
     min-width: 0;
   }
 

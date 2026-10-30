@@ -168,10 +168,10 @@
 }
 
 /* ---------- Phone layout (opt-in: data-mobile="stacked") ----------
-   Figma "iPhone 17 - 14" (node 3154:1591), drawn for the film page. Fixed
+   Figma "iPhone 17 - 21" (node 3209:2439), drawn for the film page. Fixed
    type sizes instead of the fluid desktop scale, everything full-width in a
-   single stack pinned to the bottom of the screen: wordmark, description,
-   button, then 28px down to the footer strip.
+   single stack pinned to the bottom of the screen: wordmark, 14px, the
+   description, 28px, the button, then 60px down to the footer strip.
 
    Phone browser toolbars. The hero is sized in svh — the screen with the
    browser's bars showing — so on first load nothing important sits under
@@ -190,10 +190,10 @@
   }
 
   .hero[data-mobile="stacked"][data-footer] {
-    --hero-footer-h: 46px;
+    --hero-footer-h: 40px;
     min-height: 100lvh;
     justify-content: flex-end;
-    padding-bottom: calc(var(--hero-footer-h) + 28px + var(--fold-slack));
+    padding-bottom: calc(var(--hero-footer-h) + 60px + var(--fold-slack));
   }
 
   .hero[data-mobile="stacked"] .footer {
@@ -229,7 +229,7 @@
   /* 272px at 20px, as drawn — about 30 characters a line. */
   .hero[data-mobile="stacked"] .description {
     max-width: 13.6em;
-    margin-top: 20px;
+    margin-top: 14px;
     font-size: 20px;
     line-height: 1.2;
     letter-spacing: 0;
@@ -238,7 +238,7 @@
 
   .hero[data-mobile="stacked"] .cta {
     display: inline-block;
-    margin-top: 20px;
+    margin-top: 28px;
     padding: 10px 20px;
     /* The text block lets drags through to the slideshow; the button takes
        its own taps. */
