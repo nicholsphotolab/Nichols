@@ -1,9 +1,34 @@
-/* Height math (must mirror the constants in HeroLogo.tsx):
+/* The home page's first screen — see Hero.tsx.
+
+   At least a full screen tall, and never shorter than the room the fixed
+   HeroLogo needs (that math mirrors the constants in HeroLogo.tsx):
      logo top offset (120px)
-   + logo height ((100vw - 2×40px side pad) × 1345.52/5929 ≈ × 0.22694)
-   + 80px gap before the services index. */
+   + logo height ((100vw - 2×60px side pad) × 1345.52/5929 ≈ × 0.22694)
+   + 80px of breathing room. */
 .hero {
   position: relative;
   width: 100%;
-  height: calc(200px + (100vw - 120px) * 0.22694);
+  height: max(100svh, calc(200px + (100vw - 120px) * 0.22694));
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--black);
+}
+
+.backgrounds {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+.background {
+  object-fit: cover;
+}
+
+/* Darkens the top so the nav stays legible over the photo. */
+.scrim {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(to bottom, rgba(1, 1, 1, 0.45), rgba(1, 1, 1, 0) 160px);
 }

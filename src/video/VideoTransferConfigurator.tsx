@@ -64,7 +64,9 @@ export default function VideoTransferConfigurator({ slug }: { slug: string }) {
       format: option !== optionNames[0] ? slugifyOption(option) : null,
       output: output !== RECOMMENDED_OUTPUT.name ? slugifyOption(output) : null,
     });
-    window.history.replaceState(null, "", withBasePath(`/video/${slug}`) + query);
+    // Keeps the entry's existing state: React Router's key for this page
+    // lives there, and scroll restoration (useScrollRestoration) uses it.
+    window.history.replaceState(window.history.state, "", withBasePath(`/video/${slug}`) + query);
     // optionNames is derived from slug, which is listed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, option, output]);

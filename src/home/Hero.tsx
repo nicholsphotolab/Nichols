@@ -1,8 +1,29 @@
+// Hero.tsx
+// The home page's first screen: a full-bleed lab photo with the large logo
+// over it (HeroLogo, rendered globally by BrandLogoSwitch in RootLayout.tsx —
+// this section reserves its room).
+
+import Image from "@/components/Image";
+import { withBasePath } from "@/lib/basePath";
 import styles from "./Hero.module.css";
 
-// Spacer that reserves room for the fixed <HeroLogo /> (rendered globally by
-// BrandLogoSwitch in RootLayout.tsx). The logo sits below the nav at scroll 0 and
-// docks into the nav corner on scroll; see Hero.module.css for the height math.
+// Case-sensitive on deploy — must match the filename in public/ exactly.
+const BACKGROUND = "/Home.webp";
+
 export default function Hero() {
-  return <section className={styles.hero} aria-hidden="true" />;
+  return (
+    <section id="home-hero" className={styles.hero} aria-label="Nichols Photo Lab">
+      <div className={styles.backgrounds} aria-hidden="true">
+        <Image
+          className={styles.background}
+          src={withBasePath(BACKGROUND)}
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+        />
+      </div>
+      <div className={styles.scrim} aria-hidden="true" />
+    </section>
+  );
 }

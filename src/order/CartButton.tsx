@@ -7,6 +7,9 @@
 // snaps in (node 2679:1712). Each colourway has its own hover — the first fills,
 // the second thickens its rule and bolds its label.
 //
+// On phones the chip only shows once something is in the order — the phone
+// comp (Figma node 3154:1591) has just the logo and MENU.
+//
 // The swap runs off the html[data-nav-scrolled] attribute NavBar.tsx maintains,
 // plus html[data-menu-open]. `solid` comes in as a prop as well: the pages that
 // pin the solid bar from the top would otherwise paint a paper-white chip on a
@@ -24,6 +27,7 @@ export default function CartButton({ solid = false }: { solid?: boolean }) {
       type="button"
       className={styles.cart}
       data-solid={solid ? "true" : undefined}
+      data-empty={count === 0 ? "true" : undefined}
       onClick={openCart}
       aria-haspopup="dialog"
       aria-label={

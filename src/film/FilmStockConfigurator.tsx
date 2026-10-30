@@ -153,7 +153,9 @@ export default function FilmStockConfigurator({
           ? slugifyOption(sheetSize)
           : null,
     });
-    window.history.replaceState(null, "", withBasePath(`/film/${slug}`) + query);
+    // Keeps the entry's existing state: React Router's key for this page
+    // lives there, and scroll restoration (useScrollRestoration) uses it.
+    window.history.replaceState(window.history.state, "", withBasePath(`/film/${slug}`) + query);
     // The option lists are derived from size + output, which are listed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slug, stock, size, output, exp, sheetSize]);

@@ -65,6 +65,33 @@
   );
 }
 
+/* An even 20% black over the whole photo — enough to hold paper-white type
+   on a bright frame without darkening the picture toward the bottom. */
+.hero[data-scrim="flat"] .scrim {
+  background: rgba(1, 1, 1, 0.2);
+}
+
+/* Title and description centred vertically in the space between the nav and
+   the footer bar, rather than pinned near the bottom. */
+.hero[data-align="center"] {
+  justify-content: center;
+  padding-bottom: var(--hero-footer-h, 0px);
+}
+
+.hero[data-footer] {
+  --hero-footer-h: 48.5px;
+}
+
+/* Full-width bar along the bottom edge, over the scrim, under the slide
+   indicator layer (which a page with a footer replaces anyway). */
+.footer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+}
+
 .content {
   position: relative;
   z-index: 4;
@@ -134,21 +161,49 @@
   text-box: trim-both cap alphabetic;
 }
 
+/* The button under the description — phone layout only for now, so hidden
+   until the media query below draws it. */
+.cta {
+  display: none;
+}
+
 /* ---------- Phone layout (opt-in: data-mobile="stacked") ----------
-   Figma node 2370:2315, so far drawn for the film page only — the other heroes
-   still scale fluidly at phone width until they get the same treatment. Fixed
+   Figma "iPhone 17 - 14" (node 3154:1591), drawn for the film page. Fixed
    type sizes instead of the fluid desktop scale, everything full-width in a
-   single stack, and the caption moves under the description with its two
-   parts split to opposite edges. */
+   single stack pinned to the bottom of the screen: wordmark, description,
+   button, then 28px down to the footer strip.
+
+   Phone browser toolbars. The hero is sized in svh — the screen with the
+   browser's bars showing — so on first load nothing important sits under
+   Safari's floating bottom bar (or Chrome's). But stopping the hero exactly
+   at svh leaves a band of whatever comes next (paper-white) between the
+   strip and the toolbar, which reads as a gap. So a hero with a footer runs
+   on to lvh, the screen with the bars hidden, and the extra length
+   (--fold-slack: zero on desktop, the toolbar's height on a phone) is added
+   to the bottom of the black footer. The strip's text stays where svh would
+   put it, and the toolbar floats over plain black. */
 @media (max-width: 700px) {
   .hero[data-mobile="stacked"] {
-    /* The mobile comp leaves ~60px under the caption. */
+    --fold-slack: calc(100lvh - 100svh);
+    /* The comp leaves 60px under the text when there's no footer. */
     padding-bottom: 60px;
   }
 
-  /* Second gradient at the top (132px, matching the comp) so the nav reads
-     over bright photos; the bottom scrim is unchanged. */
-  .hero[data-mobile="stacked"] .scrim {
+  .hero[data-mobile="stacked"][data-footer] {
+    --hero-footer-h: 46px;
+    min-height: 100lvh;
+    justify-content: flex-end;
+    padding-bottom: calc(var(--hero-footer-h) + 28px + var(--fold-slack));
+  }
+
+  .hero[data-mobile="stacked"] .footer {
+    padding-bottom: var(--fold-slack);
+    background: var(--black);
+  }
+
+  /* Second gradient at the top so the nav reads over bright photos. The flat
+     wash (film) already covers that, so it keeps its even 20%. */
+  .hero[data-mobile="stacked"]:not([data-scrim="flat"]) .scrim {
     background:
       linear-gradient(to bottom, rgba(0, 0, 0, 0.54), rgba(153, 153, 153, 0))
         top / 100% 132px no-repeat,
@@ -159,24 +214,53 @@
       );
   }
 
+  .hero[data-mobile="stacked"] .content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
   .hero[data-mobile="stacked"] .title {
-    grid-column: 1 / -1;
-    font-size: 54px;
+    font-size: 58px;
+    line-height: 1;
+    letter-spacing: 0;
   }
 
+  /* 272px at 20px, as drawn — about 30 characters a line. */
   .hero[data-mobile="stacked"] .description {
-    grid-column: 1 / -1;
-    font-size: 16px;
+    max-width: 13.6em;
+    margin-top: 20px;
+    font-size: 20px;
+    line-height: 1.2;
+    letter-spacing: 0;
+    text-wrap: pretty;
   }
 
-  /* The first caption span stays at the left content edge, the second pushes
-     right. The 46px top margin absorbs the 22px the slide indicator used to
-     take up here before it moved to the photo's bottom edge, keeping the
-     caption exactly where the comp puts it. */
+  .hero[data-mobile="stacked"] .cta {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    /* The text block lets drags through to the slideshow; the button takes
+       its own taps. */
+    pointer-events: auto;
+    background: var(--paper-white);
+    color: var(--black);
+    font-size: 16px;
+    line-height: 1.2;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    text-decoration: none;
+  }
+
+  .hero[data-mobile="stacked"] .cta:focus-visible {
+    outline: 2px solid var(--paper-white);
+    outline-offset: 3px;
+  }
+
+  /* The caption moves under the description with its two parts split to
+     opposite edges. */
   .hero[data-mobile="stacked"] .meta {
-    grid-column: 1 / -1;
-    grid-row: 4;
-    align-self: start;
+    align-self: stretch;
     margin-top: 46px;
     display: flex;
     justify-content: space-between;
@@ -185,7 +269,6 @@
     text-align: left;
   }
 
-  /* The two caption parts sit side by side (flex + gap) instead of stacked. */
   .hero[data-mobile="stacked"] .meta br {
     display: none;
   }

@@ -12,6 +12,8 @@
   display: flex;
   flex-direction: column;
   gap: 16px;
+  /* An in-page jump (the film hero's LEARN MORE) lands clear of the fixed nav. */
+  scroll-margin-top: var(--nav-clearance);
 }
 
 /* ---------- Header: title + paging arrows ---------- */

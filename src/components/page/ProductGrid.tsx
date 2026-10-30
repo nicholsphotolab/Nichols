@@ -33,11 +33,14 @@ export type ProductCard = {
 };
 
 export default function ProductGrid({
+  id,
   heading,
   label,
   itemsLabel,
   cards,
 }: {
+  /** Anchor for in-page links, e.g. the film hero's LEARN MORE. */
+  id?: string;
   heading: string;
   /** Accessible name for the section. */
   label: string;
@@ -81,7 +84,7 @@ export default function ProductGrid({
   };
 
   return (
-    <section className={styles.wrapper} aria-label={label}>
+    <section id={id} className={styles.wrapper} aria-label={label}>
       <div className={styles.header}>
         <h2 className={styles.heading}>{heading}</h2>
         <div className={styles.arrows}>

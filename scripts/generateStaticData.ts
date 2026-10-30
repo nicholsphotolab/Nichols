@@ -85,12 +85,20 @@ function galleryFor(slug: string, stock: FilmStock): StockGallery {
   return { product, bySize };
 }
 
-type HeroSlide = { src: string; meta: [string, string] };
+// One hero photo and what it was shot on — the film hero's bottom strip shows
+// these, and the stock picks the photo's DX edge code. Mirrored by HeroSlide
+// in src/film/FilmHero.tsx.
+type HeroSlide = { src: string; stock: string; process: string; format: string };
+
+const PROCESS_RE = /^(C-?41|E-?6|B&W|BW)$/i;
+const FORMAT_RE = /^(35MM|120|110|DISPOSABLE|SHEET.*|4X5|5X7|8X10)$/i;
 
 // public/FILM/ (desktop/tablet) and public/FILM/mobile/ (≤700px). Each file
-// is named "Stock_Process_Format" — e.g. "Portra 400_C-41_120.webp" →
-// caption "Portra 400" / "C-41 • 120". A trailing "-N" disambiguator before
-// the extension is stripped from the caption. Subdirectories are ignored.
+// is named from three underscore-separated parts — stock, process, format —
+// in any order: "Portra 400_C-41_35MM.webp" and "35MM_C-41_Portra 400.webp"
+// read the same. The process and format are recognised by shape; whatever's
+// left is the stock. A trailing "-N" disambiguator before the extension is
+// ignored. Subdirectories are ignored.
 function getHeroSlides(...segments: string[]): HeroSlide[] {
   const dir = path.join(PUBLIC, ...segments);
   const urlBase = `/${segments.join("/")}`;
@@ -106,15 +114,24 @@ function getHeroSlides(...segments: string[]): HeroSlide[] {
     if (file.startsWith(".") || !IMAGE_RE.test(file)) continue;
 
     const base = file.replace(IMAGE_RE, "").replace(/-\d+$/, "");
-    const [stock = base, ...rest] = base
+    const parts = base
       .split("_")
       .map((part) => part.trim())
       .filter(Boolean);
+    const processPart = parts.find((p) => PROCESS_RE.test(p)) ?? "";
+    const format = parts.find((p) => FORMAT_RE.test(p)) ?? "";
+    // "Cinestill800" → "Cinestill 800": a name run together with its speed
+    // gets its space back (two or more letters, then two or more digits — so
+    // "HP5" and "E100" stay whole).
+    const stock = parts
+      .filter((p) => p !== processPart && p !== format)
+      .join(" ")
+      .replace(/([A-Za-z]{2,})(\d{2,})/g, "$1 $2");
+    // Filenames spell black & white "BW" — an "&" in a URL trips up Vite's
+    // dev server — but the strip prints it as B&W.
+    const process = /^b&?w$/i.test(processPart) ? "B&W" : processPart;
 
-    slides.push({
-      src: `${urlBase}/${encodeURIComponent(file)}`,
-      meta: [stock, rest.join(" • ")],
-    });
+    slides.push({ src: `${urlBase}/${encodeURIComponent(file)}`, stock, process, format });
   }
   return slides;
 }

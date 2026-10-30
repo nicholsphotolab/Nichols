@@ -7,6 +7,7 @@
     "dev": "vite --port 3001",
     "build": "tsc --noEmit && node scripts/build.mjs",
     "typecheck": "tsc --noEmit",
+    "test": "node --test \"src/**/*.test.ts\"",
     "serve": "npx serve out -p 3001",
     "lint": "eslint ."
   },

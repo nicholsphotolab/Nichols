@@ -1,0 +1,29 @@
+/* DxEdgeCode.module.css
+   Ink comes from --dx-ink, falling back to the surrounding text colour — so
+   it's paper-white on the black hero strip without being told. To print it
+   the way it looks on an orange C-41 base, set e.g.
+     --dx-ink: #24130b;  background: #e85a1c;
+   on the element behind it. */
+
+.dx {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+  fill: var(--dx-ink, currentColor);
+}
+
+/* Heavy and narrow, like the edge-print numerals on film. */
+.number {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+/* Below ~360px wide the code gets narrower than about 1px per bit and turns
+   to mush — leave it out. */
+@media (max-width: 359px) {
+  .dx {
+    display: none;
+  }
+}

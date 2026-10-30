@@ -16,11 +16,18 @@ const THRESHOLD = 40; // px scrolled before the solid bar snaps in
 export default function NavBar({
   children,
   solid = false,
+  solidAfter,
 }: {
   children: ReactNode;
   solid?: boolean;
+  /** Scroll distance before the solid bar snaps in, when a page wants it
+   *  later than the default (the home page waits until its photo is past). */
+  solidAfter?: () => number;
 }) {
   const ref = useRef<HTMLDivElement | null>(null);
+  // Read on every scroll frame without re-subscribing the listener.
+  const solidAfterRef = useRef(solidAfter);
+  solidAfterRef.current = solidAfter;
 
   useEffect(() => {
     const el = ref.current;
@@ -42,7 +49,7 @@ export default function NavBar({
 
     const update = () => {
       raf = 0;
-      const next = window.scrollY > THRESHOLD;
+      const next = window.scrollY > (solidAfterRef.current?.() ?? THRESHOLD);
       if (next !== scrolled) {
         scrolled = next;
         el.dataset.scrolled = next ? "true" : "false";

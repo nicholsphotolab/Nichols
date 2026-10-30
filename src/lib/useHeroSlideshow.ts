@@ -11,6 +11,12 @@
 // a separate index. One thing moves, whether it's a timer or a finger moving
 // it.
 //
+// With `loop`, it only ever travels forward: the caller renders a copy of the
+// first slide after the last (HeroSlides does, given the same flag), the
+// slideshow moves on to that copy like any other slide, and once it's sitting
+// there the scroller jumps back to the real first slide. The two look the
+// same, so the jump can't be seen, and the next advance carries on rightward.
+//
 // What this owns: the scroll position, the index derived from it, and the ink
 // on the progress track. What it deliberately doesn't own is *when* to
 // advance — the film hero runs a timer and the video hero waits for a clip to
@@ -23,12 +29,16 @@ export function useHeroSlideshow({
   count,
   slideMs,
   onUserTakeover,
+  loop = false,
 }: {
   count: number;
   /** How long an auto-advance takes to cross. Hand-driven moves aren't timed. */
   slideMs: number;
   /** Fired when the customer grabs the hero, so callers can re-arm their hold. */
   onUserTakeover?: () => void;
+  /** Always move forward, wrapping from the last slide on to the first (via
+   *  a copy of it — see above) instead of turning round. */
+  loop?: boolean;
 }) {
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const indicatorRef = useRef<HTMLDivElement | null>(null);
@@ -44,6 +54,7 @@ export function useHeroSlideshow({
 
   const frame = useRef(0);
   const tween = useRef(0);
+  const settle = useRef(0);
   const takeover = useRef(onUserTakeover);
   takeover.current = onUserTakeover;
 
@@ -62,14 +73,18 @@ export function useHeroSlideshow({
       const w = el.clientWidth;
       if (!w) return;
 
-      const to = Math.max(0, Math.min(count - 1, next)) * w;
+      // With loop, one step past the last slide is the copy of the first.
+      const last = loop ? count : count - 1;
+      const target = Math.max(0, Math.min(last, next));
+      const to = target * w;
       const from = el.scrollLeft;
       if (Math.abs(to - from) < 1) return;
 
       stopTween();
 
       if (prefersReducedMotion()) {
-        el.scrollLeft = to;
+        // No travel to show, so skip the copy and land on the real thing.
+        el.scrollLeft = loop && target === count ? 0 : to;
         return;
       }
 
@@ -95,12 +110,14 @@ export function useHeroSlideshow({
           tween.current = requestAnimationFrame(step);
         } else {
           tween.current = 0;
+          // Arrived on the copy of the first slide: swap in the real one.
+          if (loop && target === count) el.scrollLeft = 0;
           el.style.removeProperty("scroll-snap-type");
         }
       };
       tween.current = requestAnimationFrame(step);
     },
-    [count, slideMs, stopTween]
+    [count, slideMs, stopTween, loop]
   );
 
   // One step, turning round at the ends rather than wrapping. Wrapping was
@@ -111,6 +128,10 @@ export function useHeroSlideshow({
   const dir = useRef(1);
   const advance = useCallback(() => {
     if (count <= 1) return;
+    if (loop) {
+      goTo(indexRef.current + 1);
+      return;
+    }
     let next = indexRef.current + dir.current;
     if (next > count - 1) {
       dir.current = -1;
@@ -120,7 +141,7 @@ export function useHeroSlideshow({
       next = 1;
     }
     goTo(next);
-  }, [count, goTo]);
+  }, [count, goTo, loop]);
 
   // ---- scroll → ink + index ----
   useEffect(() => {
@@ -140,8 +161,21 @@ export function useHeroSlideshow({
 
       // Commits at the midpoint, which is where the caption used to be flipped
       // by a timer set to half the slide duration. Same moment, no timer.
-      const nearest = Math.round(pos);
+      // The copy of the first slide counts as the first slide.
+      const nearest = loop ? Math.round(pos) % count : Math.round(pos);
       if (nearest !== indexRef.current) setIndex(nearest);
+
+      // Swiped all the way on to the copy by hand: once it has come to rest
+      // there, swap in the real first slide. (The tween does its own swap.)
+      if (loop && !tween.current && pos > count - 0.01) {
+        window.clearTimeout(settle.current);
+        settle.current = window.setTimeout(wrapIfAtCopy, 150);
+      }
+    };
+
+    const wrapIfAtCopy = () => {
+      const w = el.clientWidth;
+      if (w && !tween.current && el.scrollLeft / w > count - 0.01) el.scrollLeft = 0;
     };
 
     const onScroll = () => {
@@ -149,11 +183,16 @@ export function useHeroSlideshow({
     };
 
     el.addEventListener("scroll", onScroll, { passive: true });
+    // Where supported, scrollend says "at rest" exactly, so the swap doesn't
+    // wait on the timer above.
+    if (loop) el.addEventListener("scrollend", wrapIfAtCopy);
     return () => {
       el.removeEventListener("scroll", onScroll);
+      el.removeEventListener("scrollend", wrapIfAtCopy);
+      window.clearTimeout(settle.current);
       if (frame.current) cancelAnimationFrame(frame.current);
     };
-  }, []);
+  }, [count, loop]);
 
   // ---- the customer takes over ----
   // A hand on the hero outranks the timer: kill any tween in flight so the two

@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from "react-router-dom";
 import RootLayout from "./RootLayout";
 import NotFoundPage from "./NotFoundPage";
 import { getRouteMeta } from "./routeMeta";
+import { useScrollRestoration } from "@/lib/useScrollRestoration";
 import Home from "@/home/HomePage";
 import FilmPage from "@/film/FilmPage";
 import FilmStockPage from "@/film/FilmStockPage";
@@ -32,10 +33,18 @@ function RouteMeta() {
   return null;
 }
 
+// Top of the page on a new page, back to the same spot on Back / Forward —
+// see useScrollRestoration.
+function ScrollManager() {
+  useScrollRestoration();
+  return null;
+}
+
 export default function App() {
   return (
     <RootLayout>
       <RouteMeta />
+      <ScrollManager />
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/film" element={<FilmPage />} />

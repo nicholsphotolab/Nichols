@@ -202,12 +202,12 @@ export const STOCKS: Record<string, FilmStock> = {
     blurb:
       "Developed in dedicated black & white chemistry for true neutral tones and deep blacks. Timeless, grain-forward, and beautifully simple.",
     basePrice: 8.5,
-    image: "/B&W.webp",
+    image: "/BW.webp",
     sizeImages: {
-      "35MM": "/B&W_35mm.webp",
-      "DISPOSABLE CAMERA": "/B&W_Disposable.webp",
-      "110": "/B&W_110.webp",
-      "SHEET/4X5": "/B&W_Sheet_4x5.webp",
+      "35MM": "/BW_35mm.webp",
+      "DISPOSABLE CAMERA": "/BW_Disposable.webp",
+      "110": "/BW_110.webp",
+      "SHEET/4X5": "/BW_Sheet_4x5.webp",
     },
     sizes: ["35MM", "DISPOSABLE CAMERA", "110", "120", "SHEET"],
     sheetSizes: SHEET_SIZES,

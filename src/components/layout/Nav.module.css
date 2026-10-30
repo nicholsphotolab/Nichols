@@ -148,12 +148,12 @@
 }
 
 @media (max-width: 700px) {
-  /* Matches the smaller phone mark (NavBrand.module.css) so the slot doesn't
-     keep reserving room the logo no longer uses. Height stays 33px on purpose:
+  /* Matches the phone mark (NavBrand.module.css) so the slot reserves the
+     room the logo actually uses. Height stays 33px on purpose:
      this is what sets the bar's content height, and --nav-clearance (80.5px,
      the top padding every page is built on) is a fixed token that wouldn't
      follow it down. */
   .brandSlot {
-    width: 104px;
+    width: min(171.9px, 100vw - 220px);
   }
 }

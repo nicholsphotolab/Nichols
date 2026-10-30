@@ -1,7 +1,8 @@
 /* HomeIntro.module.css
    Figma "Slide up / Photos" (node 2653:6088), a 1440 × 1080 frame. The three
-   prints form a 424 × 520.5 stack centred in the frame; their positions below
-   are the Figma layout relative to the stack's top-left corner.
+   prints form a 424 × 522 stack centred in the frame; their positions below
+   are the Figma layout relative to the stack's top-left corner, rounded to
+   whole pixels.
 
    Timing, from the Figma timeline (3.1s, all three on the same track shape):
      each print rises in 300ms (ease-out), holds 1200ms, lifts out in 300ms
@@ -40,7 +41,8 @@
   left: 50%;
   top: 50%;
   width: 424px;
-  height: 520.5px;
+  /* Even, so centring it (translate -50%) stays on whole pixels. */
+  height: 522px;
   translate: -50% -50%;
   scale: var(--s);
 }
@@ -79,17 +81,17 @@
 
 .photo {
   position: absolute;
-  width: 231.01px;
-  height: 327.508px;
-  object-fit: cover;
+  width: 231px;
+  height: 328px;
+  background: var(--black);
 }
 
-/* Back print ("Black 3") — the photo alone, no mat. */
+/* Back print ("Black 3") — the black block alone, no mat. */
 .print3 {
   left: 0;
   top: 0;
-  width: 231.01px;
-  height: 327.508px;
+  width: 231px;
+  height: 328px;
 }
 
 .print3 .photo {
@@ -97,28 +99,39 @@
   top: 0;
 }
 
-/* Middle print ("2") — photo inset in a paper-white mat. */
+/* Middle print ("2") — black block inset in a paper-white mat. */
 .print2 {
-  left: 73.124px;
-  top: 73.105px;
-  width: 264.741px;
-  height: 356.704px;
-  background: var(--paper-white);
+  left: 73px;
+  top: 73px;
+  width: 269px;
+  height: 361px;
   animation-delay: 150ms;
 }
 
+/* The mat (265 × 357) is drawn on a pseudo-element inside a box 4px larger,
+   rather than as the print's own background. Chrome leaves a thin dark line
+   along the right and bottom edges of a moving box; this way that edge falls
+   on transparent space instead of on the mat. (The front print's box already
+   runs past its mat, so it never shows the line.) */
+.print2::before {
+  content: "";
+  position: absolute;
+  inset: 0 4px 4px 0;
+  background: var(--paper-white);
+}
+
 .print2 .photo {
-  left: 23.388px;
-  top: 23.412px;
+  left: 23px;
+  top: 23px;
 }
 
 /* Front print ("1"). Its mat is a touch smaller than its photo plus inset, so
-   the photo runs past the mat's right and bottom edges — as drawn in Figma. */
+   the block runs past the mat's right and bottom edges — as drawn in Figma. */
 .print1 {
-  left: 169.587px;
-  top: 169.621px;
-  width: 254.413px;
-  height: 350.886px;
+  left: 170px;
+  top: 170px;
+  width: 254px;
+  height: 351px;
   animation-delay: 300ms;
 }
 
@@ -127,14 +140,14 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 252.485px;
-  height: 340.191px;
+  width: 252px;
+  height: 340px;
   background: var(--paper-white);
 }
 
 .print1 .photo {
-  left: 23.403px;
-  top: 23.378px;
+  left: 23px;
+  top: 23px;
 }
 
 @media (prefers-reduced-motion: reduce) {

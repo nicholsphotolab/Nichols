@@ -15,7 +15,8 @@ import { STOCKS } from "./filmStocksData";
 // Tag (the process) and price come from filmStocksData, so they can only be
 // changed there. Format titles are mixed case for screen readers (all-caps
 // text can be read letter by letter); the CSS uppercases them for display.
-// Image paths are case-sensitive on deploy; "&" is pre-encoded as %26.
+// Image paths are case-sensitive on deploy. Keep "&" out of filenames — Vite's
+// dev server can't serve one (B&W files are named BW).
 function card(
   slug: string,
   title: string,
@@ -35,14 +36,14 @@ function card(
 
 export const FILM_CARDS: ProductCard[] = [
   card("c-41", "35mm", "/C-41_35mm.webp"),
-  card("bw", "35mm", "/B%26W_35mm.webp"),
+  card("bw", "35mm", "/BW_35mm.webp"),
   card("e-6", "35mm", "/E-6_35mm.webp"),
   card("c-41", "Disposable", "/C-41_Disposable.webp", "?format=disposable-camera"),
-  card("bw", "Disposable", "/B%26W_Disposable.webp", "?format=disposable-camera"),
+  card("bw", "Disposable", "/BW_Disposable.webp", "?format=disposable-camera"),
   card("c-41", "120", "/C-41_120.webp", "?format=120"),
   card("bw", "120", null, "?format=120"),
   card("e-6", "120", "/E-6_120.webp", "?format=120"),
-  card("bw", "Sheet 4x5", "/B%26W_Sheet_4x5.webp", "?format=sheet&sheet=4x5"),
+  card("bw", "Sheet 4x5", "/BW_Sheet_4x5.webp", "?format=sheet&sheet=4x5"),
 ];
 
 // What each process actually is, what comes back from each output choice, and

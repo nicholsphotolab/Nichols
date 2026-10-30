@@ -8,10 +8,13 @@ import styles from "./Nav.module.css";
 export default function Nav({
   activeHref,
   solid,
+  solidAfter,
 }: {
   activeHref?: string;
   /** Pin the solid white bar from the top (pages without a dark hero). */
   solid?: boolean;
+  /** Scroll distance before the solid bar snaps in, if not the default. */
+  solidAfter?: () => number;
 }) {
   return (
     <>
@@ -29,7 +32,7 @@ export default function Nav({
           reads. Stacking is set by explicit z-indexes, not source order. */}
       <MobileMenu activeHref={activeHref} />
 
-      <NavBar solid={solid}>
+      <NavBar solid={solid} solidAfter={solidAfter}>
         <span className={styles.brandSlot} aria-hidden="true" />
 
         {/* Same reveal gesture as the global reveal-arrow utility, but local: that

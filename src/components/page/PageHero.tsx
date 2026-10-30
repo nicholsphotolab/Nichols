@@ -24,6 +24,9 @@ export default function PageHero({
   background,
   scrim,
   mobile,
+  align,
+  footer,
+  cta,
 }: {
   /** Accessible name for the hero section. */
   label: string;
@@ -43,10 +46,19 @@ export default function PageHero({
   image?: string;
   /** Anything else to sit under the scrim — e.g. a HeroSlides slideshow. */
   background?: ReactNode;
-  /** "strong" darkens the scrim for footage that runs dark and busy. */
-  scrim?: "strong";
+  /** "strong" darkens the scrim for footage that runs dark and busy; "flat"
+   *  is an even 20% black wash over the whole photo instead of a gradient. */
+  scrim?: "strong" | "flat";
   /** "stacked" opts into the retuned phone layout (see the stylesheet). */
   mobile?: "stacked";
+  /** "center" puts the title and description in the middle of the hero
+   *  (between the nav and any footer) instead of near the bottom. */
+  align?: "center";
+  /** A full-width bar along the hero's bottom edge, above the scrim. */
+  footer?: ReactNode;
+  /** A button under the description. Only drawn in the phone layout so far
+   *  (Figma "iPhone 17 - 14", node 3154:1591) — the desktop comp has none. */
+  cta?: { label: string; href: string };
 }) {
   return (
     <section
@@ -54,6 +66,8 @@ export default function PageHero({
       aria-label={label}
       data-scrim={scrim}
       data-mobile={mobile}
+      data-align={align}
+      data-footer={footer ? "" : undefined}
       style={
         {
           "--title-bearing": `${titleBearing}em`,
@@ -77,8 +91,15 @@ export default function PageHero({
       <div className={styles.content}>
         <h1 className={styles.title}>{title}</h1>
         <p className={styles.description}>{description}</p>
+        {cta && (
+          <a className={styles.cta} href={cta.href}>
+            {cta.label}
+          </a>
+        )}
         {meta && <p className={styles.meta}>{meta}</p>}
       </div>
+
+      {footer && <div className={styles.footer}>{footer}</div>}
     </section>
   );
 }

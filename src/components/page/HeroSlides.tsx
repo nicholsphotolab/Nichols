@@ -16,6 +16,8 @@ export default function HeroSlides({
   slides,
   noun,
   onPick,
+  controls = true,
+  loop = false,
 }: {
   slideshow: ReturnType<typeof useHeroSlideshow>;
   slides: { key: string; content: ReactNode }[];
@@ -23,8 +25,15 @@ export default function HeroSlides({
   noun: string;
   /** Called after a segment jumps to its slide, e.g. to restart a hold timer. */
   onPick?: () => void;
+  /** False when the page draws its own controls (the film hero's strip):
+   *  leaves out the progress track and the pause button. Such a page can
+   *  still place the track itself — see SlideIndicator below. */
+  controls?: boolean;
+  /** Pass the same flag given to useHeroSlideshow: adds the copy of the first
+   *  slide after the last that its forward-only loop wraps through. */
+  loop?: boolean;
 }) {
-  const { scrollerRef, indicatorRef, index, goTo, paused, setPaused } = slideshow;
+  const { scrollerRef, paused, setPaused } = slideshow;
   const count = slides.length;
 
   return (
@@ -41,38 +50,20 @@ export default function HeroSlides({
               {slide.content}
             </div>
           ))}
+          {loop && count > 1 && (
+            <div className={styles.slide}>{slides[0].content}</div>
+          )}
         </div>
       </div>
 
-      {count > 1 && (
+      {controls && (
         // Pinned to the bottom edge of the frame — it indicates the image, not
         // a line in the text block, and it's the one thing here that still
-        // takes clicks. The rule and the travelling mark are drawn by this
-        // container; the buttons are transparent targets over it.
-        // --slide-index is the first-paint position; useHeroSlideshow then
-        // writes a fractional --slide-pos on every scroll frame.
-        <div
-          className={styles.indicators}
-          ref={indicatorRef}
-          style={{ "--slide-count": count, "--slide-index": index } as CSSProperties}
-        >
-          {slides.map((slide, i) => (
-            <button
-              key={slide.key}
-              type="button"
-              className={styles.segment}
-              aria-label={`Go to ${noun} ${i + 1} of ${count}`}
-              aria-current={i === index}
-              onClick={() => {
-                goTo(i);
-                onPick?.();
-              }}
-            />
-          ))}
-        </div>
+        // takes clicks.
+        <SlideIndicator slideshow={slideshow} count={count} noun={noun} onPick={onPick} />
       )}
 
-      {count > 1 && (
+      {controls && count > 1 && (
         // Stops the auto-advance (and any playing clip) — anything that moves
         // on its own for more than five seconds needs a way to stop it.
         <button
@@ -85,5 +76,56 @@ export default function HeroSlides({
         </button>
       )}
     </>
+  );
+}
+
+// The segmented progress track — one hairline, divided by slide, with a mark
+// one slide wide that travels along it with the photos. The rule and the mark
+// are drawn by the container; the buttons are transparent targets over it.
+// --slide-index is the first-paint position; useHeroSlideshow then writes a
+// fractional --slide-pos on every scroll frame (to whatever element its
+// indicatorRef is on — this one).
+//
+// HeroSlides pins it to the bottom of the frame. A page with its own strip
+// (the film hero) places it along the strip's top edge instead, with
+// placement="top" inside a positioned parent.
+export function SlideIndicator({
+  slideshow,
+  count,
+  noun,
+  onPick,
+  placement = "bottom",
+}: {
+  slideshow: ReturnType<typeof useHeroSlideshow>;
+  count: number;
+  noun: string;
+  onPick?: () => void;
+  placement?: "bottom" | "top";
+}) {
+  const { indicatorRef, index, goTo } = slideshow;
+  if (count <= 1) return null;
+
+  return (
+    <div
+      className={styles.indicators}
+      data-placement={placement}
+      ref={indicatorRef}
+      style={{ "--slide-count": count, "--slide-index": index } as CSSProperties}
+    >
+      <span className={styles.rail} aria-hidden="true" />
+      {Array.from({ length: count }, (_, i) => (
+        <button
+          key={i}
+          type="button"
+          className={styles.segment}
+          aria-label={`Go to ${noun} ${i + 1} of ${count}`}
+          aria-current={i === index}
+          onClick={() => {
+            goTo(i);
+            onPick?.();
+          }}
+        />
+      ))}
+    </div>
   );
 }

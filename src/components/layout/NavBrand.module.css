@@ -41,20 +41,20 @@
   }
 }
 
-/* On a phone the desktop mark takes 145 of the 335px between the page's
-   padding — 43% of the bar spent on the logo, with the cart chip and the MENU
-   trigger dividing what's left. At 104px it reads the same and gives that row
-   41px back. The ratio is held exactly (145.41:33 → 104:23.6) so the wordmark
-   doesn't distort.
+/* On a phone the mark is drawn at 171.9 × 39 (Figma "iPhone 17 - 14", node
+   3154:1591) — the same artwork, ratio held, just larger. It gives a little
+   back on phones narrower than ~392px so a filled cart chip and CLOSE still
+   fit beside it (220px = both page pads, the chip, CLOSE and the gaps).
 
-   The bar's height is deliberately untouched: --nav-clearance is a fixed 80.5px
-   that every page's top padding is built on, and .brandSlot sets the bar's
-   content height. So the slot stays 33px and the mark is re-centred inside it
-   instead — 13.5 + (33 − 23.6) / 2 = 18.2px from the top. */
+   The bar's height is deliberately untouched: --nav-clearance is a fixed
+   80.5px every page's top padding is built on, and .brandSlot sets the bar's
+   content height at 33px. The mark is centred on that slot's midline (30px
+   down) instead, overhanging it by 3px top and bottom. */
 @media (max-width: 700px) {
   .brand {
-    top: 18.2px;
-    width: 104px;
-    height: 23.6px;
+    --brand-w: min(171.9px, 100vw - 220px);
+    width: var(--brand-w);
+    height: calc(var(--brand-w) * 39 / 171.9);
+    top: calc(30px - var(--brand-w) * 39 / 171.9 / 2);
   }
 }

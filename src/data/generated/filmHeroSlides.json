@@ -2,75 +2,65 @@
   "desktop": [
     {
       "src": "/FILM/EKTACHROME%20E100_E-6_35MM.webp",
-      "meta": [
-        "EKTACHROME E100",
-        "E-6 • 35MM"
-      ]
+      "stock": "EKTACHROME E100",
+      "process": "E-6",
+      "format": "35MM"
     },
     {
       "src": "/FILM/FUJIFILM_C-41_35MM.webp",
-      "meta": [
-        "FUJIFILM",
-        "C-41 • 35MM"
-      ]
+      "stock": "FUJIFILM",
+      "process": "C-41",
+      "format": "35MM"
     },
     {
       "src": "/FILM/FUJIFILM_C-41_DISPOSABLE-2.webp",
-      "meta": [
-        "FUJIFILM",
-        "C-41 • DISPOSABLE"
-      ]
+      "stock": "FUJIFILM",
+      "process": "C-41",
+      "format": "DISPOSABLE"
     },
     {
       "src": "/FILM/Gold%20200_C-41_35MM.webp",
-      "meta": [
-        "Gold 200",
-        "C-41 • 35MM"
-      ]
+      "stock": "Gold 200",
+      "process": "C-41",
+      "format": "35MM"
     },
     {
-      "src": "/FILM/HP5_B%26W_120.webp",
-      "meta": [
-        "HP5",
-        "B&W • 120"
-      ]
+      "src": "/FILM/Ilford%20HP5%20Plus%20400_BW_120.webp",
+      "stock": "Ilford HP5 Plus 400",
+      "process": "B&W",
+      "format": "120"
     },
     {
       "src": "/FILM/Portra%20400_C-41_35MM.webp",
-      "meta": [
-        "Portra 400",
-        "C-41 • 35MM"
-      ]
+      "stock": "Portra 400",
+      "process": "C-41",
+      "format": "35MM"
     }
   ],
   "mobile": [
     {
       "src": "/FILM/mobile/120_C-41_Gold%20200.jpg",
-      "meta": [
-        "120",
-        "C-41 • Gold 200"
-      ]
+      "stock": "Gold 200",
+      "process": "C-41",
+      "format": "120"
     },
     {
       "src": "/FILM/mobile/35MM_C-41_GOLD%20200.webp",
-      "meta": [
-        "35MM",
-        "C-41 • GOLD 200"
-      ]
+      "stock": "GOLD 200",
+      "process": "C-41",
+      "format": "35MM"
     },
     {
-      "src": "/FILM/mobile/35mm_B%26W_ilford-2.webp",
-      "meta": [
-        "35mm",
-        "B&W • ilford"
-      ]
+      "src": "/FILM/mobile/35mm_BW_Ilford%20HP5%20Plus%20400.webp",
+      "stock": "Ilford HP5 Plus 400",
+      "process": "B&W",
+      "format": "35mm"
     },
     {
       "src": "/FILM/mobile/35mm_C-41_Cinestill800.webp",
-      "meta": [
-        "35mm",
-        "C-41 • Cinestill800"
-      ]
+      "stock": "Cinestill 800",
+      "process": "C-41",
+      "format": "35mm"
     }
   ]
 }

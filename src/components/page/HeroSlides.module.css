@@ -60,9 +60,10 @@
    how far through them you were.
 
    Three layers:
-     ::before   the rule  — full width, dim
-     ::after    the ink   — one slide wide, moved by the scroll position
-     .segment   targets   — transparent buttons, one per slide */
+     .rail            the rule  — full width, dim
+     .rail::before    the ink   — one slide wide, moved by the scroll position
+     .rail::after     the ink again, for a forward-only loop (below)
+     .segment         targets   — transparent buttons, one per slide */
 .indicators {
   position: absolute;
   left: 0;
@@ -73,20 +74,26 @@
   height: 2px;
 }
 
-.indicators::before,
-.indicators::after {
-  content: "";
-  position: absolute;
+/* Along the top edge of a page's own strip (the film hero) rather than the
+   bottom of the frame. The parent is positioned; the track sits just inside
+   its top edge. */
+.indicators[data-placement="top"] {
   top: 0;
-  height: 2px;
-  pointer-events: none;
+  bottom: auto;
 }
 
-.indicators::before {
-  left: 0;
-  right: 0;
-  background: var(--paper-white);
-  opacity: 0.35;
+/* Clipped, so the ink can run off either end. */
+.rail {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--paper-white) 35%, transparent);
+}
+
+/* On the strip, the unfilled track is black — only the mark shows. */
+.indicators[data-placement="top"] .rail {
+  background: var(--black);
 }
 
 /* One slide wide, translated by its own width per index. --slide-pos is the
@@ -96,12 +103,32 @@
    the finger mid-drag instead of only at the end of it, and it's also why
    there's no transition here: the hero's own glide is a tween of the scroll
    offset, so this follows it frame for frame. A transition on top would lag
-   that and then re-animate a move that had already happened. */
-.indicators::after {
+   that and then re-animate a move that had already happened.
+
+   The second mark is the same one a whole track-length behind. Normally it's
+   parked off the left end, out of sight. On a forward-only loop the position
+   runs on past the last slide (on to the copy of the first), so as the main
+   mark slides off the right end, this one slides in from the left — the ink
+   wraps round rather than travelling back. */
+.rail::before,
+.rail::after {
+  content: "";
+  position: absolute;
+  top: 0;
   left: 0;
   width: calc(100% / var(--slide-count));
+  height: 100%;
   background: var(--paper-white);
+}
+
+.rail::before {
   transform: translateX(calc(100% * var(--slide-pos, var(--slide-index))));
+}
+
+.rail::after {
+  transform: translateX(
+    calc(100% * (var(--slide-pos, var(--slide-index)) - var(--slide-count)))
+  );
 }
 
 .segment {
@@ -121,8 +148,7 @@
 }
 
 /* Hover and focus brighten just that stretch of the rule — nothing else here
-   says the line can be clicked. Painted under the ink, which is the
-   container's ::after and so comes last. */
+   says the line can be clicked. */
 .segment::before {
   content: "";
   position: absolute;

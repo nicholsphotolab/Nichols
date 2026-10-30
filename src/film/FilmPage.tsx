@@ -8,12 +8,9 @@ import page from "@/components/page/Page.module.css";
 
 // Hero slides are generated at build/dev-server start by
 // scripts/generateStaticData.ts from the image files under public/FILM/ and
-// public/FILM/mobile/ — see that script for the filename → caption
-// convention. This replaces the fs.readdirSync scan that used to run at
-// request time in Next's server component. JSON imports lose the [string,
-// string] tuple type on `meta`, so it's asserted back here — the generator
-// always writes exactly two elements.
-const heroSlides = heroSlidesData as { desktop: HeroSlide[]; mobile: HeroSlide[] };
+// public/FILM/mobile/ — see that script for the filename → stock / process /
+// format convention.
+const heroSlides: { desktop: HeroSlide[]; mobile: HeroSlide[] } = heroSlidesData;
 
 export default function FilmPage() {
   return (
@@ -24,6 +21,7 @@ export default function FilmPage() {
         <FilmHero slides={heroSlides.desktop} mobileSlides={heroSlides.mobile} />
 
         <ProductGrid
+          id="film-services"
           heading="Film Development & Scans"
           label="Film development & scans"
           itemsLabel="film stocks"

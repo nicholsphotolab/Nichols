@@ -46,6 +46,20 @@
   }
 }
 
+/* Phone: 20px, as drawn (node 3154:1591), its capitals centred on the bar's
+   midline (30px down) with the logo — the line box sits 4px lower than that,
+   since caps ride above the middle of it. The 10px of padding all round makes
+   a 44px tap target; the label still ends 20px from the screen edge. */
+@media (max-width: 700px) {
+  .toggle {
+    top: 12px;
+    right: 10px;
+    padding: 10px;
+    font-size: 20px;
+    line-height: 24px;
+  }
+}
+
 /* Dark once the solid white bar snaps in, and likewise while this panel is
    open — both put paper-white behind the label. Only needed here now that
    the toggle stays visible (as CLOSE) instead of hiding while open — the

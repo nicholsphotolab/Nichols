@@ -1,0 +1,176 @@
+/* FilmHero.module.css
+   The black strip along the bottom of the film hero (Figma "Desktop - 102",
+   node 3141:2025): what the photo on screen was shot on on the left, its DX
+   edge code centred — both swapping, caption-style, as the photos change —
+   and the slideshow controls fixed on the right. 17px top and
+   bottom around a 14.5px row — 48.5px in all, which PageHero reserves under
+   the centred title (--hero-footer-h). */
+
+.strip {
+  position: relative;
+  padding: 17px 0;
+  background: var(--black);
+  color: var(--paper-white);
+  font-size: 12px;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+/* ---------- The details ----------
+   One frame of details per photo, all in the same grid cell, and only the
+   current photo's showing — so they swap in place like a caption changing
+   from post to post rather than sliding. `index` flips at the halfway point
+   of a swipe or an auto-advance (useHeroSlideshow), so that's when it
+   changes. Every frame stays in the layout, so the strip holds the height of
+   the tallest. */
+.frames {
+  display: grid;
+}
+
+/* One photo's details, laid out across the strip: what it was shot on at the
+   left, its edge code dead centre (equal outer columns), the controls'
+   column left empty. */
+.frame {
+  grid-area: 1 / 1;
+  visibility: hidden;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  column-gap: var(--grid-gap);
+  padding: 0 var(--page-pad);
+}
+
+.frame[data-current] {
+  visibility: visible;
+}
+
+/* Stock, process, format — 100px apart, as drawn. */
+.shotOn {
+  display: flex;
+  align-items: flex-end;
+  gap: 100px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+/* Only drawn in the phone layout, between process and format. */
+.slash {
+  display: none;
+}
+
+/* Sized with the hero's width: 183px at 1440, the Figma artwork's width. */
+.edge {
+  width: calc(100vw * 183 / 1440);
+  min-width: 140px;
+}
+
+/* Fixed over the right end of the strip, on its own black. */
+.controls {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  padding: 0 var(--page-pad) 0 36px;
+  background: var(--black);
+}
+
+.pause,
+.arrow {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: inherit;
+  cursor: pointer;
+}
+
+.pause {
+  font: inherit;
+  text-transform: uppercase;
+  opacity: 0.75;
+}
+
+.arrow {
+  display: block;
+  width: 16.2px;
+  height: 15.12px;
+}
+
+.arrow svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+/* ← at the first photo. The slideshow only ever moves forward — → wraps
+   from the last photo on to the first — so going back from the first is the
+   one move it doesn't make. */
+.arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+/* ---------- Phone ----------
+   Figma "iPhone 17 - 14" (node 3154:1591): 10px type, 10px top and bottom
+   (46px in all — PageHero's --hero-footer-h on a phone), process / format
+   stacked over the stock at the left, the edge code at the right. No
+   controls: the photos swipe, and a swipe stops the auto-advance
+   (FilmHero.tsx). */
+@media (max-width: 700px) {
+  .strip {
+    padding: 10px 0;
+    font-size: 10px;
+    line-height: 1.2;
+  }
+
+  .frame {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+
+  .shotOn {
+    display: grid;
+    /* The last column takes any width a long stock name below adds, so
+       "B&W / 35MM" stays tight instead of spreading to match it. */
+    grid-template-columns: max-content max-content 1fr;
+    justify-content: start;
+    column-gap: 4px;
+    row-gap: 2px;
+  }
+
+  .process,
+  .slash,
+  .format {
+    grid-row: 1;
+  }
+
+  .slash {
+    display: inline;
+  }
+
+  .stock {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
+
+  /* 223px at 402 wide, as drawn. */
+  .edge {
+    width: min(223px, 52vw);
+    min-width: 0;
+  }
+
+  .controls {
+    display: none;
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .pause:hover {
+    opacity: 1;
+  }
+}

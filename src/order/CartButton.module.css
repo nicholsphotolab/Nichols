@@ -134,7 +134,18 @@
    still 35px, and the bar's height (and with it --nav-clearance) doesn't
    move. */
 @media (max-width: 700px) {
+  /* The phone bar is just the logo and MENU until there's an order to show
+     (Figma node 3154:1591). Once there is, the chip sits 12px left of the
+     20px MENU/CLOSE label (~70px wide at that size), and drops the desktop
+     slot's 123px reserve — there's no ORDER PRINTS here to hold steady. */
+  .cart[data-empty="true"] {
+    display: none;
+  }
+
   .cart {
+    min-width: 0;
+    padding-left: 12px;
+    margin-right: 82px;
     padding-top: 4.5px;
     padding-bottom: 4.5px;
     margin-top: -4.5px;
