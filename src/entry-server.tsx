@@ -7,8 +7,13 @@ import { getRouteMeta, ROUTES, SITE_URL } from "./routeMeta";
 // built, so each page ships as real static HTML (same outcome as Next's
 // generateStaticParams) instead of an empty shell the browser has to render.
 export function render(url: string) {
+  // Same basename the browser's router gets (main.tsx) — the GitHub Pages
+  // build lives under /Nichols/. Without it, links in the static HTML point
+  // at /film instead of /Nichols/film, and React has to throw the
+  // prerendered page away and redraw it when the two disagree.
+  const basename = import.meta.env.BASE_URL.replace(/\/$/, "");
   const html = renderToString(
-    <StaticRouter location={url}>
+    <StaticRouter basename={basename} location={basename + url}>
       <App />
     </StaticRouter>
   );
